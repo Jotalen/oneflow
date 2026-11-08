@@ -8,8 +8,8 @@ import { FraudTile } from "@/components/FraudTile";
 import { useDashboardPrefs } from "@/lib/bank/useDashboard";
 
 const TITLE = "Settings";
-const SUBTITLE = "Your profile, security, and how NovaBank works for you.";
-const APP_VERSION = "NovaBank demo 0.1.0 · HackUTD 2026";
+const SUBTITLE = "Your profile, security, and how OneFlow works for you.";
+const APP_VERSION = "OneFlow demo 0.1.0 · HackUTD 2026";
 const NOTIFY_KEY = "nova:notify";
 const THEME_KEY = "nova:theme";
 
@@ -89,7 +89,7 @@ function DashboardPanel({ personaId }: { personaId: string }) {
   const [didReset, setDidReset] = useState(false);
   return (
     <Panel title="Dashboard">
-      <Toggle label="Let NovaBank pick my bubbles" sub="Bubbles appear when you link a loan, start a goal, or something needs attention. Your changes always win." on={prefs.auto} onChange={(v) => { save({ ...prefs, auto: v }); setDidReset(false); }} />
+      <Toggle label="Let OneFlow pick my bubbles" sub="Bubbles appear when you link a loan, start a goal, or something needs attention. Your changes always win." on={prefs.auto} onChange={(v) => { save({ ...prefs, auto: v }); setDidReset(false); }} />
       <div className="flex flex-wrap gap-2 mt-3">
         <Link href="/dashboard/edit" className="btn btn-primary">Edit dashboard</Link>
         <button type="button" className="btn" onClick={() => { reset(); setDidReset(true); }}>Reset to recommended</button>

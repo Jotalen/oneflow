@@ -1,10 +1,12 @@
-# NovaBank
+# OneFlow
 
-**Your bank already knows your money. Ours also knows your car, and tells you the one thing to do next.**
+**One Financial World. OneFlow.**
+
+Your bank already knows your money. Ours also knows your car, and tells you the one thing to do next.
 
 Live: **https://www.one-flow.us** · Built in 24 hours at HackUTD 2026: Zero Day
 
-![NovaBank overview: the next best move pinned on top](screenshots/01-overview.png)
+![OneFlow overview: the next best move pinned on top](screenshots/01-overview.png)
 
 ## The problem
 
@@ -12,7 +14,7 @@ Priya's car lease ends in three months. She has about $32k across checking and s
 
 Should she buy the car, renew, or hand it back? Pay down the card first? Is she fine if her income drops? Answering that today means three apps, a spreadsheet, and a guess.
 
-NovaBank answers it on one screen. In her case it says: **buy the car at lease end, about $8,958 better off in 24 months.** That matches Toyota's own reference answer for her.
+OneFlow answers it on one screen. In her case it says: **buy the car at lease end, about $8,958 better off in 24 months.** That matches Toyota's own reference answer for her.
 
 ## What it does
 
@@ -38,7 +40,7 @@ NovaBank answers it on one screen. In her case it says: **buy the car at lease e
 **Capital One: Best Use of Nessie.** Nessie isn't a data source we read once. It is the bank.
 - Twenty customers are seeded with accounts, paychecks, purchases, bills and loans.
 - Moves execute as real transfers, card payments, new bills and cancelled subscriptions.
-- *Send money* pays another NovaBank customer, and the receipt shows Nessie's own transaction id.
+- *Send money* pays another OneFlow customer, and the receipt shows Nessie's own transaction id.
 - The guard decides pending holds with `POST /transactions/{id}/decision`.
 - A signed, de-duplicated decision webhook (with a registration script) lets Nessie ask us directly before a purchase settles.
 - A fraud monitor runs our own detectors over Nessie's historical simulation.

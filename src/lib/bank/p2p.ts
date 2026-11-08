@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { Cents } from "@/lib/money";
 
-/** Send money to another NovaBank customer: a real Nessie transfer, checking → their checking. */
+/** Send money to another OneFlow customer: a real Nessie transfer, checking → their checking. */
 export const MAX_P2P_CENTS: Cents = 250_000; // $2,500 per send, like a typical P2P daily cap
 export const MAX_MEMO_CHARS = 60;
 const MAX_DESCRIPTION_CHARS = 200; // Nessie TransferCreateDTO.description maxLength

@@ -7,7 +7,7 @@ import { loadToyota } from "@/lib/toyota/load";
 import { P2PRequest, p2pDescription, type P2PFailure, type P2PReceipt } from "@/lib/bank/p2p";
 
 /**
- * Send money to another NovaBank customer (P2P). A real Nessie transfer from the sender's checking
+ * Send money to another OneFlow customer (P2P). A real Nessie transfer from the sender's checking
  * to the recipient's checking, then settled early so the event feed shows it complete.
  * Never simulates: if the bank is offline nothing is sent and the caller is told so.
  */
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
   if (!knownPersona(b.to)) return fail(404, `unknown recipient ${b.to}`);
   const toName = firstName(b.to);
   const recipient = readSeedIds()[b.to];
-  if (!recipient?.checkingId) return fail(404, `${toName} doesn't have a NovaBank checking account yet`);
+  if (!recipient?.checkingId) return fail(404, `${toName} doesn't have a OneFlow checking account yet`);
 
   try {
     const { analysis, live, ids } = await getAnalysis(b.persona);

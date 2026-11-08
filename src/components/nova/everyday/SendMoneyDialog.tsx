@@ -32,7 +32,7 @@ function Receipt({ r }: { r: P2PReceipt }) {
   );
 }
 
-/** "Send money" button + modal: a real P2P transfer to another NovaBank customer's checking. */
+/** "Send money" button + modal: a real P2P transfer to another OneFlow customer's checking. */
 export function SendMoneyDialog({ availableCents }: { availableCents: number }) {
   const b = useReadyBank();
   const { personas } = usePersona();
@@ -72,7 +72,7 @@ export function SendMoneyDialog({ availableCents }: { availableCents: number }) 
       <button className="btn" onClick={open} aria-haspopup="dialog">Send money</button>
       <dialog ref={ref} aria-labelledby="send-money-title" className="panel m-auto w-[min(26rem,calc(100vw-2rem))] p-5 text-fg backdrop:bg-black/40">
         <h2 id="send-money-title" className="font-semibold text-lg">Send money</h2>
-        <p className="text-xs text-muted mt-0.5">From checking to another NovaBank customer. Moves real money in the bank.</p>
+        <p className="text-xs text-muted mt-0.5">From checking to another OneFlow customer. Moves real money in the bank.</p>
         {result?.ok ? (
           <div className="mt-4 space-y-3">
             <Receipt r={result} />

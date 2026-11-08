@@ -11,7 +11,7 @@ import { ActionNote } from "@/components/nova/wealth/ActionNote";
 import { useMoneyMove } from "@/components/nova/wealth/useMoneyMove";
 
 const TITLE = "Credit score";
-const SUB = "Estimate · based on what NovaBank can see. Checking here never affects your score.";
+const SUB = "Estimate · based on what OneFlow can see. Checking here never affects your score.";
 const LOW_USE_PCT = 10;
 const TARGET_UTIL_PCT = 9;
 const OK_USE_PCT = 30;
@@ -42,7 +42,7 @@ export default function CreditPage() {
   const factors: Factor[] = [
     { name: "On-time payments", value: `${cr.onTimePct}%`, impact: "High impact", note: missed ? `${missed} missed in the last 12 months` : "No missed payments in 12 months" },
     { name: "Card use", value: `${Math.round(cr.utilizationPct)}% of your limit`, impact: "High impact", note: cardUseLabel(cr.utilizationPct) },
-    { name: "Total accounts", value: String(cr.accounts), impact: "Low", note: "Accounts we can see at NovaBank and Toyota" },
+    { name: "Total accounts", value: String(cr.accounts), impact: "Low", note: "Accounts we can see at OneFlow and Toyota" },
     { name: "Credit tier", value: `Tier ${p.creditTier}`, impact: "Medium", note: "From Toyota Financial Services" },
   ];
 

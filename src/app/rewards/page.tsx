@@ -11,7 +11,7 @@ import { AS_OF } from "@/lib/engine/types";
 import { fmtUSD } from "@/lib/money";
 
 const TITLE = "Rewards";
-const SUBTITLE = "Points from your NovaBank rewards card.";
+const SUBTITLE = "Points from your OneFlow rewards card.";
 const EARN = [
   { rate: "3x", what: "Dining and takeout" },
   { rate: "2x", what: "Groceries and gas" },
@@ -26,7 +26,7 @@ export default function RewardsPage() {
   if (!b) return <><PageHeader title={TITLE} subtitle={SUBTITLE} /><Loading /></>;
   const { analysis, view } = b;
   const hasCard = analysis.profile.accounts.some((a) => a.kind === "card");
-  if (!hasCard) return <><PageHeader title={TITLE} subtitle={SUBTITLE} /><Empty title="No rewards card" body="Rewards points are earned on a NovaBank credit card. This customer doesn't have one." /></>;
+  if (!hasCard) return <><PageHeader title={TITLE} subtitle={SUBTITLE} /><Empty title="No rewards card" body="Rewards points are earned on a OneFlow credit card. This customer doesn't have one." /></>;
   const r = view.rewards;
   const available = availablePoints(r.points, redemptions);
   const month = MONTH_NAMES[Number(AS_OF.slice(5, 7)) - 1];

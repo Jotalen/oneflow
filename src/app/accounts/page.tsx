@@ -9,7 +9,7 @@ import type { BankAccount, Profile } from "@/lib/engine/types";
 import { fmtUSD, type Cents } from "@/lib/money";
 
 const TITLE = "Accounts";
-const SUBTITLE = "Every account you have with NovaBank, in one place.";
+const SUBTITLE = "Every account you have with OneFlow, in one place.";
 const PCT = 100;
 
 interface AcctRow { id: string; title: string; sub: string; value: Cents; href: string }

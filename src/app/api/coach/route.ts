@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     for (const provider of chain) {
       try {
         const result = await run(provider);
-        const notice = failed.length ? `${failed.join(" and ")} ${failed.length > 1 ? "were" : "was"} busy, so ${provider.name === "stub" ? "NovaBank's built-in narrator" : provider.name} answered. Same numbers, same rules.` : undefined;
+        const notice = failed.length ? `${failed.join(" and ")} ${failed.length > 1 ? "were" : "was"} busy, so ${provider.name === "stub" ? "OneFlow's built-in narrator" : provider.name} answered. Same numbers, same rules.` : undefined;
         return NextResponse.json({ ...result, provider: provider.name, ...(notice ? { notice } : {}) });
       } catch (llmErr) {
         if (provider.name === "stub") throw llmErr;

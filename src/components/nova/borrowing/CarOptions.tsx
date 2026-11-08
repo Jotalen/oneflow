@@ -47,7 +47,7 @@ function OptionCard({ move }: { move: RankedMove }) {
       {move.tfs?.tradeoff && <p className="text-xs text-muted mt-2">Trade-off: {move.tfs.tradeoff}</p>}
       {move.execution && move.execution.length > 0 && (
         <button type="button" className="btn btn-primary mt-3" disabled={accepting === move.id} onClick={() => void accept(move)}>
-          {accepting === move.id ? "Working…" : "Do this in NovaBank"}
+          {accepting === move.id ? "Working…" : "Do this in OneFlow"}
         </button>
       )}
       {receipt && (

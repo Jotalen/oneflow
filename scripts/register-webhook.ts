@@ -1,5 +1,5 @@
 /**
- * Register NovaBank's Nessie decision-mode webhook (idempotent).
+ * Register OneFlow's Nessie decision-mode webhook (idempotent).
  *
  *   pnpm webhook:register --url https://www.one-flow.us/api/webhook/decision [--dry-run]
  *     [--kind purchase] [--on-error approve|decline] [--max-wait 30]

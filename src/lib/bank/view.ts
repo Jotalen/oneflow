@@ -1,5 +1,5 @@
 /**
- * NovaBank view model: every number the wireframe screens show, derived deterministically
+ * OneFlow view model: every number the wireframe screens show, derived deterministically
  * from the engine Analysis (ADR-003: code computes). No I/O, no randomness.
  *
  * Honesty notes (README): Nessie stamps seeded transactions with the seed time, so posting

@@ -112,7 +112,7 @@ function WhyDrawer({ move, personaId, onClose }: { move: RankedMove; personaId: 
           <div className="panel p-4">
             <h3 className="font-semibold mb-2">Two futures</h3>
             <TwoFutures baseline={move.baseline} applied={move.applied} appliedLabel={move.title} />
-            <p className="text-xs text-muted mt-2">Every number here comes from NovaBank&apos;s projection engine, not the AI.</p>
+            <p className="text-xs text-muted mt-2">Every number here comes from OneFlow&apos;s projection engine, not the AI.</p>
           </div>
         )}
         {brief && <div className="panel p-4 text-sm whitespace-pre-wrap leading-relaxed">{brief}</div>}

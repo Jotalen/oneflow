@@ -1,5 +1,5 @@
 /**
- * Variable dashboard. Each bubble has a rule for when NovaBank adds it (wireframe "Bubble library");
+ * Variable dashboard. Each bubble has a rule for when OneFlow adds it (wireframe "Bubble library");
  * the person can add, remove and reorder, and their changes always win.
  */
 import type { Analysis } from "@/lib/engine/analyze";
@@ -62,7 +62,7 @@ export function recommendBubbles(a: Analysis, v: BankView, ctx: { hasGoal: boole
 export interface DashboardPrefs { auto: boolean; order: BubbleId[] | null; removed: BubbleId[]; added: BubbleId[] }
 export const DEFAULT_PREFS: DashboardPrefs = { auto: true, order: null, removed: [], added: [] };
 
-/** Merge NovaBank's picks with the person's edits. Their changes always win. */
+/** Merge OneFlow's picks with the person's edits. Their changes always win. */
 export function applyPrefs(recommended: BubbleId[], prefs: DashboardPrefs): BubbleId[] {
   const removed = new Set(prefs.removed);
   if (!prefs.auto && prefs.order) return prefs.order.filter((id) => !removed.has(id));

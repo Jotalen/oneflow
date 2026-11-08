@@ -86,7 +86,7 @@ export function PayFasterPanel({ contract, loan }: { contract: Contract; loan: L
         <Tile label="Interest saved" value={fmtUSD(plan.interestSaved)} />
       </div>
       <p className="text-xs text-muted mt-3">
-        Next step: ask Toyota Financial Services to apply the extra amount to principal. NovaBank can&apos;t send loan payments to TFS from here yet, so nothing is scheduled by this slider.
+        Next step: ask Toyota Financial Services to apply the extra amount to principal. OneFlow can&apos;t send loan payments to TFS from here yet, so nothing is scheduled by this slider.
       </p>
     </Panel>
   );

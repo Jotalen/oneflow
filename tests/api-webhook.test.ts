@@ -50,7 +50,7 @@ describe("/api/webhook/decision", () => {
     const res = await POST(signedRequest(purchase({ amount_cents: 60_000 })));
     const body = await res.json();
     expect(body).toMatchObject({ decision: "decline", rule: "large_low_runway" });
-    expect(body.reason).toMatch(/approve it in NovaBank/i);
+    expect(body.reason).toMatch(/approve it in OneFlow/i);
   });
 
   test("GET status does not expose decision reasons (they contain customer balances)", async () => {

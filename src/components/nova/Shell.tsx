@@ -20,7 +20,7 @@ function NavLink({ href, label, path }: { href: string; label: string; path: str
 function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 px-2.5 py-1 font-semibold text-lg tracking-tight">
-      <span className="h-7 w-7 rounded-lg bg-ink grid place-items-center text-ink-fg text-sm" aria-hidden>N</span>NovaBank
+      <span className="h-7 w-7 rounded-lg bg-ink grid place-items-center text-ink-fg text-sm" aria-hidden>O</span>OneFlow
     </Link>
   );
 }

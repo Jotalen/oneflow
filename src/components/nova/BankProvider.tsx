@@ -31,7 +31,7 @@ interface BankCtx {
 const Ctx = createContext<BankCtx | null>(null);
 const REFRESH_AFTER_TRANSFER_MS = 1_500;
 
-/** One fetch per persona shared by every page; derived NovaBank numbers memoized. */
+/** One fetch per persona shared by every page; derived OneFlow numbers memoized. */
 export function BankProvider({ children }: { children: ReactNode }) {
   const { personaId, ready, personas } = usePersona();
   const { data, loading, offline, error, refresh } = useProfile(personaId, ready);

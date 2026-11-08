@@ -51,7 +51,7 @@ export function BalanceHistory({ personaId }: { personaId: string }) {
       <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 mb-3">
         <Tile label="Bank events stored" value={activity.events.toLocaleString()} />
         <Tile label="Transactions posted" value={activity.holds.toLocaleString()} />
-        <Tile label="Declined by NovaBank" value={activity.declined.toLocaleString()} />
+        <Tile label="Declined by OneFlow" value={activity.declined.toLocaleString()} />
         <Tile label="Cash now" value={last ? fmtUSD(last.cash as Cents) : "—"} note={activity.firstAt ? `since ${timeLabel(activity.firstAt)}` : undefined} />
       </div>
       {points.length < 2 ? (

@@ -65,7 +65,7 @@ describe("POST /api/p2p", () => {
     expect(transfer).not.toHaveBeenCalled();
   });
 
-  test("404 when the recipient has no NovaBank checking account in the bank", async () => {
+  test("404 when the recipient has no OneFlow checking account in the bank", async () => {
     expect((await post({ ...good, to: "C009" })).status).toBe(404);
     expect((await post({ ...good, to: "C010" })).status).toBe(404); // known persona, never seeded
     expect(transfer).not.toHaveBeenCalled();

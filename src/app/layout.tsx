@@ -10,7 +10,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NovaBank · NextMove",
+  title: "OneFlow · One Financial World",
   description: "Your whole financial picture and your next best move. The code computes, the AI explains, the bank executes.",
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };

@@ -50,10 +50,10 @@ export default function EditDashboardPage() {
         actions={<><button className="btn" onClick={reset}>Reset to recommended</button><Link href="/" className="btn btn-primary">Done</Link></>} />
       <div className="panel p-4 flex items-center justify-between gap-4">
         <div>
-          <div className="font-semibold text-sm">Let NovaBank pick my bubbles</div>
+          <div className="font-semibold text-sm">Let OneFlow pick my bubbles</div>
           <p className="text-xs text-muted">We add a bubble when you link a loan, start a goal, or something needs your attention. Bubbles you remove stay removed.</p>
         </div>
-        <button role="switch" aria-checked={prefs.auto} aria-label="Let NovaBank pick my bubbles" onClick={() => save({ ...prefs, auto: !prefs.auto, order: prefs.order ?? current })}
+        <button role="switch" aria-checked={prefs.auto} aria-label="Let OneFlow pick my bubbles" onClick={() => save({ ...prefs, auto: !prefs.auto, order: prefs.order ?? current })}
           className={`h-7 w-12 shrink-0 rounded-full p-1 transition-colors ${prefs.auto ? "bg-ink" : "bg-line"}`}>
           <span className={`block h-5 w-5 rounded-full bg-surface transition-transform ${prefs.auto ? "translate-x-5" : ""}`} />
         </button>

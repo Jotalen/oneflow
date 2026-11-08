@@ -60,7 +60,7 @@ export async function POST(req: Request) {
     const g = guardDecision({ id: tx.id ?? body.tx_id ?? "", kind: tx.kind ?? "purchase", amountCents: Number(tx.amount_cents ?? 0), description: tx.description, merchantCategory: category, payeeId: tx.payee_id }, analysis.profile, analysis.health);
     // A hook must answer now and cannot wait for the owner, so "ask" fails safe: decline, and say why.
     const decision = g.decision === "ask" ? "decline" : g.decision;
-    const reason = g.decision === "ask" ? `${g.reason} Declined until you approve it in NovaBank.` : g.reason;
+    const reason = g.decision === "ask" ? `${g.reason} Declined until you approve it in OneFlow.` : g.reason;
     if (eventId) remember(eventId, { decision, reason, rule: g.rule });
     return NextResponse.json({ decision, reason: reason.slice(0, 200), rule: g.rule, decision_source: "hook" });
   } catch (e) {

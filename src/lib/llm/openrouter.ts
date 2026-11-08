@@ -47,7 +47,7 @@ export class OpenRouterProvider implements LlmProvider {
     const res = await fetch(ENDPOINT, {
       method: "POST",
       signal: AbortSignal.timeout(TIMEOUT_MS),
-      headers: { authorization: `Bearer ${this.apiKey}`, "content-type": "application/json", "x-title": "NovaBank NextMove" },
+      headers: { authorization: `Bearer ${this.apiKey}`, "content-type": "application/json", "x-title": "OneFlow NextMove" },
       body: JSON.stringify({
         model: this.model,
         temperature: 0.3,

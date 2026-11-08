@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* NovaBank tokens. Light by default; dark follows the device unless Settings forces a theme. */
+/* OneFlow tokens. Light by default; dark follows the device unless Settings forces a theme. */
 :root {
   --bg: #f1f1ef;
   --surface: #ffffff;
