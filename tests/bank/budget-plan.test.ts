@@ -87,6 +87,11 @@ describe("planBudget — Set my own", () => {
     expect(b.limit).toBe(60_000 + 40_000 + 20_000);
     expect(b.spent).toBe(60_000 + 15_000 + 5_000 + 2_500);
   });
+  test("a declined charge this month is not counted as spent", () => {
+    const withDeclined = [...ledger, tx({ id: "casino", category: "entertainment", amount: -80_000, status: "declined", accountKind: "card" })];
+    const d = planBudget(suggested, withDeclined, { mode: "manual", auto: {}, manual: { entertainment: 10_000 } });
+    expect(d.categories.find((c) => c.key === "entertainment")).toMatchObject({ limit: 10_000, spent: 0 });
+  });
   test("ordered like the category list", () => {
     expect(b.categories.map((c) => c.key)).toEqual(["automotive", "food", "groceries", "personal", "travel"]);
   });

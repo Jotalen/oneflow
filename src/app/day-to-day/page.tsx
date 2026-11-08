@@ -22,10 +22,10 @@ const RANGE_LABEL: Record<BalanceRange, string> = { "1M": "last month", "3M": "l
 type Action = "transfer" | "paybill" | null;
 
 function InOutPanel({ view }: { view: BankView }) {
-  const { inflow, outflow, net, nextPayday, nextPaycheck } = view.inOut;
+  const { inflow, outflow, net, nextPayday, nextPaycheck, days } = view.inOut;
   const max = Math.max(inflow, outflow, 1);
   return (
-    <Panel title="Money in and out" subtitle="Checking · last 30 days">
+    <Panel title="Money in and out" subtitle={`Checking · last ${days / 7} weeks`}>
       <div className="space-y-3 text-sm">
         <div>
           <div className="flex justify-between"><span>In</span><span className="font-semibold money">{fmtSigned(inflow)}</span></div>

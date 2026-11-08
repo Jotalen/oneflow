@@ -5,7 +5,7 @@
  * Pure: storage lives in the components (useBudgetPlan).
  */
 import { z } from "zod";
-import { CATEGORY_LABEL, SPENDING_CATEGORIES, budgetNote, isSpendingCategory, type BankView, type Budget, type BudgetCategory, type LedgerTxn } from "@/lib/bank/view";
+import { CATEGORY_LABEL, SPENDING_CATEGORIES, budgetNote, isSettled, isSpendingCategory, type BankView, type Budget, type BudgetCategory, type LedgerTxn } from "@/lib/bank/view";
 import type { BudgetOverrides } from "@/lib/bank/everyday";
 import type { Cents } from "@/lib/money";
 
@@ -62,7 +62,7 @@ const withLimit = (c: BudgetCategory, limit: Cents): BudgetCategory => {
 };
 
 function spentThisMonth(ledger: LedgerTxn[], month: string, key: string): Cents {
-  return ledger.filter((t) => t.date.startsWith(month) && t.amount < 0 && t.category === key).reduce((s, t) => s - t.amount, 0);
+  return ledger.filter((t) => t.date.startsWith(month) && t.amount < 0 && t.category === key && isSettled(t)).reduce((s, t) => s - t.amount, 0);
 }
 
 function manualLines(suggested: Budget, ledger: LedgerTxn[], manual: BudgetOverrides): BudgetCategory[] {

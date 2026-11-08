@@ -22,7 +22,7 @@ export function FraudTile() {
             <li key={i} className="flex flex-wrap gap-2 items-baseline">
               <span className="chip text-warn">{RULE_LABEL[a.rule] ?? a.rule}</span>
               <span>{a.evidence}</span>
-              <span className="text-xs font-mono text-muted">acct {a.accountId.slice(0, 8)}… · {a.txIds.length} tx</span>
+              <span className="text-xs font-mono text-muted">acct …{a.accountId.slice(-6)} · {a.txIds.length} tx</span>
             </li>
           ))}
         </ul>

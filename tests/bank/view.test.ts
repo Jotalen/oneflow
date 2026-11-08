@@ -171,3 +171,37 @@ describe("REWARD_RULES", () => {
     expect(REWARD_RATE).toEqual({ food: 3, groceries: 2, gas: 2 });
   });
 });
+
+describe("declined and cancelled charges", () => {
+  const a = snap("C018");
+  const card = a.profile.accounts.find((x) => x.kind === "card")!;
+  const chk = a.profile.accounts.find((x) => x.kind === "checking")!;
+  const withTxns = (extra: Analysis["profile"]["recentTxns"]) => ({ ...a, profile: { ...a.profile, recentTxns: [...extra, ...a.profile.recentTxns] } });
+  const casino = (status: string) => ({ id: `cas_${status}`, accountId: card.id, kind: "purchase", status, amount: 80_000, description: "Card swipe (demo) at Lucky Star Casino", createdAt: "2099-01-01T00:00:00Z" });
+  test.each(["declined", "cancelled"])("a %s card swipe adds nothing to budget spending or rewards", (status) => {
+    const base = buildBankView(withTxns([{ ...casino(status), status: "completed", amount: 0 }]));
+    const v = buildBankView(withTxns([casino(status)]));
+    expect(v.budget.spent).toBe(base.budget.spent);
+    expect(v.rewards.points).toBe(base.rewards.points);
+  });
+  test("a declined charge still shows in the ledger with its status", () => {
+    const ledger = buildLedger(withTxns([casino("declined")]).profile);
+    expect(ledger.find((t) => t.id === "cas_declined")?.status).toBe("declined");
+  });
+  test("money in and out ignores declined checking rows", () => {
+    const dep = { id: "dep_x", accountId: chk.id, kind: "deposit", status: "declined", amount: 50_000, description: "Paycheck", createdAt: "2099-01-01T00:00:00Z" };
+    const base = buildBankView(withTxns([{ ...dep, status: "completed", amount: 0 }])).inOut;
+    const v = buildBankView(withTxns([dep])).inOut;
+    expect(v.inflow).toBe(base.inflow);
+  });
+});
+
+describe("money in and out window", () => {
+  test("covers the whole 8-week ledger window, so older paychecks count", () => {
+    const a = snap("C018");
+    const v = buildBankView(a);
+    const ledger = buildLedger(a.profile).filter((t) => t.accountKind === "checking" && t.status !== "declined" && t.status !== "cancelled");
+    expect(v.inOut.inflow).toBe(ledger.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0));
+    expect(v.inOut.days).toBe(56);
+  });
+});

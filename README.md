@@ -94,7 +94,7 @@ Nessie (bank)  ───┘                       ├─ execute  → real Nessi
                                           └─ events   → shared poller → Tiger Data hypertable → balance history
 ```
 
-658 automated tests in 66 files cover the engine, the guard, the coach fallback, Ask AI, P2P, budgets, credit, what-if, Solana payments and every API route.
+669 automated tests in 67 files cover the engine, the guard, the coach fallback, Ask AI, P2P, budgets, credit, what-if, Solana payments and every API route.
 
 ## Challenges we ran into
 

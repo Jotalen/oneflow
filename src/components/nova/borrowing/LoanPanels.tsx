@@ -74,7 +74,7 @@ export function LoanProgressPanel({ contract, loan }: { contract: Contract; loan
 
 export function PayFasterPanel({ contract, loan }: { contract: Contract; loan: LoanStats }) {
   const [extra, setExtra] = useState<Cents>(EXTRA_DEFAULT);
-  const plan = extraPaymentPlan({ balance: contract.balance, aprPct: contract.aprPct ?? 0, monthly: contract.monthlyPayment, extra, nextPaymentDate: loan.nextPaymentDate });
+  const plan = extraPaymentPlan({ balance: contract.balance, aprPct: contract.aprPct ?? 0, monthly: contract.monthlyPayment, extra, nextPaymentDate: loan.nextPaymentDate, scheduleMonths: contract.monthsRemaining });
   return (
     <Panel title="Pay it off faster">
       <DollarSlider id="extra-monthly" label="Extra each month" cents={extra} max={EXTRA_MAX_DOLLARS} step={EXTRA_STEP_DOLLARS} onChange={setExtra} />

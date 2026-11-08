@@ -108,7 +108,7 @@ export function Bubble({ id, a, v, goal }: { id: BubbleId; a: Analysis; v: BankV
           <div onClick={(e) => e.preventDefault()}><CarSpinner model={p.car.model} year={p.car.year} /></div>
           {c.type === "loan" && v.loan ? (
             <>
-              <div className="text-xs text-muted mt-2">Remaining balance</div>
+              <div className="text-xs text-muted mt-2">Payoff today</div>
               <Big>{fmtUSD(c.payoffQuote)}</Big>
               <div className="mt-2"><Bar pct={v.loan.pctPaid} /></div>
               <div className="flex justify-between text-xs text-muted mt-1"><span>{v.loan.paymentsMade} of {c.termMonths} payments</span><span>{v.loan.pctPaid}% paid</span></div>

@@ -44,6 +44,14 @@ describe("extraPaymentPlan", () => {
     expect(r.interestSaved).toBeGreaterThan(0);
     expect(r.paidOffDate < r.basePaidOffDate).toBe(true);
   });
+  test("anchors both dates on the contract schedule when scheduleMonths is given", () => {
+    const r = extraPaymentPlan({ balance: 1_757_811, aprPct: 7.6, monthly: 60_859, extra: 5_000, nextPaymentDate: "2026-12-01", scheduleMonths: 32 });
+    expect(r.basePaidOffDate).toBe("2029-07-01");
+    expect(r.monthsSaved).toBeGreaterThan(0);
+    const [y, m] = r.basePaidOffDate.split("-").map(Number);
+    const diff = (y * 12 + m) - (Number(r.paidOffDate.slice(0, 4)) * 12 + Number(r.paidOffDate.slice(5, 7)));
+    expect(diff).toBe(r.monthsSaved);
+  });
   test("zero extra saves nothing", () => {
     const r = extraPaymentPlan({ balance: 1_000_000, aprPct: 5, monthly: 30_000, extra: 0, nextPaymentDate: "2026-12-01" });
     expect(r.monthsSaved).toBe(0);

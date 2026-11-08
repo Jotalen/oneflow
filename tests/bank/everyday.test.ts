@@ -100,3 +100,13 @@ describe("all 20 persona snapshots", () => {
     }
   });
 });
+
+describe("declined card swipes earn no points", () => {
+  test("pointsForTxn is 0 for declined and cancelled purchases", async () => {
+    const { pointsForTxn } = await import("@/lib/bank/everyday");
+    const row = { id: "x", accountId: "card", accountKind: "card" as const, accountLabel: "", date: "2026-11-07", merchant: "Lucky Star Casino", category: "entertainment" as const, amount: -80_000, status: "declined", kind: "purchase" };
+    expect(pointsForTxn(row)).toBe(0);
+    expect(pointsForTxn({ ...row, status: "cancelled" })).toBe(0);
+    expect(pointsForTxn({ ...row, status: "completed" })).toBe(800);
+  });
+});

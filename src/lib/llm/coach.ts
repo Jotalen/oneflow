@@ -8,7 +8,7 @@ import { runTool, TOOL_DEFS, type ToolCtx } from "./tools";
 export const COACH_PROVIDER_TIMEOUT_MS = 15_000;
 
 export const MAX_TOOL_CALLS = 4;
-const ANALYZE_PROMPT = "Analyze my whole picture and brief me on my next best move, with one or two alternatives and the trade-offs.";
+const ANALYZE_PROMPT = "Analyze my whole picture and brief me on my next best move, with one or two alternatives and the trade-offs. My next best move is topMoves[0] in the context (the engine's pick); lead with it.";
 
 export interface CoachResult { text: string; toolTrace: string[]; provider: string }
 

@@ -29,20 +29,27 @@ export function financeOptions(i: { amount: Cents; rates: RateRow[]; tier: strin
 
 export interface ExtraPlan { months: number; baseMonths: number; monthsSaved: number; interest: Cents; interestSaved: Cents; paidOffDate: string; basePaidOffDate: string }
 
-/** Paying `extra` more each month vs the schedule. */
-export function extraPaymentPlan(i: { balance: Cents; aprPct: number; monthly: Cents; extra: Cents; nextPaymentDate: string }): ExtraPlan {
+/**
+ * Paying `extra` more each month vs the schedule. With `scheduleMonths` (the contract's payments left),
+ * dates anchor on the contract's end date, so this panel agrees with the loan's "Paid off" date.
+ */
+export function extraPaymentPlan(i: { balance: Cents; aprPct: number; monthly: Cents; extra: Cents; nextPaymentDate: string; scheduleMonths?: number }): ExtraPlan {
   const base = payoffWithExtra(i.balance, i.aprPct, i.monthly, 0);
   const faster = payoffWithExtra(i.balance, i.aprPct, i.monthly, i.extra);
   const finite = Number.isFinite(base.months) && Number.isFinite(faster.months);
   const dateFor = (m: number) => (Number.isFinite(m) && m > 0 ? addMonths(i.nextPaymentDate, m - 1) : i.nextPaymentDate);
+  const monthsSaved = finite ? base.months - faster.months : 0;
+  const scheduled = i.scheduleMonths !== undefined && i.scheduleMonths > 0 && finite;
+  const baseDateMonths = scheduled ? i.scheduleMonths! : base.months;
+  const fasterDateMonths = scheduled ? Math.max(1, i.scheduleMonths! - monthsSaved) : faster.months;
   return {
     months: faster.months,
     baseMonths: base.months,
-    monthsSaved: finite ? base.months - faster.months : 0,
+    monthsSaved,
     interest: faster.interest,
     interestSaved: finite ? base.interest - faster.interest : 0,
-    paidOffDate: dateFor(faster.months),
-    basePaidOffDate: dateFor(base.months),
+    paidOffDate: dateFor(fasterDateMonths),
+    basePaidOffDate: dateFor(baseDateMonths),
   };
 }
 

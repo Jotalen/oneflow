@@ -67,13 +67,16 @@ export function buildLedger(p: Profile): LedgerTxn[] {
 
 const isCash = (k: string) => k === "checking" || k === "savings" || k === "cd";
 
+/** Money actually moved. Declined and cancelled rows stay in the ledger (shown with their status) but never count in totals; same rule as the engine (engine/cashflow.ts). */
+export const isSettled = (t: Pick<LedgerTxn, "status">) => t.status !== "declined" && t.status !== "cancelled";
+
 export interface Point { date: string; value: Cents }
 
 /** Daily cash (checking + savings) for the last `days`, walked back from today's balances. */
 export function cashHistory(p: Profile, ledger: LedgerTxn[], days: number): Point[] {
   let bal = p.accounts.filter((a) => isCash(a.kind)).reduce((s, a) => s + a.balance, 0);
   const byDay = new Map<string, Cents>();
-  for (const t of ledger) if (isCash(t.accountKind)) byDay.set(t.date, (byDay.get(t.date) ?? 0) + t.amount);
+  for (const t of ledger) if (isCash(t.accountKind) && isSettled(t)) byDay.set(t.date, (byDay.get(t.date) ?? 0) + t.amount);
   const out: Point[] = [];
   for (let i = 0; i <= days; i++) {
     const date = addDays(AS_OF, -i);
@@ -98,7 +101,7 @@ export interface Rewards { points: number; valueCents: Cents; monthPoints: numbe
 /** Card rewards: 3x dining (Food & Drink), 2x groceries & gas, 1x everything else. 100 points = $1. */
 export function rewardsFor(ledger: LedgerTxn[]): Rewards {
   const earned = ledger
-    .filter((t) => t.accountKind === "card" && t.kind === "purchase" && t.amount < 0)
+    .filter((t) => t.accountKind === "card" && t.kind === "purchase" && t.amount < 0 && isSettled(t))
     .map((t) => { const rate = REWARD_RATE[t.category] ?? 1; return { txn: t, rate, points: Math.round((Math.abs(t.amount) / 100) * rate) }; });
   const points = earned.reduce((s, e) => s + e.points, 0);
   const monthPoints = earned.filter((e) => e.txn.date.slice(0, 7) === AS_OF.slice(0, 7)).reduce((s, e) => s + e.points, 0);
@@ -234,7 +237,8 @@ function recurringLines(p: Profile, dayOfMonth: number): Partial<Record<Spending
   };
 }
 
-function buildBudget(p: Profile, ledger: LedgerTxn[]): Budget {
+function buildBudget(p: Profile, allRows: LedgerTxn[]): Budget {
+  const ledger = allRows.filter(isSettled);
   const month = AS_OF.slice(0, 7);
   const dayOfMonth = Number(AS_OF.slice(8, 10));
   const daysInMonth = 30;
@@ -303,14 +307,15 @@ function buildSafetyNet(p: Profile, budget: Budget): SafetyNet {
   };
 }
 
-export interface MoneyInOut { inflow: Cents; outflow: Cents; net: Cents; nextPayday: string; nextPaycheck: Cents }
+/** `days` = the window covered. Posting dates are spread over the whole seed window, so a shorter cut would drop rows by seed order, not by date. */
+export interface MoneyInOut { inflow: Cents; outflow: Cents; net: Cents; nextPayday: string; nextPaycheck: Cents; days: number }
 
 function buildInOut(p: Profile, ledger: LedgerTxn[]): MoneyInOut {
-  const since = addDays(AS_OF, -30);
-  const chk = ledger.filter((t) => t.accountKind === "checking" && t.date > since);
+  const since = addDays(AS_OF, -WINDOW_DAYS);
+  const chk = ledger.filter((t) => t.accountKind === "checking" && t.date > since && isSettled(t));
   const inflow = chk.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
   const outflow = chk.filter((t) => t.amount < 0).reduce((s, t) => s - t.amount, 0);
-  return { inflow, outflow, net: inflow - outflow, nextPayday: nextDueDate(p.paydayDay, addDays(AS_OF, 1)), nextPaycheck: Math.round(p.incomeMonthly / 2) };
+  return { inflow, outflow, net: inflow - outflow, nextPayday: nextDueDate(p.paydayDay, addDays(AS_OF, 1)), nextPaycheck: Math.round(p.incomeMonthly / 2), days: WINDOW_DAYS };
 }
 
 export interface UpcomingBill { id: string; label: string; detail: string; amount: Cents; date: string }

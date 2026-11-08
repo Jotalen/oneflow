@@ -2,7 +2,7 @@
  * Pure helpers for the Everyday pages (day-to-day, transactions, budget, rewards).
  * Deterministic, no I/O: localStorage reads/writes live in the components.
  */
-import { CATEGORY_LABEL, REWARD_RATE, isCategory, type Category, type LedgerTxn, type UpcomingBill } from "@/lib/bank/view";
+import { CATEGORY_LABEL, REWARD_RATE, isCategory, isSettled, type Category, type LedgerTxn, type UpcomingBill } from "@/lib/bank/view";
 import { parseCents, type Cents } from "@/lib/money";
 
 export type AmountFilter = "any" | "under25" | "25to100" | "over100";
@@ -85,7 +85,7 @@ export function monthlySpend(ledger: LedgerTxn[]): { month: string; spent: Cents
 
 /** Points a ledger row earns (card purchases only), same rule as rewardsFor. */
 export function pointsForTxn(t: LedgerTxn): number {
-  if (t.accountKind !== "card" || t.kind !== "purchase" || t.amount >= 0) return 0;
+  if (t.accountKind !== "card" || t.kind !== "purchase" || t.amount >= 0 || !isSettled(t)) return 0;
   return Math.round((Math.abs(t.amount) / 100) * (REWARD_RATE[t.category] ?? 1));
 }
 

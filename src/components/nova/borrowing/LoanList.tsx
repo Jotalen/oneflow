@@ -1,6 +1,6 @@
 "use client";
 import { Panel, fmtDate, fmtMonth } from "@/components/nova/ui";
-import { addMonths, nextDueDate, payoffWithExtra } from "@/lib/bank/view";
+import { addMonths, loanStats, nextDueDate, payoffWithExtra } from "@/lib/bank/view";
 import { AS_OF, type Debt, type Profile } from "@/lib/engine/types";
 import { fmtUSD } from "@/lib/money";
 
@@ -8,6 +8,8 @@ const KIND_LABEL: Record<Debt["kind"], string> = { auto_loan: "Car loan", auto_l
 
 function paidOff(d: Debt, p: Profile): string {
   if (d.kind === "auto_lease") return p.contract ? `Lease ends ${fmtMonth(addMonths(AS_OF, p.contract.monthsRemaining))}` : "Lease";
+  const contractLoan = d.kind === "auto_loan" && p.contract ? loanStats(p.contract) : null;
+  if (contractLoan) return `Paid off ${fmtMonth(contractLoan.paidOffDate)}`;
   const { months } = payoffWithExtra(d.balance, d.aprPct, d.monthlyPayment, 0);
   return Number.isFinite(months) ? `Paid off ${fmtMonth(addMonths(AS_OF, months))}` : "Payment doesn't cover interest";
 }

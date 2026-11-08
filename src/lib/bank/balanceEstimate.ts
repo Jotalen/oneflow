@@ -10,7 +10,7 @@
  * customer did not actually have. Balances are floored at $0. Pure and deterministic.
  */
 import { AS_OF, type Profile } from "@/lib/engine/types";
-import { WINDOW_DAYS, addDays, type LedgerTxn, type Point } from "@/lib/bank/view";
+import { WINDOW_DAYS, addDays, isSettled, type LedgerTxn, type Point } from "@/lib/bank/view";
 import type { Cents } from "@/lib/money";
 
 export type BalanceRange = "1M" | "3M" | "6M";
@@ -76,7 +76,7 @@ export function recurringFlows(p: Profile, ledger: LedgerTxn[]): RecurringFlows 
     ...p.bills.filter((b) => b.status === "recurring" && !b.isVehiclePayment).map((b) => ({ amount: b.amount, dueDay: b.dueDay ?? 1 })),
     ...(p.contract ? [{ amount: p.contract.monthlyPayment, dueDay: p.contract.dueDay }] : []),
   ];
-  const realOut = ledger.filter((t) => t.accountKind === "checking" && t.amount < 0).reduce((s, t) => s - t.amount, 0);
+  const realOut = ledger.filter((t) => t.accountKind === "checking" && t.amount < 0 && isSettled(t)).reduce((s, t) => s - t.amount, 0);
   const observedDaily = Math.ceil(realOut / WINDOW_DAYS);
   const billsMonthly = bills.reduce((s, b) => s + b.amount, 0);
   const leftoverDaily = Math.ceil((paycheck * paydays.length - billsMonthly) / DAYS_PER_MONTH);
