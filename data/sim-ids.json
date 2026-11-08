@@ -1,0 +1,43 @@
+{
+  "simulationId": "sim_01m6w8pcmgwczcg9nse6zwdcpy",
+  "status": "finished",
+  "customerIds": [
+    "cust_01m6w8r5vk4k9q2a0n5tvez0x1",
+    "cust_01m6w8r5vk4k9q2a0n629z53xr",
+    "cust_01m6w8r5vk4k9q2a0n6afg36aw",
+    "cust_01m6w8r5vk4k9q2a0n6fy0sdj1",
+    "cust_01m6w8r5vk4k9q2a0n6rc134ws",
+    "cust_01m6w8r5vk4k9q2a0n7hk1qcat"
+  ],
+  "accountIds": [
+    "acct_01m6w8r5vk4k9q2a0n5vf1ggcj",
+    "acct_01m6w8r5vk4k9q2a0n5z8qsgce",
+    "acct_01m6w8r5vk4k9q2a0n64vk0ft2",
+    "acct_01m6w8r5vk4k9q2a0n674bvdp6",
+    "acct_01m6w8r5vk4k9q2a0n6avkbyxc",
+    "acct_01m6w8r5vk4k9q2a0n6dhyayt3",
+    "acct_01m6w8r5vk4k9q2a0n6kfnp0e5",
+    "acct_01m6w8r5vk4k9q2a0n6q8ydr4d",
+    "acct_01m6w8r5vk4k9q2a0n6wbwr8ck",
+    "acct_01m6w8r5vk4k9q2a0n6xezbp8w",
+    "acct_01m6w8r5vk4k9q2a0n7meay0vy"
+  ],
+  "merchantIds": [
+    "merch_01m6w8r5vk4k9q2a0n6z0k1w8f",
+    "merch_01m6w8r5vk4k9q2a0n72fe6k02",
+    "merch_01m6w8r5vk4k9q2a0n74cpxm2h",
+    "merch_01m6w8r5vk4k9q2a0n77ae6zt2",
+    "merch_01m6w8r5vk4k9q2a0n79s6pk5s",
+    "merch_01m6w8r5vk4k9q2a0n79xzynh5",
+    "merch_01m6w8r5vk4k9q2a0n7c4p6771",
+    "merch_01m6w8r5vk4k9q2a0n7ed382rq",
+    "merch_01m6w8r5vk4k9q2a0n7g5x5cnp",
+    "merch_01m6w8r5vk4k9q2a0n7ghj0qcj",
+    "merch_01m6w8r5vk4k9q2a0n7gvfzpsh"
+  ],
+  "generated": 2000,
+  "anomalies": 181,
+  "merchantsBefore": 10,
+  "merchantsAfter": 21,
+  "ranAt": "2026-11-08T00:26:11.322Z"
+}

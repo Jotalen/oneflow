@@ -1,0 +1,326 @@
+{
+  "personas": {
+    "C003": {
+      "billIds": [
+        "bill_01m6w8mp9ckf2f1ntg6fg5t795",
+        "bill_01m6w8mpvzxr0yr18nsfhksnav",
+        "bill_01m6w8mqf7qah8jmsksh9cng10",
+        "bill_01m6w8mr1krtbt7yy0f5ncd77p",
+        "bill_01m6w8mrmnqp4grxpfhstfccct",
+        "bill_01m6w8ms753yqm30gdhgg8vxvc"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w8khnbsagb5nxjztscdr1r",
+      "checkingId": "acct_01m6w8khr5nnqya0a6wstr3m6h",
+      "savingsId": "acct_01m6w8khva8x3gkcrpshqbr3cx",
+      "cardId": "acct_01m6w8khxfz0661426dtrsmq9h",
+      "loanId": "loan_01m6w8msszdme4cfpqv7yx2e3d"
+    },
+    "C014": {
+      "billIds": [
+        "bill_01m6w8sertp9cg2npf607k5nez",
+        "bill_01m6w8sety6ksaqx222g99bbzq"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w8n3j5qsw2c928ec0e9fb9",
+      "checkingId": "acct_01m6w8n3mv9v6my254c1d402r1",
+      "savingsId": "acct_01m6w8n3s3kx8qe6cyr7y7jgkj",
+      "cardId": "acct_01m6w8n3vsmw1frksjk5w66902",
+      "loanId": "loan_01m6w8sex3kvbrpgyq9teg21ec"
+    },
+    "C001": {
+      "billIds": [
+        "bill_01m6w8tweb8afb0sd0jz6js4pz",
+        "bill_01m6w8tx3wwsxjnfcjca8h8stz",
+        "bill_01m6w8txm4vg88zgmmct6ssmnp",
+        "bill_01m6w8ty6taseyn9t9br7rdwsr",
+        "bill_01m6w8tysc8tyhbksf96b3xmt3"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w8sf0vgvdh4qr36ecca28d",
+      "checkingId": "acct_01m6w8sf39fn5f73s7qv6j4bj1",
+      "savingsId": "acct_01m6w8sf5t7c1tt0kjt2y1vgf3",
+      "cardId": "acct_01m6w8sf7y7m7tszsnk3z9zbw9",
+      "loanId": "loan_01m6w8tzcdk5b316f6cebrev3r"
+    },
+    "C002": {
+      "billIds": [
+        "bill_01m6w8wvne7khjtnnv7z9mbqtx",
+        "bill_01m6w8wvr0r6sjzcknn1ar2em1",
+        "bill_01m6w8wwaaeby3v0gsr7t3s0h1"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w8tzz047b3nh83rk3mxenx",
+      "checkingId": "acct_01m6w8v0hj5xg5mrqcbktah88t",
+      "savingsId": "acct_01m6w8v16q94vybj6fx5a91y1n",
+      "cardId": "acct_01m6w8v1q5c2b93rtk86nqxkqc",
+      "loanId": "loan_01m6w8wwx1682ea75s1r53hd7c"
+    },
+    "C004": {
+      "billIds": [
+        "bill_01m6w8yr2nhwrzwe16kym1sabk",
+        "bill_01m6w8yrnj7ecsjewnb3g2fvjc",
+        "bill_01m6w8ys88g9jzes4jxtyya6ps",
+        "bill_01m6w8ysva42qwgk50mefre71q"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w8wxfq6waf1w9akm7g6wev",
+      "checkingId": "acct_01m6w8wy4g2nsabszzxbbfqa8x",
+      "savingsId": "acct_01m6w8wyn6b94538jajbbp9xmv",
+      "cardId": "acct_01m6w8wz7z77fsvbmntegcmkqt",
+      "loanId": "loan_01m6w8ytds1a4whpjk8ndzmg6j"
+    },
+    "C005": {
+      "billIds": [
+        "bill_01m6w90p5z27pjvq5a9dez5m02",
+        "bill_01m6w90prxwj2kqac9pqj1s6zq"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w8yv1zca6bb62tawyzcsnc",
+      "checkingId": "acct_01m6w8yvk6a3kcwsr1ddek3pv0",
+      "savingsId": "acct_01m6w8yw5zave952wzccznd7nm",
+      "cardId": "acct_01m6w8ywrq328h6prtre4xvjza",
+      "cdId": "acct_01m6w8yxb3s81drgnxa4e80t1r",
+      "loanId": "loan_01m6w90qbdgtf0wsc6hww73vzw"
+    },
+    "C006": {
+      "billIds": [
+        "bill_01m6w92rcv69cvqxn0mysn6j85",
+        "bill_01m6w92s0jd13qdzffwcd5m18j",
+        "bill_01m6w92sj8zk1qfdg59aeeqnw0",
+        "bill_01m6w92t5503zmz96fvxarft59",
+        "bill_01m6w92tqhjd4qn237mgbrhays",
+        "bill_01m6w92vagy8bvbpd98b0aphvy"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w90qzk1whtptnzvqwam86y",
+      "checkingId": "acct_01m6w90rgygwc9gmhqq1d32w6e",
+      "savingsId": "acct_01m6w90s46kymyy61zm3yaax11",
+      "cardId": "acct_01m6w90spgq5ssdh6nk44s5bh6",
+      "loanId": "loan_01m6w92vxh33tprzd7131re6ht"
+    },
+    "C007": {
+      "billIds": [
+        "bill_01m6w94xkvw2jk65becbxf05fe",
+        "bill_01m6w94y47w8jeenxjh24tavyz",
+        "bill_01m6w94yppte4kctvkzyrpbk5g",
+        "bill_01m6w94z9e0j7skyvdbgwsc3e6",
+        "bill_01m6w94zw9bkwkrtv9fqb280xg",
+        "bill_01m6w950f5sac3zhngvw53y3gm"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w92wgjar1h3rjzk5snpqth",
+      "checkingId": "acct_01m6w92x3q78my1vevxnqkqncz",
+      "savingsId": "acct_01m6w92xnhnp78cg7yd23zqkd8",
+      "cardId": "acct_01m6w92y8es19zhkf98b5a8xgv",
+      "loanId": "loan_01m6w9511stf7s3s3s71hn8bj0"
+    },
+    "C008": {
+      "billIds": [
+        "bill_01m6w96zqsz241yvc4ask4vpk1",
+        "bill_01m6w970apdzhdhmhrakd6hycj",
+        "bill_01m6w970xfwf5cmrbvd98kxv9x",
+        "bill_01m6w971g98sh6p7s5tkng80w5"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w951q31f41sg5bkfeywq3f",
+      "checkingId": "acct_01m6w95279f85ym2knc7w8atch",
+      "savingsId": "acct_01m6w952sx784x85qvmm3wsvgp",
+      "cardId": "acct_01m6w953cxx059dy34yr1adf1p",
+      "loanId": "loan_01m6w9722vdtj0hx3kp6mrwrk4"
+    },
+    "C009": {
+      "billIds": [
+        "bill_01m6w995f5rt5rtnke7nk4504z",
+        "bill_01m6w99622t1tvzn9a6v4prty6",
+        "bill_01m6w996mqwwx7w90az0k2bnab",
+        "bill_01m6w9977hknmve67kyrpht99p",
+        "bill_01m6w997vph8hvd82ahdmmd3as",
+        "bill_01m6w998czkcsg6v6gdawqnqyj"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w972qmv78tg95wxmzc1yp2",
+      "checkingId": "acct_01m6w9738enm6prdvp62tvp7w1",
+      "savingsId": "acct_01m6w973v3pzk5t43a6eek33c8",
+      "cardId": "acct_01m6w974dyga1jg917gg7vzfm4",
+      "loanId": "loan_01m6w998zntrkv7wmx52esrv40"
+    },
+    "C010": {
+      "billIds": [
+        "bill_01m6w9bb6gakch38n14jj0t80b",
+        "bill_01m6w9bbs734pn0nz8qdzk454z",
+        "bill_01m6w9bcc1jzccpej4n627w1sk",
+        "bill_01m6w9bczg0mdk18pt589d5242",
+        "bill_01m6w9bdhk9k35897jsjrqr3c6",
+        "bill_01m6w9be4aw4w63zjc8zbf31hb"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w999j7gp9x5zz9v5a11x94",
+      "checkingId": "acct_01m6w99a59y4w29dsgmrwebk12",
+      "savingsId": "acct_01m6w99ar3snn1hww6h722c59c",
+      "cardId": "acct_01m6w99baqscjwz4m22bfhf1wp",
+      "loanId": "loan_01m6w9beq1wzw244jpa5gky8xf"
+    },
+    "C011": {
+      "billIds": [
+        "bill_01m6w9dj38v1s9f9z6ebqk4drs"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9bf9s1dpa97v972jgga6t",
+      "checkingId": "acct_01m6w9bfwj26fwvzs7fs8r1g0h",
+      "savingsId": "acct_01m6w9bgf273jfz5ts1611evfk",
+      "cardId": "acct_01m6w9bh2kakq9dc2ejw8s4q5n",
+      "loanId": "loan_01m6w9djp1s25004rf8xdwjppr"
+    },
+    "C012": {
+      "billIds": [
+        "bill_01m6w9fdvs9dh8m2dn4pg6qejh",
+        "bill_01m6w9feh2rxwcqfc0xmh9w65z",
+        "bill_01m6w9ff1dfcj1fk00ndc86pen",
+        "bill_01m6w9ffm1rjzhbxgnp2wv0b2t"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9dk8tybe79nhj49rn13m0",
+      "checkingId": "acct_01m6w9dkvhqf5qbgf2jkgak14c",
+      "savingsId": "acct_01m6w9dme6ep59amgk1ween7db",
+      "cardId": "acct_01m6w9dn0xvjk4zqwe1q3q1s14",
+      "loanId": "loan_01m6w9fg6h3avyg3d4penjss45"
+    },
+    "C013": {
+      "billIds": [
+        "bill_01m6w9hh7xy98xew83xrvc9rcx",
+        "bill_01m6w9hhtrxaw3kb399njkf1pz",
+        "bill_01m6w9hjdc7fvpsp6a3cps70pj",
+        "bill_01m6w9hk07nanbtqevb1gd1r0q",
+        "bill_01m6w9hkmnmz8j9gynj8tazq6s",
+        "bill_01m6w9hm5re9kfnbdhs7gg9pd1"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9fgsm9s1x26x6pdhd2cky",
+      "checkingId": "acct_01m6w9fhc9bphrp1qp04bt8j7p",
+      "savingsId": "acct_01m6w9fhz1jkwryhq6d36g4bfb",
+      "cardId": "acct_01m6w9fjkqy9rq4vkdskcgr13n",
+      "loanId": "loan_01m6w9hmrchezwvj9r81krgbse"
+    },
+    "C015": {
+      "billIds": [
+        "bill_01m6w9knstw6ykrjwbwwf02xfs",
+        "bill_01m6w9kpd0ebv284nwaqak11ge",
+        "bill_01m6w9kpzc3nnmb2bvjbqp96ad",
+        "bill_01m6w9kqj2gyasbcypd9hqt75s",
+        "bill_01m6w9kr4gtgsm1z11ttb1mh39",
+        "bill_01m6w9krrcqbfmxbdzdsss808c"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9hnb8syyk03wfpk9r3wwf",
+      "checkingId": "acct_01m6w9hnxznxh4ta8m1pw3cgxj",
+      "savingsId": "acct_01m6w9hpgps6ykkk9p87k5hqvs",
+      "cardId": "acct_01m6w9hq3cp3v7p0jmfvhrb9d2",
+      "loanId": "loan_01m6w9ksa9ngegpfh6cdr8nb24"
+    },
+    "C016": {
+      "billIds": [
+        "bill_01m6w9nnp2z4aay77w6s8yqrrj",
+        "bill_01m6w9np83tqhgfms7d4e69z94",
+        "bill_01m6w9npv4tsdbxqv0th4x0wp0"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9kswyxnskn19pndfp8p84",
+      "checkingId": "acct_01m6w9ktfngppy1b0e013nk1gw",
+      "savingsId": "acct_01m6w9kv2hh377jzq4nmae8mxt",
+      "cardId": "acct_01m6w9kvn5tkzahtrsdnkjhya6",
+      "loanId": "loan_01m6w9nqdn9ddfh5tghqxe5y56"
+    },
+    "C017": {
+      "billIds": [
+        "bill_01m6w9qqw5hbg4pdn3jwwnmp4d",
+        "bill_01m6w9qrf03pwn8p3km0j3tbye",
+        "bill_01m6w9qs1n8f8knw4bn5x6ywsq",
+        "bill_01m6w9qsmnbqbmvpq0kdfkj5nk"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9nr091g3vpszx9v3q0ttq",
+      "checkingId": "acct_01m6w9nrkr5zg4b79edkdvdgt4",
+      "savingsId": "acct_01m6w9ns5vj100k82wtdf6vpxs",
+      "cardId": "acct_01m6w9nss90qxr5ap2ww519k21",
+      "loanId": "loan_01m6w9qt9pbn7ms96sq3e9ytmn"
+    },
+    "C018": {
+      "billIds": [
+        "bill_01m6w9ssg77b4naf91zbz90xv0",
+        "bill_01m6w9st2vvr7ra9hxsmk3kpsw",
+        "bill_01m6w9stnqghgm64k37201awdz",
+        "bill_01m6w9svaqq6b7w44w9ppvjdxs"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9qtsw0kvf682p1kf5zs24",
+      "checkingId": "acct_01m6w9qvchfjwng0gc2aka2kn1",
+      "savingsId": "acct_01m6w9qvz73xezj8bab4fr7f4g",
+      "cardId": "acct_01m6w9qwj3p20ar6nadr8ge2cz",
+      "loanId": "loan_01m6w9svva7tx2459b9yxca60q"
+    },
+    "C019": {
+      "billIds": [
+        "bill_01m6w9vqknrrjzgn6t0e4fzn8q",
+        "bill_01m6w9vr85xq8ktxf6w9zff3rd",
+        "bill_01m6w9vrs1g2zsmf0xwesratxa",
+        "bill_01m6w9vsbs2d50z78705xt0jq9",
+        "bill_01m6w9vsyptar8c7fzf5ygr477",
+        "bill_01m6w9vthgk0r9ssfdwc30kz07"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9swdx3g37c0rkxda4nm4j",
+      "checkingId": "acct_01m6w9sx0j5y62n17kp762vajm",
+      "savingsId": "acct_01m6w9sxkn0tbemtbdzdy6pyhc",
+      "cardId": "acct_01m6w9sy65ax75a0bwxfb54ch6",
+      "loanId": "loan_01m6w9vv4fmc2rtapvvr0prtgb"
+    },
+    "C020": {
+      "billIds": [
+        "bill_01m6w9xw5cy4w53yfh2f4t4bb2",
+        "bill_01m6w9xwr3j5cc5w8j4a68qt1m",
+        "bill_01m6w9xxc180nvbhe4p38s09zp",
+        "bill_01m6w9xxxngr4nhgky88g4mkbm"
+      ],
+      "purchaseCount": 40,
+      "depositCount": 8,
+      "customerId": "cust_01m6w9vvpxkm826y4wg4mhhkd7",
+      "checkingId": "acct_01m6w9vwb80c2hkwyq2v63k5p6",
+      "savingsId": "acct_01m6w9vwwargb8ary59kjwag2j",
+      "cardId": "acct_01m6w9vxezzb3namdz922535p6",
+      "cdId": "acct_01m6w9vy21kcyg85vy4nsxzpkg",
+      "loanId": "loan_01m6w9xygfwtqp17eg6hb581g5"
+    }
+  },
+  "_merchants": {
+    "groceries": "merch_01m6w8kgt309t6gvkb6dt5qxcj",
+    "fuel": "merch_01m6w8kgx24n4ntt52nt0xztww",
+    "dining": "merch_01m6w8kgzta6j7gfz6582ej85a",
+    "pharmacy": "merch_01m6w8kh2edggjg4z1fh7s51gg",
+    "rideshare": "merch_01m6w8kh53cn1fp66c3n4v3zwp",
+    "retail": "merch_01m6w8kh7nbcm8psgr149xceh6",
+    "coffee": "merch_01m6w8kha04h6qqpcw40wpdyc0",
+    "entertainment": "merch_01m6w8khcj64kk9e2yqkrjvab6",
+    "home": "merch_01m6w8khesdzz5cjkpvp2jb5ax",
+    "misc": "merch_01m6w8khjsaf31e3y4d607jcwh"
+  }
+}

@@ -1,0 +1,12 @@
+[
+  { "id": "human", "requires": "human", "urgency": "handoff" },
+  { "id": "car", "requires": "car", "urgency": "car" },
+  { "id": "moves", "requires": "always", "urgency": "none" },
+  { "id": "health", "requires": "always", "urgency": "none" },
+  { "id": "cards", "requires": "card", "urgency": "utilization" },
+  { "id": "accounts", "requires": "always", "urgency": "none" },
+  { "id": "cd", "requires": "cd", "urgency": "none" },
+  { "id": "subscriptions", "requires": "subscriptions", "urgency": "none" },
+  { "id": "guard", "requires": "always", "urgency": "none" },
+  { "id": "fraud", "requires": "always", "urgency": "none" }
+]
