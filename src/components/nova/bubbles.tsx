@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { NavIcon, hasNavIcon } from "./icons";
 import type { ReactNode } from "react";
 import type { Analysis } from "@/lib/engine/analyze";
 import type { BankView } from "@/lib/bank/view";
@@ -26,11 +27,16 @@ export const BUBBLE_SPAN: Record<BubbleSize, string> = { small: "col-span-1", me
 
 function Shell({ id, children, right }: { id: BubbleId; children: ReactNode; right?: ReactNode }) {
   const d = bubbleDef(id);
+  const iconHref = d.href.split(/[?#]/)[0];
   return (
     <Link href={d.href} className="panel block h-full p-4 hover:border-fg/40 transition-colors">
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="h-7 w-7 shrink-0 rounded-full bg-surface-2 border border-line" aria-hidden />
+          {hasNavIcon(iconHref) && (
+            <span className="h-7 w-7 shrink-0 rounded-full bg-accent-soft text-accent grid place-items-center" aria-hidden>
+              <NavIcon href={iconHref} className="h-4 w-4" />
+            </span>
+          )}
           <h3 className="text-sm font-semibold truncate">{d.title}</h3>
         </div>
         {right ?? <span className="text-muted text-sm" aria-hidden>›</span>}
@@ -123,8 +129,8 @@ export function Bubble({ id, a, v, goal }: { id: BubbleId; a: Analysis; v: BankV
       const monthly = amortize(SHOP_PRICE, apr, SHOP_TERM);
       return (
         <Shell id={id}>
-          <div className="h-24 rounded-xl bg-surface-2 border border-line grid place-items-center text-xs text-muted">{c?.type === "lease" ? `Lease ends in ${c.monthsRemaining} months` : "Your next car"}</div>
-          <p className="text-sm mt-3">A {fmtWhole(SHOP_PRICE)} car could be about <b>{fmtWhole(monthly)}/mo</b> over {SHOP_TERM} months at your credit level (est. {apr}% APR).</p>
+          <p className="text-lg font-semibold leading-snug">{c?.type === "lease" ? `Your lease ends in ${c.monthsRemaining} month${c.monthsRemaining === 1 ? "" : "s"}` : "Thinking about your next car?"}</p>
+          <p className="text-sm mt-2">A {fmtWhole(SHOP_PRICE)} car could be about <b>{fmtWhole(monthly)}/mo</b> over {SHOP_TERM} months at your credit level (est. {apr}% APR).</p>
           <div className="btn w-full mt-3 bg-surface-2">See financing options →</div>
         </Shell>
       );
