@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { fmtUSD, type Cents } from "@/lib/money";
+import { fmtAxisK, fmtUSD, type Cents } from "@/lib/money";
 import type { BalancePoint } from "@/lib/tiger/history";
 import type { ActivityStats } from "@/lib/tiger/store";
 import { Panel, Tile } from "./ui";
@@ -15,7 +15,6 @@ interface Loaded { persona: string; res: HistoryResponse | null; failed: boolean
 const CHART_HEIGHT = 200;
 const axisTick = { fontSize: 11, fill: "var(--muted)" };
 const timeLabel = (t: string | number) => new Date(t).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-const kFmt = (c: number) => `$${(c / 100_000).toFixed(c >= 1_000_000 ? 0 : 1)}k`;
 
 /**
  * Balance history from Tiger Data: every Nessie balance change lands in a TimescaleDB hypertable,
@@ -62,7 +61,7 @@ export function BalanceHistory({ personaId }: { personaId: string }) {
             <LineChart data={points} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
               <CartesianGrid vertical={false} stroke="var(--line)" />
               <XAxis dataKey="ms" type="number" scale="time" domain={["dataMin", "dataMax"]} tickFormatter={timeLabel} tick={axisTick} axisLine={false} tickLine={false} minTickGap={32} />
-              <YAxis tickFormatter={kFmt} tick={axisTick} axisLine={false} tickLine={false} width={48} domain={["auto", "auto"]} />
+              <YAxis tickFormatter={fmtAxisK} tick={axisTick} axisLine={false} tickLine={false} width={48} domain={["auto", "auto"]} />
               <Tooltip formatter={(v) => fmtUSD(Number(v))} labelFormatter={(t) => timeLabel(Number(t))} contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 12, fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Line type="stepAfter" dataKey="cash" name="Cash" stroke="var(--fg)" strokeWidth={2} dot={false} isAnimationActive={false} />

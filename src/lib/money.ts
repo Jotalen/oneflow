@@ -28,3 +28,8 @@ export function parseCents(raw: unknown): Cents | null {
   const n = Number(s);
   return Number.isFinite(n) ? toCents(n) : null;
 }
+
+/** Chart axis label in thousands: $0.5k / $17.5k / $18k. One decimal so nearby ticks never repeat. */
+export function fmtAxisK(cents: Cents): string {
+  return `$${(cents / 100_000).toFixed(1).replace(/\.0$/, "")}k`;
+}

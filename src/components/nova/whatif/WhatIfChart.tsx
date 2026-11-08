@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Segmented } from "@/components/nova/ui";
-import { fmtUSD } from "@/lib/money";
+import { fmtAxisK, fmtUSD } from "@/lib/money";
 import { monthLabel, type ChartRow } from "@/lib/bank/whatif";
 
 type Series = "netWorth" | "cash";
@@ -13,7 +13,7 @@ const KEYS: Record<Series, { base: keyof ChartRow; scen: keyof ChartRow }> = {
 };
 const TICKS = [0, 6, 12, 18, 24];
 const axisTick = { fontSize: 11, fill: "var(--muted)" };
-const kFmt = (dollars: number) => `${dollars < 0 ? "−" : ""}$${Math.round(Math.abs(dollars) / 1000)}k`;
+const kFmt = (dollars: number) => `${dollars < 0 ? "−" : ""}${fmtAxisK(Math.abs(dollars) * 100)}`;
 
 export interface WhatIfChartProps { rows: ChartRow[]; runOutMonth: number | null; changed: boolean }
 
