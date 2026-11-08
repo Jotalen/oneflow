@@ -6,6 +6,7 @@ import { health } from "@/lib/engine/health";
 const p = profileFor("C018");
 let current = p;
 vi.mock("@/lib/server/analysis", () => ({
+  invalidateAnalysis: () => {},
   readSeedIds: () => ({ C018: { checkingId: "chk", savingsId: "sav", cardId: "card", customerId: "cust", billIds: [] } }),
   getAnalysis: async () => ({ analysis: { profile: current, health: health(current) } }),
 }));

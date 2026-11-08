@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { nessieApi } from "@/lib/nessie/api";
 import { NessieError } from "@/lib/nessie/client";
-import { knownPersona, readSeedIds } from "@/lib/server/analysis";
+import { invalidateAnalysis, knownPersona, readSeedIds } from "@/lib/server/analysis";
 
 const DEFAULT_SWIPE_CENTS = 80_000;
 const MAX_SWIPE_CENTS = 500_000;
@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     });
     const name = (merchant as { name?: string }).name ?? want.name;
     const tx = await api.purchase(ids.cardId, { merchant_id: merchant.id, amount_cents: amountCents, description: `Card swipe (demo) at ${name}` });
+    invalidateAnalysis(persona);
     return NextResponse.json({ ok: true, txId: tx.id, status: tx.status, settle_at: tx.settle_at, merchant: name });
   } catch (e) {
     if (e instanceof NessieError) return NextResponse.json({ error: e.message }, { status: 503 });

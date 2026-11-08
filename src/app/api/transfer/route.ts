@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { nessieApi } from "@/lib/nessie/api";
 import { NessieError } from "@/lib/nessie/client";
-import { getAnalysis, knownPersona } from "@/lib/server/analysis";
+import { getAnalysis, invalidateAnalysis, knownPersona } from "@/lib/server/analysis";
 
 /** User-initiated money movement (Add money to a goal, Pay card, extra payment). Executes in Nessie. */
 const MAX_TRANSFER_CENTS = 5_000_000;
@@ -38,6 +38,7 @@ export async function POST(req: Request) {
     const api = nessieApi();
     const tx = await api.transfer(idOf[b.from], { payee_id: idOf[b.to], amount_cents: b.amountCents, description });
     await api.settle(tx.id).catch((e) => { if (!(e instanceof NessieError) || e.status !== 409) console.warn("[transfer] settle", tx.id, e?.status); });
+    invalidateAnalysis(b.persona);
     return NextResponse.json({ ok: true, simulated: false, txIds: [tx.id], description });
   } catch (e) {
     if (e instanceof NessieError) return NextResponse.json({ ok: false, error: e.message, retryAfter: e.retryAfter }, { status: e.status === 429 ? 429 : 502 });

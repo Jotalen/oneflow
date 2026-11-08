@@ -9,6 +9,7 @@ import { analyze, type Analysis } from "@/lib/engine/analyze";
 import type { NessieBundle, Profile } from "@/lib/engine/types";
 import type { PersonaIds } from "@/lib/engine/execute";
 import { planBank, syntheticBundle } from "@/lib/seed/plan";
+import { createTtlCache } from "./ttl-cache";
 
 const TXN_LIMIT = 200;
 
@@ -46,11 +47,25 @@ export function syntheticProfile(persona: string): Profile {
 
 export interface Loaded { analysis: Analysis; live: boolean; ids?: PersonaIds }
 
+/**
+ * One live profile costs ~11 Nessie calls against a 120/min budget shared by every visitor, so live
+ * analyses are cached briefly per persona (concurrent requests share one load). Routes that move money
+ * call `invalidateAnalysis` so the next read is fresh; settlement that happens later shows within the TTL.
+ */
+export const ANALYSIS_TTL_MS = 15_000;
+const liveCache = createTtlCache<Loaded>({ ttlMs: ANALYSIS_TTL_MS });
+
+export function invalidateAnalysis(...personas: string[]): void {
+  for (const p of personas) liveCache.invalidate(p);
+}
+
 /** Live Nessie when seeded + key present; otherwise synthetic. Throws NessieError on live failure. */
 export async function getAnalysis(persona: string): Promise<Loaded> {
   const toyota = loadToyota();
   const ids = readSeedIds()[persona] as PersonaIds | undefined;
   if (!ids?.customerId || !process.env.NESSIE_API_KEY) return { analysis: analyze(syntheticProfile(persona), toyota), live: false };
-  const bundle = await fetchBundle(ids);
-  return { analysis: analyze(buildProfile(bundle, toyota, persona), toyota), live: true, ids };
+  return liveCache.get(persona, async () => {
+    const bundle = await fetchBundle(ids);
+    return { analysis: analyze(buildProfile(bundle, toyota, persona), toyota), live: true, ids };
+  });
 }

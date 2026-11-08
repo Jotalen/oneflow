@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
+const invalidate = vi.hoisted(() => vi.fn());
+
 const transfer = vi.fn(async () => ({ id: "txn_1" }));
 const settle = vi.fn(async () => ({}));
 vi.mock("@/lib/nessie/api", () => ({ nessieApi: () => ({ transfer, settle }) }));
 vi.mock("@/lib/server/analysis", () => ({
+  invalidateAnalysis: invalidate,
   knownPersona: (p: string) => p === "C018",
   getAnalysis: async () => ({
     live: true,
@@ -46,6 +49,7 @@ describe("POST /api/transfer", () => {
     await expect(res.json()).resolves.toMatchObject({ ok: true, txIds: ["txn_1"] });
     expect(transfer).toHaveBeenCalledWith("chk", { payee_id: "card", amount_cents: 20_000, description: "Pay card" });
     expect(settle).toHaveBeenCalledWith("txn_1");
+    expect(invalidate).toHaveBeenCalledWith("C018"); // next profile read is fresh, not the 15 s cache
   });
 
   test("paying the card more than its balance is refused", async () => {

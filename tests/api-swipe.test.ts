@@ -9,6 +9,7 @@ const createMerchant = vi.fn(async (dto: { name: string; category: string }) => 
 const purchase = vi.fn(async (_card: string, dto: { merchant_id: string; amount_cents: number }) => ({ id: "tx1", status: "pending", settle_at: "soon", ...dto }));
 
 vi.mock("@/lib/server/analysis", () => ({
+  invalidateAnalysis: () => {},
   knownPersona: (p: string) => p === "C018",
   readSeedIds: () => ({ C018: { cardId: "card" } }),
 }));

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { nessieApi } from "@/lib/nessie/api";
 import { NessieError } from "@/lib/nessie/client";
 import { describeOps, executeMove, type PersonaIds } from "@/lib/engine/execute";
-import { getAnalysis, knownPersona } from "@/lib/server/analysis";
+import { getAnalysis, invalidateAnalysis, knownPersona } from "@/lib/server/analysis";
 
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as { persona?: string; moveId?: string } | null;
@@ -20,6 +20,7 @@ export async function POST(req: Request) {
   }
   const api = nessieApi();
   const result = await executeMove(api, move, ids);
+  invalidateAnalysis(body.persona); // even a partial failure may have moved money
   if (result.ok) {
     // Nessie v2 lets the account owner settle early; do it so the feed shows pending → completed at demo speed.
     await Promise.all(result.txIds.map((id) => api.settle(id).catch((e) => { if (!(e instanceof NessieError) || e.status !== 409) console.warn("[execute] settle", id, e?.status); })));

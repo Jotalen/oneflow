@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { nessieApi } from "@/lib/nessie/api";
 import { NessieError } from "@/lib/nessie/client";
-import { getAnalysis, knownPersona, readSeedIds } from "@/lib/server/analysis";
+import { getAnalysis, invalidateAnalysis, knownPersona, readSeedIds } from "@/lib/server/analysis";
 import { personaAccountIds } from "@/lib/engine/ownership";
 import { loadToyota } from "@/lib/toyota/load";
 import { P2PRequest, p2pDescription, type P2PFailure, type P2PReceipt } from "@/lib/bank/p2p";
@@ -63,6 +63,7 @@ export async function POST(req: Request) {
     const description = p2pDescription(analysis.profile.name, toName, b.memo);
     const tx = await nessieApi().transfer(src.id, { payee_id: recipient.checkingId, amount_cents: b.amountCents, description });
     const status = await settleOrPending(tx.id, tx.status);
+    invalidateAnalysis(b.persona, b.to);
     return NextResponse.json<P2PReceipt>({ ok: true, txId: tx.id, status, amountCents: b.amountCents, recipient: { id: b.to, name: toName }, memo: b.memo || undefined, description });
   } catch (e) {
     if (e instanceof NessieError) {

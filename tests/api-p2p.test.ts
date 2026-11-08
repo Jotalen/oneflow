@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
+
+const invalidate = vi.hoisted(() => vi.fn());
 import { NessieError } from "@/lib/nessie/client";
 
 type TxFn = (...args: unknown[]) => Promise<{ id: string; status: string; kind: string; amount_cents: number }>;
@@ -14,6 +16,7 @@ const SEED: Record<string, Record<string, unknown>> = {
 };
 const state = { live: true, checkingId: "chk_brian" };
 vi.mock("@/lib/server/analysis", () => ({
+  invalidateAnalysis: invalidate,
   knownPersona: (p: string) => ["C018", "C005", "C009", "C010"].includes(p),
   readSeedIds: () => SEED,
   getAnalysis: async () => ({
@@ -45,6 +48,7 @@ describe("POST /api/p2p", () => {
     expect(json).toMatchObject({ ok: true, txId: "txn_p2p", status: "completed", amountCents: 100, recipient: { id: "C005", name: "Linda" }, memo: "Coffee" });
     expect(transfer).toHaveBeenCalledWith("chk_brian", { payee_id: "chk_linda", amount_cents: 100, description: "P2P Brian → Linda: Coffee" });
     expect(settle).toHaveBeenCalledWith("txn_p2p");
+    expect(invalidate).toHaveBeenCalledWith("C018", "C005"); // both sides refresh
   });
 
   test("400 on a malformed body, a self-send, or an absurd amount; nothing moves", async () => {

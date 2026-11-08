@@ -7,6 +7,7 @@ const readBalanceBuckets = vi.fn(async () => [
 const readActivity = vi.fn(async () => ({ events: 5, holds: 2, declined: 1, firstAt: "2026-11-08T00:45:00.000Z", lastAt: "2026-11-08T01:00:00.000Z" }));
 vi.mock("@/lib/tiger/store", () => ({ readBalanceBuckets, readActivity }));
 vi.mock("@/lib/server/analysis", () => ({
+  invalidateAnalysis: () => {},
   knownPersona: (p: string) => p === "C018",
   readSeedIds: () => ({ C018: { checkingId: "chk", savingsId: "sav", cardId: "card" } }),
 }));

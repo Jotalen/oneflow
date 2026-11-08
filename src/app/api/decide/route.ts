@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { nessieApi } from "@/lib/nessie/api";
 import { NessieError } from "@/lib/nessie/client";
 import { guardDecision } from "@/lib/engine/guard";
-import { getAnalysis, knownPersona, readSeedIds } from "@/lib/server/analysis";
+import { getAnalysis, invalidateAnalysis, knownPersona, readSeedIds } from "@/lib/server/analysis";
 import { txBelongsTo } from "@/lib/engine/ownership";
 
 /** POST { persona, txId, decision?: 'approve'|'decline', reason? } — omit decision to let the guard rules decide. */
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       rule = g.rule;
     }
     const updated = await api.decide(tx.id, { decision, reason: reason.slice(0, 200) });
+    invalidateAnalysis(body.persona);
     return NextResponse.json({ ok: true, decision, reason, rule, status: updated.status, decision_source: updated.decision_source });
   } catch (e) {
     if (e instanceof NessieError) return NextResponse.json({ error: e.message, retryAfter: e.retryAfter }, { status: e.status === 429 ? 429 : 503 });

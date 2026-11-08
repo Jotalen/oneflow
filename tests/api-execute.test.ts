@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 import { NessieError } from "@/lib/nessie/client";
 
 vi.mock("@/lib/server/analysis", () => ({
+  invalidateAnalysis: () => {},
   knownPersona: () => true,
   getAnalysis: async () => { throw new NessieError(429, "rate limited", 7); },
 }));

@@ -5,7 +5,8 @@ import path from "node:path";
 const snap = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/snapshots/C003.json"), "utf8"));
 const busy = (name: string) => ({ name, chat: async () => { throw new Error("[503] This model is currently experiencing high demand"); } });
 let chain: () => unknown[] = () => [];
-vi.mock("@/lib/server/analysis", () => ({ knownPersona: () => true, getAnalysis: async () => ({ analysis: snap, live: false }) }));
+vi.mock("@/lib/server/analysis", () => ({
+  invalidateAnalysis: () => {}, knownPersona: () => true, getAnalysis: async () => ({ analysis: snap, live: false }) }));
 vi.mock("@/lib/llm", () => ({ providerChain: () => chain() }));
 
 const ask = async () => {
