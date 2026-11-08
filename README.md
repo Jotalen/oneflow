@@ -150,6 +150,8 @@ For Solana, open `/solana`, connect a Devnet wallet, fund it with free test SOL 
 
 Browser checks use an ephemeral fixture wallet and mocked APIs: run `pnpm exec playwright install chromium`, then `pnpm test:browser` with the app running. Real on-chain proof is linked in the Solana track description above.
 
+`pnpm demo:solana` records a read-only walkthrough using public Devnet balances and the existing verified payment. It saves video/screenshots under `artifacts/solana/` and cannot sign or broadcast; demonstrate live Phantom approval separately.
+
 ## Built with
 
 TypeScript · Next.js 16 · React · Tailwind CSS 4 · Recharts · Zod · Vitest · Capital One Nessie v2 · Google Gemini API · OpenRouter · Tiger Data (TimescaleDB, PostgreSQL) · Vercel · GoDaddy Registry
