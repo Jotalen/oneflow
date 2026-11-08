@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 import { PageHeader } from "@/components/nova/ui";
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
@@ -16,13 +16,15 @@ function greeting(hour: number) {
   return "Good evening";
 }
 
+const noSubscribe = () => () => {};
+
 export default function OverviewPage() {
   const b = useReadyBank();
   const personaId = b?.personaId ?? "";
   const { prefs } = useDashboardPrefs(personaId);
   const { goals } = useGoals(personaId);
-  const [hour, setHour] = useState<number | null>(null);
-  useEffect(() => setHour(new Date().getHours()), []);
+  // Local hour is only known in the browser; the prerendered page says "Hi" until hydration.
+  const hour = useSyncExternalStore(noSubscribe, () => new Date().getHours(), () => null);
 
   const topGoal = useMemo(() => {
     const withPct = goals.map((g) => ({ ...g, pct: g.target ? Math.min(100, Math.round((g.saved / g.target) * 100)) : 0 }));

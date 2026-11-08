@@ -19,9 +19,14 @@ export function CarSpinner({ model, year }: { model: string; year: number }) {
   const raf = useRef<number | null>(null);
   const idleDir = useRef(1);
 
-  useEffect(() => {
+  // New car model: restart at its first angle (state adjusted during render, per React docs).
+  const [shownSet, setShownSet] = useState(set);
+  if (shownSet !== set) {
+    setShownSet(set);
     setYaw(set.frames[set.full360 ? 1 : 0].yaw);
     setTouched(false);
+  }
+  useEffect(() => {
     for (const f of set.frames) { const img = new Image(); img.src = f.src; }
   }, [set]);
 

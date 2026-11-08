@@ -27,15 +27,16 @@ function impactLine(m: RankedMove): string {
 /** Dark "Next best move" bubble, pinned to the top. Rotates through the top 3 engine-ranked moves. */
 export function NextMoveHero() {
   const b = useReadyBank();
-  const [i, setI] = useState(0);
+  // Carousel position belongs to one persona; switching customers starts at their top move.
+  const [pos, setPos] = useState({ persona: "", i: 0 });
   const [why, setWhy] = useState(false);
   const moves = b?.analysis.ranked.slice(0, HERO_COUNT) ?? [];
-  useEffect(() => setI(0), [b?.personaId]);
+  const i = pos.persona === b?.personaId ? pos.i : 0;
   if (!b || moves.length === 0) return null;
   const m = moves[Math.min(i, moves.length - 1)];
   const receipt = b.receipts.find((r) => r.moveId === m.id);
   const canExecute = !!m.execution?.length && m.kind === "bank";
-  const step = (d: number) => setI((x) => (x + d + moves.length) % moves.length);
+  const step = (d: number) => setPos({ persona: b.personaId, i: (i + d + moves.length) % moves.length });
 
   return (
     <>

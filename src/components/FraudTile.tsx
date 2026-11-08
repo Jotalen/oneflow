@@ -31,7 +31,7 @@ export function FraudTile() {
       {!data ? (
         <p className="text-sm text-muted">Reading simulator accounts…</p>
       ) : !data.available ? (
-        <p className="text-sm text-muted">Nessie historical simulation not loaded ({data.reason}). The simulator creates its own synthetic customers; nothing is labeled, so these are our rule detectors, not Nessie's.</p>
+        <p className="text-sm text-muted">Nessie historical simulation not loaded ({data.reason}). The simulator creates its own synthetic customers; nothing is labeled, so these are our rule detectors, not Nessie&apos;s.</p>
       ) : (
         <div className="flex flex-wrap gap-2 text-sm">
           {Object.entries(data.counts ?? {}).map(([rule, n]) => <span key={rule} className="chip">{RULE_LABEL[rule] ?? rule}: {n}</span>)}

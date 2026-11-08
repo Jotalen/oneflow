@@ -2,8 +2,6 @@ import type { OptionScenario, ToyotaData } from "@/lib/toyota/types";
 import { guardrails, NEW_VEHICLE_OPTIONS } from "../guardrails";
 import type { Contract, Move, MoveTfs, Profile } from "../types";
 
-const LEASE_END_OPTIONS = new Set(["RETURN", "BUYOUT", "RENEW", "EXTENDLEASE"]);
-const KEEP_CAR_OPTIONS = new Set(["BUYOUT", "RENEW", "EXTENDLEASE"]);
 const FOLLOW_UP_OPTIONS = new Set(["DEFER", "RELOCATE", "EARLYEND"]);
 const SELF_SERVICE_OPTIONS = new Set(["DUEDATE", "SERVICE", "EXTRA100"]);
 const EXTEND_MONTHS = 12;
