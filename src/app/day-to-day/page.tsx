@@ -109,7 +109,7 @@ export default function DayToDayPage() {
         </Panel>
         <InOutPanel view={view} />
       </div>
-      <div className="grid gap-4 lg:grid-cols-2 mt-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
         <UpcomingPanel view={view} />
         <RecentPanel view={view} />
       </div>
