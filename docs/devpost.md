@@ -81,5 +81,5 @@ nextjs, react, typescript, tailwindcss, recharts, zod, vitest, capital-one-nessi
 
 ## Links
 - Live: https://oneflow-eosin.vercel.app
-- Repo: https://github.com/moaizattiq/novabank-nextmove
+- Repo: https://github.com/moaizattiq/oneflow
 - Video: <add YouTube link>
