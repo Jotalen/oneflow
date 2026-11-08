@@ -29,7 +29,8 @@ export function useProfile(personaId: string, enabled = true): ProfileState {
     const id = personaId;
     setRefreshing(true);
     try {
-      const r = await loadAnalysis(id, browserLoadDeps);
+      // Refreshes follow money moves or new bank events, so always read the bank, not a cache.
+      const r = await loadAnalysis(id, browserLoadDeps, true);
       if (latest.current !== id) return;
       // Keep showing the data we have if a background refresh fails.
       setLoaded((prev) => (r.data || prev?.id !== id ? { id, ...r } : prev));

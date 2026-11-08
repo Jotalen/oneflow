@@ -44,6 +44,8 @@ export async function POST(req: Request) {
     invalidateAnalysis(persona);
     return NextResponse.json({ ok: true, txId: tx.id, status: tx.status, settle_at: tx.settle_at, merchant: name });
   } catch (e) {
+    // 422: the bank refused the purchase, almost always because pending holds used up the card's credit.
+    if (e instanceof NessieError && e.status === 422) return NextResponse.json({ error: "The bank rejected the swipe: not enough available credit on the card." }, { status: 422 });
     if (e instanceof NessieError) return NextResponse.json({ error: e.message }, { status: 503 });
     console.error("[swipe]", e);
     return NextResponse.json({ error: "internal" }, { status: 500 });

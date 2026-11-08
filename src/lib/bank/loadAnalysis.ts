@@ -3,7 +3,8 @@ import type { Analysis } from "@/lib/engine/analyze";
 export const analysisCacheKey = (id: string) => `nm:analysis:${id}`;
 
 export interface LoadDeps {
-  fetchProfile: (id: string) => Promise<Analysis>;
+  /** `fresh` asks the server to skip its short cache and read the bank now. */
+  fetchProfile: (id: string, fresh?: boolean) => Promise<Analysis>;
   fetchSnapshot: (id: string) => Promise<Analysis | null>;
   readCache: (key: string) => string | null;
   writeCache: (key: string, value: string) => void;
@@ -21,9 +22,9 @@ function readCached(id: string, deps: LoadDeps): Analysis | null {
 }
 
 /** Live profile → cached copy → bundled snapshot (ADR-009). Never returns another persona's data. */
-export async function loadAnalysis(id: string, deps: LoadDeps): Promise<LoadResult> {
+export async function loadAnalysis(id: string, deps: LoadDeps, fresh = false): Promise<LoadResult> {
   try {
-    const data = await deps.fetchProfile(id);
+    const data = await deps.fetchProfile(id, fresh);
     try { deps.writeCache(analysisCacheKey(id), JSON.stringify(data)); } catch { /* storage full or blocked: cache is optional */ }
     return { data, offline: data.profile.source === "snapshot", error: null };
   } catch (e) {
@@ -35,8 +36,8 @@ export async function loadAnalysis(id: string, deps: LoadDeps): Promise<LoadResu
 
 /** Browser implementations of the loader's dependencies. */
 export const browserLoadDeps: LoadDeps = {
-  async fetchProfile(id) {
-    const res = await fetch(`/api/profile/${id}`, { cache: "no-store" });
+  async fetchProfile(id, fresh) {
+    const res = await fetch(`/api/profile/${id}${fresh ? "?fresh=1" : ""}`, { cache: "no-store" });
     if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error ?? `HTTP ${res.status}`);
     return (await res.json()) as Analysis;
   },

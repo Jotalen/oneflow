@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
+import { NessieError } from "@/lib/nessie/client";
 
 const merchants: { id: string; name: string; category: string }[] = [];
 const createMerchant = vi.fn(async (dto: { name: string; category: string }) => {
@@ -48,5 +49,12 @@ describe("POST /api/dev/swipe", () => {
     expect((await post({ persona: "C018", amountCents: 10_000_000 })).status).toBe(400);
     expect(createMerchant).not.toHaveBeenCalled();
     expect(purchase).not.toHaveBeenCalled();
+  });
+
+  test("out of card credit returns 422 with a plain message", async () => {
+    purchase.mockRejectedValueOnce(new NessieError(422, "insufficient available credit"));
+    const res = await post({ persona: "C018" });
+    expect(res.status).toBe(422);
+    expect((await res.json()).error).toMatch(/not enough available credit/);
   });
 });

@@ -59,11 +59,20 @@ export function invalidateAnalysis(...personas: string[]): void {
   for (const p of personas) liveCache.invalidate(p);
 }
 
+export interface GetAnalysisOptions {
+  /**
+   * Skip this instance's cache and read Nessie now. On Vercel each route runs in its own function,
+   * so a money move's `invalidateAnalysis` can't clear the profile route's cache; fresh reads can.
+   */
+  fresh?: boolean;
+}
+
 /** Live Nessie when seeded + key present; otherwise synthetic. Throws NessieError on live failure. */
-export async function getAnalysis(persona: string): Promise<Loaded> {
+export async function getAnalysis(persona: string, opts: GetAnalysisOptions = {}): Promise<Loaded> {
   const toyota = loadToyota();
   const ids = readSeedIds()[persona] as PersonaIds | undefined;
   if (!ids?.customerId || !process.env.NESSIE_API_KEY) return { analysis: analyze(syntheticProfile(persona), toyota), live: false };
+  if (opts.fresh) liveCache.invalidate(persona);
   return liveCache.get(persona, async () => {
     const bundle = await fetchBundle(ids);
     return { analysis: analyze(buildProfile(bundle, toyota, persona), toyota), live: true, ids };

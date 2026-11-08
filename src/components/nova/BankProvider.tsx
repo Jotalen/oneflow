@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 import { usePersona, type PersonaSummary } from "@/components/PersonaProvider";
 import { useProfile } from "@/hooks/useProfile";
 import { useExecute, type Receipt } from "@/hooks/useExecute";
+import { useLiveBalance } from "@/hooks/useLiveBalance";
 import { buildBankView, type BankView } from "@/lib/bank/view";
 import type { Analysis } from "@/lib/engine/analyze";
 import type { RankedMove } from "@/lib/engine/moves/rank";
@@ -37,6 +38,7 @@ export function BankProvider({ children }: { children: ReactNode }) {
   const { data, loading, offline, error, refresh } = useProfile(personaId, ready);
   const live = !!data && data.profile.source === "nessie";
   const { accept, accepting, receipts } = useExecute(personaId, refresh, live);
+  useLiveBalance(data, live, refresh);
   const [transferring, setTransferring] = useState(false);
   const view = useMemo(() => (data ? buildBankView(data) : null), [data]);
 

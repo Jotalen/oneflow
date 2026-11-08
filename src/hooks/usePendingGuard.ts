@@ -67,7 +67,7 @@ export function usePendingGuard(personaId: string, enabled: boolean, accountIds:
       const res = await postJson("/api/dev/swipe", { persona: personaId, amountCents: SWIPE_CENTS, merchantCategory });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
-        setSwipeError(res.status === 503 && body.error?.includes("422") ? "The bank rejected the swipe (not enough available credit on the card)." : body.error ?? `Swipe failed (HTTP ${res.status})`);
+        setSwipeError(body.error ?? `Swipe failed (HTTP ${res.status})`);
       }
     } catch {
       setSwipeError("Could not reach the bank. Try again.");
