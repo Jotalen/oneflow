@@ -1,52 +1,27 @@
 "use client";
-import { useState } from "react";
+import Link from "next/link";
 import { PageHeader, Panel } from "@/components/nova/ui";
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
 import { fmtUSD } from "@/lib/money";
-import { estimateCreditScore } from "@/lib/bank/view";
-import { cappedPayment, paymentToReachUtil } from "@/lib/bank/wealth";
+import { AS_OF } from "@/lib/engine/types";
+import { creditFactors, creditSteps, type CreditFactor, type CreditInputs, type CreditStep } from "@/lib/bank/credit";
 import { Gauge } from "@/components/nova/wealth/Gauge";
-import { ActionNote } from "@/components/nova/wealth/ActionNote";
-import { useMoneyMove } from "@/components/nova/wealth/useMoneyMove";
+import { CreditGoalPanel } from "@/components/nova/borrowing/CreditGoal";
 
 const TITLE = "Credit score";
 const SUB = "Estimate · based on what OneFlow can see. Checking here never affects your score.";
-const LOW_USE_PCT = 10;
-const TARGET_UTIL_PCT = 9;
-const OK_USE_PCT = 30;
-
-interface Factor { name: string; value: string; impact: "High impact" | "Medium" | "Low"; note: string }
-
-function cardUseLabel(pct: number): string {
-  if (pct < LOW_USE_PCT) return "Excellent";
-  if (pct <= OK_USE_PCT) return `Fair · aim under ${LOW_USE_PCT}%`;
-  return `High · aim under ${LOW_USE_PCT}%`;
-}
+const RATING_TONE: Record<CreditFactor["rating"], string> = { Excellent: "text-good", Good: "text-good", Fair: "", "Needs work": "text-bad" };
 
 export default function CreditPage() {
   const b = useReadyBank();
-  const [why, setWhy] = useState(false);
-  const move = useMoneyMove();
   if (!b) return <><PageHeader title={TITLE} subtitle={SUB} /><Loading /></>;
-  const { analysis, view, transfer, transferring } = b;
+  const { analysis, view, personaId } = b;
   const p = analysis.profile;
   const cr = view.credit;
-  const missed = p.flags.missed12m;
-  const projected = estimateCreditScore({ tier: p.creditTier, utilizationPct: TARGET_UTIL_PCT, missed12m: missed });
-  const card = p.debts.find((d) => d.kind === "card");
-  const needed = paymentToReachUtil(view.cardBalance, view.cardLimit, LOW_USE_PCT);
-  const payNow = cappedPayment(needed, view.checking);
-  const cardName = card?.label ?? "your card";
-
-  const factors: Factor[] = [
-    { name: "On-time payments", value: `${cr.onTimePct}%`, impact: "High impact", note: missed ? `${missed} missed in the last 12 months` : "No missed payments in 12 months" },
-    { name: "Card use", value: `${Math.round(cr.utilizationPct)}% of your limit`, impact: "High impact", note: cardUseLabel(cr.utilizationPct) },
-    { name: "Total accounts", value: String(cr.accounts), impact: "Low", note: "Accounts we can see at OneFlow and Toyota" },
-    { name: "Credit tier", value: `Tier ${p.creditTier}`, impact: "Medium", note: "From Toyota Financial Services" },
-  ];
-
-  const pay = () => move.run(() => transfer("checking", "card", payNow, `Card payment: ${cardName}`.slice(0, 80)), `Paid ${fmtUSD(payNow)} to ${cardName}.`);
+  const inputs: CreditInputs = { tier: p.creditTier, age: p.age, utilizationPct: cr.utilizationPct, missed12m: p.flags.missed12m, accounts: cr.accounts, contractStart: p.contract?.contractStart, asOf: AS_OF };
+  const factors = creditFactors(inputs);
+  const steps = creditSteps({ ...inputs, cardBalance: view.cardBalance, cardLimit: view.cardLimit, autopay: p.flags.autopay });
 
   return (
     <>
@@ -57,53 +32,50 @@ export default function CreditPage() {
             <Gauge score={cr.score} label={cr.label} />
             <p className="text-xs text-muted text-center mt-2">Estimated from your Toyota credit tier, card use and payment history. Not a bureau score.</p>
           </Panel>
-          <Panel title="What would move it" subtitle="Same estimate, one thing changed">
-            {cr.utilizationPct < LOW_USE_PCT ? (
-              <p className="text-sm">Your card use is already under {LOW_USE_PCT}%, the best range for this factor. Keep paying on time.</p>
-            ) : (
-              <>
-                <div className="flex items-baseline gap-3">
-                  <span className="text-4xl font-semibold">{projected.score}</span>
-                  <span className="text-sm text-muted">{projected.label} · {projected.score - cr.score >= 0 ? "+" : ""}{projected.score - cr.score} points</span>
-                </div>
-                <p className="text-sm text-muted mt-2">If card use dropped from {Math.round(cr.utilizationPct)}% to under {LOW_USE_PCT}%.</p>
-              </>
-            )}
-            <p className="text-xs text-muted mt-4">We don&apos;t have your score history, so there&apos;s no trend chart here.</p>
-          </Panel>
+          <CreditGoalPanel persona={personaId} inputs={{ asOf: AS_OF, tier: p.creditTier, utilizationPct: cr.utilizationPct, missed12m: p.flags.missed12m, cardBalance: view.cardBalance, cardLimit: view.cardLimit, current: cr.score }} />
         </div>
-
-        <Panel title="What shapes your score">
-          <ul className="divide-y divide-line">
-            {factors.map((f) => (
-              <li key={f.name} className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-3 text-sm items-center">
-                <span className="font-semibold">{f.name}</span>
-                <span>{f.value}</span>
-                <span><span className={`chip ${f.impact === "High impact" ? "bg-ink text-ink-fg" : ""}`}>{f.impact}</span></span>
-                <span className="text-muted">{f.note}</span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-
-        {needed > 0 && card && (
-          <section className="panel p-4 sm:p-5 border-2 border-fg">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <div className="text-xs font-semibold uppercase text-muted">Biggest quick win</div>
-                <div className="font-semibold mt-1">Pay {fmtUSD(needed)} on your {cardName}</div>
-                <p className="text-xs text-muted">That brings card use under {LOW_USE_PCT}%.{payNow < needed ? ` Checking covers ${fmtUSD(payNow)} today.` : ""}</p>
-              </div>
-              <div className="flex gap-2">
-                {payNow > 0 && <button className="btn btn-primary" disabled={transferring} onClick={() => void pay()}>{transferring ? "Paying…" : `Make a ${fmtUSD(payNow)} payment`}</button>}
-                <button className="btn" aria-expanded={why} onClick={() => setWhy((v) => !v)}>Why it matters</button>
-              </div>
-            </div>
-            {why && <p className="text-sm text-muted mt-3">Card use is how much of your limit you&apos;re using. Lenders read high use as risk, so it&apos;s one of the biggest factors. In our estimate, dropping under {LOW_USE_PCT}% moves you to about {projected.score}. Real bureau scores usually update after your next statement.</p>}
-            <ActionNote result={move.result} okText={move.okText} />
-          </section>
-        )}
+        <FactorList factors={factors} />
+        <StepList steps={steps} />
       </div>
     </>
+  );
+}
+
+function FactorList({ factors }: { factors: CreditFactor[] }) {
+  return (
+    <Panel title="What shapes your score" subtitle="“Estimate” marks values we infer from your Toyota credit tier and profile; the rest is real account data.">
+      <ul className="divide-y divide-line">
+        {factors.map((f) => (
+          <li key={f.id} className="grid grid-cols-[1fr_auto] sm:grid-cols-[1.2fr_1fr_auto_2fr] gap-x-3 gap-y-1 py-3 text-sm items-center">
+            <span className="font-semibold">{f.name}{f.estimated && <span className="chip ml-2 text-xs">Estimate</span>}</span>
+            <span className="text-right sm:text-left"><span className="font-semibold money">{f.value}</span> <span className={`text-xs ${RATING_TONE[f.rating]}`}>{f.rating}</span></span>
+            <span><span className={`chip ${f.impact === "High impact" ? "bg-ink text-ink-fg" : ""}`}>{f.impact}</span></span>
+            <span className="text-xs text-muted col-span-2 sm:col-span-1">{f.note}</span>
+          </li>
+        ))}
+      </ul>
+    </Panel>
+  );
+}
+
+function StepList({ steps }: { steps: CreditStep[] }) {
+  return (
+    <Panel title="Steps to raise your score" subtitle="Worked out from your factors above. Point gains are from our estimate.">
+      <ol className="divide-y divide-line">
+        {steps.map((s, i) => (
+          <li key={s.id} className="flex gap-3 py-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-2 text-xs font-semibold">{i + 1}</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-sm font-semibold">{s.title}</span>
+                {s.points !== null && s.points > 0 && <span className="chip text-good">+{s.points} pts · estimate</span>}
+              </div>
+              <p className="text-xs text-muted mt-0.5">{s.amount !== null && <><b className="text-fg money">About {fmtUSD(s.amount)}.</b> </>}{s.detail}</p>
+              {s.amount !== null && <Link href="/debt" className="text-xs font-semibold mt-1 inline-block">Pay from Debt &amp; liquidity →</Link>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Panel>
   );
 }
