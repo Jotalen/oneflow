@@ -39,7 +39,7 @@ export function CoachPanel({ personaId, onBrief }: Props) {
       title="Ask, or press AI analyze"
       right={
         <div className="flex items-center gap-2">
-          {last?.provider && <span className="chip" title="LLM provider">{last.provider === "stub" ? "Offline narrator" : last.provider}</span>}
+          {last?.provider && <span className="chip" title="LLM provider">{({ stub: "Built-in narrator", gemini: "Gemini", openrouter: "OpenRouter" } as Record<string, string>)[last.provider] ?? last.provider}</span>}
           <button type="button" onClick={() => void send("analyze")} disabled={busy !== null} className="glass px-3 py-1.5 text-sm font-semibold hover:border-accent disabled:opacity-50">
             {busy === "analyze" ? "Analyzing…" : "✦ AI analyze"}
           </button>

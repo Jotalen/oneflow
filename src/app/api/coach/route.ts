@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { NessieError } from "@/lib/nessie/client";
 import { getAnalysis, knownPersona } from "@/lib/server/analysis";
-import { getProvider } from "@/lib/llm";
+import { providerChain } from "@/lib/llm";
+import type { LlmProvider } from "@/lib/llm/provider";
 import { coachAnalyze, runCoach } from "@/lib/llm/coach";
 import type { Msg } from "@/lib/llm/provider";
 
@@ -18,9 +19,21 @@ export async function POST(req: Request) {
 
   try {
     const { analysis } = await getAnalysis(body.persona);
-    const provider = getProvider();
-    const result = mode === "analyze" ? await coachAnalyze(analysis, provider) : await runCoach(analysis, message, provider, {}, history);
-    return NextResponse.json(result);
+    const run = (provider: LlmProvider) => (mode === "analyze" ? coachAnalyze(analysis, provider) : runCoach(analysis, message, provider, {}, history));
+    const chain = providerChain();
+    const failed: string[] = [];
+    for (const provider of chain) {
+      try {
+        const result = await run(provider);
+        const notice = failed.length ? `${failed.join(" and ")} ${failed.length > 1 ? "were" : "was"} busy, so ${provider.name === "stub" ? "NovaBank's built-in narrator" : provider.name} answered. Same numbers, same rules.` : undefined;
+        return NextResponse.json({ ...result, provider: provider.name, ...(notice ? { notice } : {}) });
+      } catch (llmErr) {
+        if (provider.name === "stub") throw llmErr;
+        console.warn(`[coach] ${provider.name} failed:`, llmErr instanceof Error ? llmErr.message.slice(0, 160) : llmErr);
+        failed.push(provider.name === "gemini" ? "Gemini" : "OpenRouter");
+      }
+    }
+    return NextResponse.json({ error: "no LLM provider available" }, { status: 502 });
   } catch (e) {
     if (e instanceof NessieError) return NextResponse.json({ error: e.message }, { status: 503 });
     console.error("[coach]", e);
