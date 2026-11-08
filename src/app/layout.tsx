@@ -5,6 +5,7 @@ import { loadToyota } from "@/lib/toyota/load";
 import { PersonaProvider } from "@/components/PersonaProvider";
 import { BankProvider } from "@/components/nova/BankProvider";
 import { Shell } from "@/components/nova/Shell";
+import { SIDEBAR_INIT_SCRIPT } from "@/lib/nav";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -15,8 +16,9 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
-/** Apply the saved theme before first paint (Settings → Appearance). */
+/** Apply the saved theme (Settings → Theme) and sidebar rail width before first paint. */
 const THEME_INIT = `try{var t=localStorage.getItem("nova:theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+const HEAD_INIT = THEME_INIT + SIDEBAR_INIT_SCRIPT;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const t = loadToyota();
@@ -28,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   }));
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
-      <head><script dangerouslySetInnerHTML={{ __html: THEME_INIT }} /></head>
+      <head><script dangerouslySetInnerHTML={{ __html: HEAD_INIT }} /></head>
       <body>
         <PersonaProvider personas={personas}>
           <BankProvider>

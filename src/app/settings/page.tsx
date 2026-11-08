@@ -23,7 +23,7 @@ const NOTIFY_ROWS: { id: NotifyId; label: string }[] = [
 ];
 const NOTIFY_DEFAULT: Notify = { purchases: true, bills: true, tips: true, weekly: false };
 
-type Theme = "light" | "dark" | "device";
+type Theme = "light" | "dark" | "system";
 
 const STORAGE_EVT = "nova:settings";
 
@@ -53,7 +53,7 @@ function Toggle({ label, on, onChange, sub }: { label: string; on: boolean; onCh
     <div className="flex items-center justify-between gap-3 py-2.5 border-b border-line last:border-0">
       <div className="min-w-0"><div className="text-sm">{label}</div>{sub && <div className="text-xs text-muted">{sub}</div>}</div>
       <button type="button" role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${on ? "bg-ink" : "bg-line"}`}>
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${on ? "bg-accent" : "bg-line"}`}>
         <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-surface transition-all ${on ? "left-[1.375rem]" : "left-0.5"}`} />
       </button>
     </div>
@@ -70,16 +70,18 @@ function NotificationsPanel() {
   );
 }
 
-function AppearancePanel() {
+const THEME_OPTIONS: { value: Theme; label: string }[] = [{ value: "light", label: "Light" }, { value: "dark", label: "Dark" }, { value: "system", label: "System" }];
+
+function ThemePanel() {
   const stored = useStoredString(THEME_KEY);
-  const theme: Theme = stored === "light" || stored === "dark" ? stored : "device";
+  const theme: Theme = stored === "light" || stored === "dark" ? stored : "system";
   const apply = (t: Theme) => {
-    if (t === "device") { delete document.documentElement.dataset.theme; writeStorage(THEME_KEY, null); }
+    if (t === "system") { delete document.documentElement.dataset.theme; writeStorage(THEME_KEY, null); }
     else { document.documentElement.dataset.theme = t; writeStorage(THEME_KEY, t); }
   };
   return (
-    <Panel title="Appearance">
-      <Segmented<Theme> value={theme} onChange={apply} options={[{ value: "light", label: "Light" }, { value: "dark", label: "Dark" }, { value: "device", label: "Match device" }]} />
+    <Panel title="Theme" subtitle="Saved on this device">
+      <Segmented<Theme> value={theme} onChange={apply} options={THEME_OPTIONS} />
     </Panel>
   );
 }
@@ -127,7 +129,7 @@ export default function SettingsPage() {
           <p className="text-sm">{linked} account{linked === 1 ? "" : "s"} linked{p.contract ? " (including your Toyota Financial Services " + p.contract.type + ")" : ""}</p>
           <Link href="/accounts" className="btn mt-3 inline-block">Manage accounts</Link>
         </Panel>
-        <AppearancePanel />
+        <ThemePanel />
         <Panel title="Data source">
           <p className="text-sm">
             {b.offline ? "Offline snapshot: the Nessie API wasn't reachable, so you're seeing a saved copy." : b.live ? "Live from the Capital One Nessie API." : "Saved snapshot of the Nessie data (no live API key)."}

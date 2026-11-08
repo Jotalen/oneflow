@@ -8,27 +8,44 @@
   --line: #e4e4e1;
   --fg: #151515;
   --muted: #6c6c69;
-  --ink: #1a1a1a;
+  /* Strong-emphasis fill (hero cards, logo mark, progress). Palette navy, used sparingly. */
+  --ink: #1b263b;
   --ink-fg: #ffffff;
-  --accent: #1a1a1a;
+  /* Minimal slate accent: primary buttons, selected nav, links, focus ring. 7.1:1 with white. */
+  --accent: #415a77;
+  --accent-strong: #1b263b;
+  --on-accent: #ffffff;
+  /* Secondary chart lines, hover borders. 3.4:1 on white (graphics only, not body text). */
+  --accent-2: #778da9;
+  /* Selected-row fill. */
+  --accent-soft: #e0e1dd;
   --good: #1d7a45;
   --warn: #a8660f;
   --bad: #b8392a;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   color-scheme: light;
 }
+/* Dark: #415a77 is only 2.7:1 on the dark surfaces, so the lighter slate carries accent text,
+   focus and fills there (5.2:1 on --surface), with navy text on it (5.1:1). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f1012; --surface: #18191c; --surface-2: #212226; --line: #2b2d31; --fg: #f1f1f1; --muted: #9b9da3;
-    --ink: #f1f1f1; --ink-fg: #121212; --accent: #f1f1f1; --good: #4ade80; --warn: #fbbf24; --bad: #f87171;
+    --ink: #e0e1dd; --ink-fg: #0d1b2a;
+    --accent: #778da9; --accent-strong: #e0e1dd; --on-accent: #0d1b2a; --accent-2: #778da9; --accent-soft: rgba(119, 141, 169, 0.16);
+    --good: #4ade80; --warn: #fbbf24; --bad: #f87171;
     --shadow: none; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f1012; --surface: #18191c; --surface-2: #212226; --line: #2b2d31; --fg: #f1f1f1; --muted: #9b9da3;
-  --ink: #f1f1f1; --ink-fg: #121212; --accent: #f1f1f1; --good: #4ade80; --warn: #fbbf24; --bad: #f87171;
+  --ink: #e0e1dd; --ink-fg: #0d1b2a;
+  --accent: #778da9; --accent-strong: #e0e1dd; --on-accent: #0d1b2a; --accent-2: #778da9; --accent-soft: rgba(119, 141, 169, 0.16);
+  --good: #4ade80; --warn: #fbbf24; --bad: #f87171;
   --shadow: none; color-scheme: dark;
 }
+
+/* Desktop sidebar collapsed to an icon rail (html[data-sidebar] is set before paint). */
+@custom-variant rail-collapsed (&:where(html[data-sidebar="collapsed"] *));
 
 @theme inline {
   --color-bg: var(--bg);
@@ -40,6 +57,10 @@
   --color-ink: var(--ink);
   --color-ink-fg: var(--ink-fg);
   --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-on-accent: var(--on-accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
@@ -76,16 +97,28 @@ body {
   display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
   height: 2.25rem; padding: 0 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600;
   border: 1px solid var(--line); background: var(--surface); color: var(--fg);
-  transition: opacity 120ms ease, border-color 120ms ease;
+  transition: opacity 120ms ease, border-color 120ms ease, background-color 120ms ease;
 }
-.btn:hover { border-color: var(--fg); }
+.btn:hover { border-color: var(--accent-2); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-primary { background: var(--ink); color: var(--ink-fg); border-color: var(--ink); }
-.btn-primary:hover { opacity: 0.88; }
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
 .btn-on-ink { background: var(--ink-fg); color: var(--ink); border-color: var(--ink-fg); }
 .btn-ghost-ink { background: transparent; color: var(--ink-fg); border-color: color-mix(in srgb, var(--ink-fg) 40%, transparent); }
 
 .money { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
 }
 
-:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+@layer base {
+  /* Inline text links. */
+  a.underline { color: var(--accent); text-underline-offset: 2px; }
+  a.underline:hover { text-decoration-thickness: 2px; }
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* On strong-emphasis fills the accent ring would vanish; use the fill's text colour. */
+.bg-ink :focus-visible, .bg-ink:focus-visible { outline-color: var(--ink-fg); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+}

@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { usePersona } from "@/components/PersonaProvider";
 import { PendingGuard } from "@/components/PendingGuard";
 import { usePendingGuard } from "@/hooks/usePendingGuard";
@@ -20,13 +19,11 @@ function useOutside(open: boolean, close: () => void) {
   return ref;
 }
 
-/** Search, notifications (live Nessie events + pending-transaction guard), and the customer menu. */
+/** Notifications (live Nessie events + pending-transaction guard), and the customer menu. */
 export function TopActions() {
-  const router = useRouter();
   const { personaId, setPersonaId, personas } = usePersona();
   const { analysis, live, offline, receipts } = useBank();
   const guard = usePendingGuard(personaId, live, analysis?.profile.accounts.map((a) => a.id) ?? []);
-  const [q, setQ] = useState("");
   const [bell, setBell] = useState(false);
   const [menu, setMenu] = useState(false);
   const bellRef = useOutside(bell, () => setBell(false));
@@ -34,17 +31,8 @@ export function TopActions() {
   const me = personas.find((p) => p.id === personaId);
   const unread = receipts.filter((r) => !r.settled).length;
 
-  const onSearch = (e: FormEvent) => { e.preventDefault(); router.push(`/transactions${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ""}`); };
-
   return (
     <div className="flex items-center gap-2">
-      <form onSubmit={onSearch} className="hidden md:block" role="search">
-        <label className="flex items-center gap-2 h-9 w-56 rounded-full border border-line bg-surface px-3 text-sm">
-          <span aria-hidden className="text-muted">⌕</span>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" aria-label="Search transactions" className="bg-transparent outline-none w-full placeholder:text-muted" />
-        </label>
-      </form>
-
       <div className="relative" ref={bellRef}>
         <button className="h-9 w-9 rounded-full border border-line bg-surface grid place-items-center relative" aria-label="Notifications" aria-expanded={bell} onClick={() => setBell((v) => !v)}>
           <span aria-hidden>🔔</span>
@@ -66,7 +54,7 @@ export function TopActions() {
         </button>
         {menu && (
           <div className="absolute right-0 mt-2 w-64 z-40 panel p-2 shadow-xl max-h-[70vh] overflow-auto">
-            <div className="px-2 py-1 text-[0.7rem] uppercase tracking-wider text-muted">Demo customers</div>
+            <div className="px-2 py-1 text-[0.7rem] uppercase tracking-wider text-muted">Customers</div>
             {personas.map((p) => (
               <button key={p.id} onClick={() => { setPersonaId(p.id); setMenu(false); }}
                 className={`w-full text-left px-2 py-1.5 rounded-lg text-sm hover:bg-surface-2 flex justify-between ${p.id === personaId ? "bg-surface-2 font-semibold" : ""}`}>
