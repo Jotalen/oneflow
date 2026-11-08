@@ -2,7 +2,7 @@
 
 **Tagline:** What's my next best move? The code computes, the AI explains, the bank executes.
 
-**Tracks:** Capital One: Best Use of Nessie · Toyota Financial Services: What's Your Next Move? · PNC: 360° Financial Health Navigator · HackUTD: Design · MLH: Best Use of Gemini API, Best Use of Tiger Data
+**Tracks:** Capital One: Best Use of Nessie · Toyota Financial Services: What's Your Next Move? · PNC: 360° Financial Health Navigator · HackUTD: Design · MLH: Best Use of Gemini API, Best Use of Tiger Data, Best Domain Name from GoDaddy Registry
 
 ## Inspiration
 PNC and Toyota both literally ask "what's your next move?", and Capital One asks us to reimagine banking. Your bank app doesn't know about your car, and your auto lender doesn't know your cash flow. So we built one bank that knows both, with one answer at the top of the screen.
@@ -77,9 +77,9 @@ Deterministic math with an LLM that only narrates is not a limitation; it is the
 - Real TFS APIs.
 
 ## Built with
-nextjs, react, typescript, tailwindcss, recharts, zod, vitest, capital-one-nessie, gemini-api, openrouter, tiger-data, timescaledb, postgresql, vercel
+nextjs, react, typescript, tailwindcss, recharts, zod, vitest, capital-one-nessie, gemini-api, openrouter, tiger-data, timescaledb, postgresql, vercel, godaddy-registry
 
 ## Links
-- Live: https://oneflow-eosin.vercel.app
+- Live: https://www.one-flow.us
 - Repo: https://github.com/moaizattiq/oneflow
 - Video: <add YouTube link>

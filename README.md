@@ -4,9 +4,9 @@
 
 NextMove is a banking dashboard built on **Capital One's Nessie v2** that shows a person's whole financial picture (PNC 360° Financial Health Navigator), folds in their **Toyota** vehicle and loan/lease (Toyota Financial Services "What's Your Next Move?"), ranks concrete moves by their dollar impact 24 months out, shows "do nothing vs do this" futures, narrates with an LLM that never does arithmetic, and **executes accepted moves in the bank**.
 
-**Tracks:** Capital One — Best Use of Nessie (primary) · Toyota Financial Services — What's Your Next Move? · PNC — 360° Financial Health Navigator · HackUTD — Design · MLH: Best Use of Gemini API, Best Use of Tiger Data.
+**Tracks:** Capital One — Best Use of Nessie (primary) · Toyota Financial Services — What's Your Next Move? · PNC — 360° Financial Health Navigator · HackUTD — Design · MLH: Best Use of Gemini API, Best Use of Tiger Data, Best Domain Name from GoDaddy Registry (one-flow.us).
 
-**Live:** https://oneflow-eosin.vercel.app · **Repo:** https://github.com/moaizattiq/oneflow
+**Live:** https://www.one-flow.us · **Repo:** https://github.com/moaizattiq/oneflow
 
 ## 3-minute tour
 
