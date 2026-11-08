@@ -72,7 +72,7 @@ function RecentPanel({ view }: { view: BankView }) {
   return (
     <Panel title="Recent activity" right={<Link href="/transactions" className="font-semibold">All transactions →</Link>}>
       {rows.length === 0 ? <p className="text-sm text-muted">No checking activity yet.</p> : rows.map((t) => (
-        <Row key={t.id} icon={initials(t.merchant)} title={t.merchant} sub={`${fmtDate(t.date)} · ${CATEGORY_LABEL[t.category]}`} value={fmtSigned(t.amount)} />
+        <Row key={`${t.id}:${t.accountId}`} icon={initials(t.merchant)} title={t.merchant} sub={`${fmtDate(t.date)} · ${CATEGORY_LABEL[t.category]}`} value={fmtSigned(t.amount)} />
       ))}
     </Panel>
   );

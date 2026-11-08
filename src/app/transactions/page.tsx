@@ -105,7 +105,7 @@ function TransactionsInner({ initialQ }: { initialQ: string }) {
             <div key={g.date} className="mb-2">
               <h3 className="text-xs font-semibold text-muted pt-2 pb-1">{dayLabel(g.date)}</h3>
               {g.txns.map((t) => (
-                <div key={t.id}>
+                <div key={`${t.id}:${t.accountId}`}>
                   <Row icon={initials(t.merchant)} title={t.merchant} sub={rowSub(t, meta)}
                     value={fmtSigned(t.amount)} active={current?.id === t.id} onClick={() => setSelected(t.id)} />
                   {current?.id === t.id && selected === t.id && <div className="lg:hidden rounded-xl border border-line p-3 my-2">{detail}</div>}

@@ -4,6 +4,8 @@ import { PageHeader, initials } from "@/components/nova/ui";
 import { useBank } from "@/components/nova/BankProvider";
 import { NavIcon } from "@/components/nova/icons";
 import { NAV, SETTINGS_ITEM, type NavGroup, type NavItem } from "@/lib/nav";
+import { GeminiMark } from "@/components/chat/GeminiMark";
+import { openAskAi } from "@/components/chat/askAiStore";
 
 const ACCOUNT_GROUP: NavGroup = { label: "Account", items: [SETTINGS_ITEM] };
 
@@ -34,6 +36,11 @@ export default function MorePage() {
         <span className="flex-1"><span className="block font-semibold">{name}</span><span className="block text-sm text-muted">Profile and settings</span></span>
         <span className="text-muted" aria-hidden>›</span>
       </Link>
+      <button type="button" onClick={openAskAi} className="panel flex w-full items-center gap-3 p-4 mb-5 text-left hover:border-accent-2">
+        <GeminiMark className="h-6 w-6 shrink-0" />
+        <span className="flex-1"><span className="block font-semibold">Ask AI</span><span className="block text-sm text-muted">Plan payments, a new Toyota, or Solana</span></span>
+        <span className="text-muted" aria-hidden>›</span>
+      </button>
       {[...NAV, ACCOUNT_GROUP].map((g, i) => (
         <section key={g.label ?? `group-${i}`} className="mb-5">
           {g.label && <h2 className="text-xs font-semibold tracking-widest uppercase text-muted mb-2 px-1">{g.label}</h2>}

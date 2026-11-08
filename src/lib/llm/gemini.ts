@@ -50,12 +50,12 @@ export function toContents(messages: Msg[]): { system: string; contents: Content
 export class GeminiProvider implements LlmProvider {
   readonly name = "gemini" as const;
   private readonly client: GoogleGenerativeAI;
-  constructor(apiKey: string, private readonly modelName = process.env.GEMINI_MODEL ?? DEFAULT_MODEL) {
+  constructor(apiKey: string, private readonly modelName = process.env.GEMINI_MODEL ?? DEFAULT_MODEL, private readonly fallbacks: string[] = FALLBACK_MODELS) {
     this.client = new GoogleGenerativeAI(apiKey);
   }
 
   async chat(messages: Msg[], tools: ToolDef[]): Promise<LlmTurn> {
-    const models = [this.modelName, ...FALLBACK_MODELS.filter((m) => m !== this.modelName)];
+    const models = [this.modelName, ...this.fallbacks.filter((m) => m !== this.modelName)];
     let lastErr: unknown;
     for (const name of models) {
       try {

@@ -140,7 +140,7 @@ export function Bubble({ id, a, v, goal }: { id: BubbleId; a: Analysis; v: BankV
       return (
         <Shell id={id} right={<span className="text-sm font-semibold">See all →</span>}>
           {v.ledger.slice(0, RECENT_COUNT).map((t) => (
-            <Row key={t.id} icon={initials(t.merchant)} title={t.merchant} sub={`${fmtDate(t.date)} · ${t.accountLabel}`} value={fmtSigned(t.amount)} />
+            <Row key={`${t.id}:${t.accountId}`} icon={initials(t.merchant)} title={t.merchant} sub={`${fmtDate(t.date)} · ${t.accountLabel}`} value={fmtSigned(t.amount)} />
           ))}
         </Shell>
       );

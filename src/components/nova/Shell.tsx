@@ -9,6 +9,9 @@ import { SPRING, morphNameForPath, useIntroPhase } from "@/lib/motion";
 import { LogoMark } from "@/components/brand/LogoMark";
 import { IntroOverlay } from "@/components/intro/IntroOverlay";
 import { NavIcon, SidebarToggleIcon } from "./icons";
+import { AskAiPanel } from "@/components/chat/AskAiPanel";
+import { GeminiMark } from "@/components/chat/GeminiMark";
+import { openAskAi, useAskAiMode } from "@/components/chat/askAiStore";
 
 const SIDEBAR_ID = "sidebar";
 
@@ -57,6 +60,17 @@ function Logo() {
   );
 }
 
+/** Opens the Ask AI chat (over the sidebar, or full width when there is no room). */
+function AskAiButton({ collapsed }: { collapsed: boolean }) {
+  return (
+    <button type="button" onClick={openAskAi} title={collapsed ? "Ask AI" : undefined}
+      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm text-fg/85 hover:bg-accent-soft/60 rail-collapsed:justify-center rail-collapsed:px-0 rail-collapsed:py-2">
+      <GeminiMark className="h-5 w-5 shrink-0" />
+      <span className="truncate rail-collapsed:sr-only">Ask AI</span>
+    </button>
+  );
+}
+
 function CollapseButton({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const label = collapsed ? "Expand sidebar" : "Collapse sidebar";
   return (
@@ -70,6 +84,10 @@ function CollapseButton({ collapsed, onToggle }: { collapsed: boolean; onToggle:
 
 function Sidebar({ path }: { path: string }) {
   const { collapsed, toggle } = useSidebarCollapsed();
+  const askAi = useAskAiMode();
+  if (askAi === "docked") {
+    return <aside id={SIDEBAR_ID} className="hidden md:flex flex-col border-r border-line bg-surface sticky top-0 h-dvh overflow-hidden"><AskAiPanel mode="docked" /></aside>;
+  }
   return (
     <aside id={SIDEBAR_ID} className="hidden md:flex flex-col gap-4 border-r border-line bg-surface px-3 py-5 sticky top-0 h-dvh overflow-y-auto overflow-x-hidden rail-collapsed:px-2.5">
       <Logo />
@@ -79,6 +97,7 @@ function Sidebar({ path }: { path: string }) {
             {g.label && <div className="px-2.5 pb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-muted rail-collapsed:sr-only">{g.label}</div>}
             {g.label && <div className="hidden rail-collapsed:block mx-2 mb-1.5 border-t border-line" aria-hidden />}
             {g.items.map((it) => <NavLink key={it.href} item={it} path={path} collapsed={collapsed} />)}
+            {i === 0 && <AskAiButton collapsed={collapsed} />}
           </div>
         ))}
       </nav>
@@ -109,16 +128,19 @@ function MobileTabs({ path }: { path: string }) {
 /** Desktop sidebar (collapsible to an icon rail) + mobile bottom tabs around every page. */
 export function Shell({ children }: { children: ReactNode }) {
   const path = usePathname();
+  const askAi = useAskAiMode();
   return (
     <MotionConfig reducedMotion="user">
     <IntroOverlay />
-    <div className="min-h-dvh md:grid md:grid-cols-[15rem_minmax(0,1fr)] md:rail-collapsed:grid-cols-[4.25rem_minmax(0,1fr)]">
+    <div className={`min-h-dvh md:grid ${askAi === "docked" ? "md:grid-cols-[24rem_minmax(0,1fr)]" : "md:grid-cols-[15rem_minmax(0,1fr)] md:rail-collapsed:grid-cols-[4.25rem_minmax(0,1fr)]"}`}>
       <Sidebar path={path} />
       <div className="min-w-0 flex flex-col">
         <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 pt-5 pb-28 md:pb-10">
           {/* Route change: fade + 8px rise. If this page belongs to the card just opened, the card morphs into it. */}
+          {/* Expanded Ask AI takes over this area; the page stays mounted underneath so nothing reloads. */}
+          {askAi === "expanded" && <div className="panel h-[calc(100dvh-8rem)] md:h-[calc(100dvh-3.75rem)] overflow-hidden p-0"><AskAiPanel mode="expanded" /></div>}
           <ViewTransition key={path} name={morphNameForPath(path)} share="card-morph" enter="page-in" exit="page-out" default="none">
-            <div>{children}</div>
+            <div className={askAi === "expanded" ? "hidden" : undefined}>{children}</div>
           </ViewTransition>
         </main>
         <footer className="hidden md:block max-w-6xl mx-auto w-full px-6 pb-6 text-xs text-muted">
