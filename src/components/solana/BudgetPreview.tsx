@@ -2,21 +2,19 @@
 
 import { useState } from "react";
 import { useBank } from "@/components/nova/BankProvider";
-import { useStored } from "@/components/nova/everyday/useStored";
+import { useBudgetPlan } from "@/components/nova/everyday/useBudgetPlan";
 import { Tile, fmtSigned } from "@/components/nova/ui";
-import { applyBudgetOverrides, type BudgetOverrides } from "@/lib/bank/everyday";
+import { planBudget } from "@/lib/bank/budgetPlan";
 import { previewPaymentBudget } from "@/lib/solana/budget";
 import { formatTokenAmount } from "@/lib/solana/payment";
 import { fmtUSD } from "@/lib/money";
 
-const EMPTY: BudgetOverrides = {};
-
 export function BudgetPreview({ amount }: { amount: string }) {
   const bank = useBank();
-  const [overrides] = useStored<BudgetOverrides>("budget", bank.personaId, EMPTY);
+  const [plan] = useBudgetPlan(bank.personaId);
   const [chosen, setChosen] = useState("");
   if (!bank.view) return <p className="text-xs text-muted">Demo budget comparison will appear when the bank profile finishes loading.</p>;
-  const budget = applyBudgetOverrides(bank.view.budget, overrides);
+  const budget = planBudget(bank.view.budget, bank.view.ledger, plan);
   const categories = budget.categories.filter((item) => !item.fixed);
   const category = categories.find((item) => item.key === chosen)?.key ?? categories.find((item) => item.key === "shopping")?.key ?? categories[0]?.key;
   const preview = category ? previewPaymentBudget(budget, category, BigInt(amount)) : null;
