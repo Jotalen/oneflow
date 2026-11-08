@@ -1,4 +1,5 @@
 "use client";
+import { pendingCents } from "@/lib/bank/pending";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { PageHeader, Panel, Tile, fmtSigned, initials } from "@/components/nova/ui";
@@ -13,21 +14,22 @@ const TITLE = "Accounts";
 const SUBTITLE = "Every account you have with OneFlow, in one place.";
 const PCT = 100;
 
-interface AcctRow { id: string; title: string; sub: string; value: Cents; href: string }
+/** `pending`: money the bank is holding but hasn't settled yet (shown under the balance). */
+interface AcctRow { id: string; title: string; sub: string; value: Cents; href: string; pending?: Cents }
 
 const CASH_HREF: Record<string, string> = { checking: "/day-to-day", savings: "/goals", cd: "/safety-net" };
 const CASH_SUB: Record<string, string> = { checking: "Day-to-day spending", savings: "Savings · goals live inside", cd: "Certificate of deposit" };
 
 const cashRows = (p: Profile): AcctRow[] =>
-  p.accounts.filter((a) => a.kind !== "card").map((a) => ({ id: a.id, title: a.nickname, sub: CASH_SUB[a.kind] ?? a.kind, value: a.balance, href: CASH_HREF[a.kind] ?? "/day-to-day" }));
+  p.accounts.filter((a) => a.kind !== "card").map((a) => ({ id: a.id, title: a.nickname, sub: CASH_SUB[a.kind] ?? a.kind, value: a.balance, pending: pendingCents(a), href: CASH_HREF[a.kind] ?? "/day-to-day" }));
 
 const cardSub = (a: BankAccount) => {
   const limit = a.creditLimit ?? 0;
   if (!limit) return "Credit card";
-  return `${fmtUSD(Math.max(0, limit - a.balance))} available of ${fmtUSD(limit)} · ${Math.round((a.balance / limit) * PCT)}% used`;
+  return `${fmtUSD(Math.min(a.available, Math.max(0, limit - a.balance)))} available of ${fmtUSD(limit)} · ${Math.round((a.balance / limit) * PCT)}% used`;
 };
 const cardRows = (p: Profile): AcctRow[] =>
-  p.accounts.filter((a) => a.kind === "card").map((a) => ({ id: a.id, title: a.nickname, sub: cardSub(a), value: -a.balance, href: "/debt" }));
+  p.accounts.filter((a) => a.kind === "card").map((a) => ({ id: a.id, title: a.nickname, sub: cardSub(a), value: -a.balance, href: "/debt", pending: pendingCents(a) }));
 
 function loanRows(p: Profile): AcctRow[] {
   const rows: AcctRow[] = [];
@@ -54,7 +56,10 @@ function Group({ title, rows, empty }: { title: string; rows: AcctRow[]; empty: 
               <Link href={r.href} className="flex items-center gap-3 py-2.5 px-2 -mx-2 rounded-lg hover:bg-surface-2">
                 <span className="h-9 w-9 shrink-0 rounded-lg bg-surface-2 border border-line grid place-items-center text-xs font-semibold text-muted" aria-hidden>{initials(r.title)}</span>
                 <span className="min-w-0 flex-1"><span className="block text-sm font-semibold truncate">{r.title}</span><span className="block text-xs text-muted truncate">{r.sub}</span></span>
-                <span className="text-sm font-semibold money shrink-0">{fmtSigned(r.value).replace("+", "")}</span>
+                <span className="shrink-0 text-right">
+                  <span className="block text-sm font-semibold money">{fmtSigned(r.value).replace("+", "")}</span>
+                  {!!r.pending && <span className="block text-[0.7rem] text-warn money">{fmtUSD(r.pending)} pending</span>}
+                </span>
                 <span className="text-muted" aria-hidden>›</span>
               </Link>
             </li>

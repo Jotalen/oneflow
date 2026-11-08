@@ -1,4 +1,5 @@
 "use client";
+import { pendingCents } from "@/lib/bank/pending";
 import Link from "next/link";
 import { useState } from "react";
 import { PageHeader, Panel, Row, Money, Segmented, fmtDate, fmtSigned, initials } from "@/components/nova/ui";
@@ -116,7 +117,7 @@ export default function DayToDayPage() {
             <div>
               <div className="text-sm font-semibold">{checking?.nickname ?? "Checking"}</div>
               <div className="text-3xl sm:text-4xl font-semibold money mt-1"><Money cents={view.checking} /></div>
-              <div className="text-xs text-muted mt-1">Available now · {fmtUSD(checking?.available ?? view.checking)}</div>
+              <div className="text-xs text-muted mt-1">Available now · {fmtUSD(checking?.available ?? view.checking)}{checking && pendingCents(checking) > 0 && <> · {fmtUSD(pendingCents(checking))} pending</>}</div>
             </div>
             <div className="flex flex-wrap gap-2">
               {hasSavings && checking && <button className={`btn ${action === "transfer" ? "btn-primary" : ""}`} aria-expanded={action === "transfer"} onClick={() => toggle("transfer")}>Transfer</button>}
