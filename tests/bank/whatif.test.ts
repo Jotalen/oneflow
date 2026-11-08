@@ -7,7 +7,7 @@ import { project } from "@/lib/engine/project";
 import { health } from "@/lib/engine/health";
 import {
   EMPTY_SCENARIO, HORIZON_MONTHS, cancellableBills, cashLow, debtTargets, describeScenario, healthAtMonth,
-  indicatorChanges, isEmptyScenario, monthLabel, runOutMonth, runWhatIf, scenarioToOverrides, chartRows, type Scenario,
+  indicatorChanges, isEmptyScenario, monthLabel, runOutMonth, runWhatIf, scenarioToOverrides, chartRows, PRESETS, presetScenario, fmtSignedWhole, type Scenario,
 } from "@/lib/bank/whatif";
 import { profileFor } from "../fixtures/profiles";
 
@@ -180,6 +180,10 @@ describe("describeScenario", () => {
     ]);
   });
 
+  test("fmtSignedWhole rounds to whole dollars with a sign", () => {
+    expect([fmtSignedWhole(50_049), fmtSignedWhole(-100_000), fmtSignedWhole(0)]).toEqual(["+$500", "−$1,000", "$0"]);
+  });
+
   test("a raise reads as earning more", () => {
     expect(describeScenario(load("C018"), scenario({ incomeMonthlyDelta: 50_000 }))).toEqual(["earn $500/mo more"]);
   });
@@ -213,5 +217,17 @@ describe("runWhatIf", () => {
   test("works for a typical fixture profile and a lease persona without throwing", () => {
     expect(() => runWhatIf(profileFor("C003"), scenario({ expenseAmount: 300_000, expenseMonth: 3 }))).not.toThrow();
     expect(runWhatIf(load("C003"), scenario({ extraToDebtMonthly: 10_000 })).changes.some((c) => c.key === "ptiPct")).toBe(true);
+  });
+});
+
+describe("presets", () => {
+  test("each preset is a valid scenario built from the persona's own numbers", () => {
+    const p = load("C018");
+    expect(PRESETS.map((x) => x.id)).toEqual(["pay-cut", "job-loss", "car-repair", "cancel-subs", "rent-up"]);
+    expect(presetScenario(p, "job-loss")).toEqual(scenario({ incomeMonthlyDelta: -p.incomeMonthly }));
+    expect(presetScenario(p, "car-repair")).toEqual(scenario({ expenseAmount: 300_000, expenseMonth: 1 }));
+    expect(presetScenario(p, "cancel-subs").cancelBillIds).toEqual(cancellableBills(p).filter((b) => b.isSubscription).map((b) => b.id));
+    expect(presetScenario(p, "rent-up")).toEqual(scenario({ newBillMonthly: 30_000 }));
+    expect(presetScenario(p, "pay-cut")).toEqual(scenario({ incomeMonthlyDelta: -100_000 }));
   });
 });

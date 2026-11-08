@@ -85,6 +85,29 @@ export function scenarioToOverrides(p: Profile, raw: Scenario): Partial<ProfileO
   };
 }
 
+export type PresetId = "pay-cut" | "job-loss" | "car-repair" | "cancel-subs" | "rent-up";
+export const PRESETS: { id: PresetId; label: string }[] = [
+  { id: "pay-cut", label: "Lose $1,000/mo" },
+  { id: "job-loss", label: "Job loss" },
+  { id: "car-repair", label: "$3,000 car repair" },
+  { id: "cancel-subs", label: "Cancel subscriptions" },
+  { id: "rent-up", label: "Rent up $300" },
+];
+const PAY_CUT = 100_000;
+const CAR_REPAIR = 300_000;
+const RENT_UP = 30_000;
+
+/** One-tap starting points, built from the persona's own income and bills. */
+export function presetScenario(p: Profile, id: PresetId): Scenario {
+  switch (id) {
+    case "pay-cut": return { ...EMPTY_SCENARIO, incomeMonthlyDelta: -Math.min(PAY_CUT, p.incomeMonthly ?? 0) };
+    case "job-loss": return { ...EMPTY_SCENARIO, incomeMonthlyDelta: -(p.incomeMonthly ?? 0) };
+    case "car-repair": return { ...EMPTY_SCENARIO, expenseAmount: CAR_REPAIR, expenseMonth: 1 };
+    case "cancel-subs": return { ...EMPTY_SCENARIO, cancelBillIds: cancellableBills(p).filter((b) => b.isSubscription).map((b) => b.id) };
+    case "rent-up": return { ...EMPTY_SCENARIO, newBillMonthly: RENT_UP };
+  }
+}
+
 export interface CashLow { month: number; liquid: Cents }
 
 export function cashLow(pr: Projection): CashLow {
@@ -195,6 +218,8 @@ export function indicatorChanges(base: HealthReport, scen: HealthReport, ctx: In
 
 /** Whole dollars: $1,000. */
 export const fmtWhole = (c: Cents): string => fmtUSD(Math.round(c / 100) * 100).replace(/\.00$/, "");
+/** Signed whole dollars: +$500 / −$1,000 / $0. */
+export const fmtSignedWhole = (c: Cents): string => `${c > 0 ? "+" : c < 0 ? "−" : ""}${fmtWhole(Math.abs(c))}`;
 
 const joinWords = (parts: string[]) => (parts.length <= 1 ? parts.join("") : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`);
 
