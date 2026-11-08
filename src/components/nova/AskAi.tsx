@@ -71,8 +71,13 @@ function AnswerView({ answer }: { answer: Answer }) {
   );
 }
 
-export function AskAi({ topic, essentialsOverrides }: AskAiProps) {
+/** Keyed by customer so switching persona starts a fresh dialog (no answer about the previous customer). */
+export function AskAi(props: AskAiProps) {
   const { personaId } = useBank();
+  return <AskAiDialog key={personaId} personaId={personaId} {...props} />;
+}
+
+function AskAiDialog({ topic, essentialsOverrides, personaId }: AskAiProps & { personaId: string }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const [status, setStatus] = useState<Status>({ kind: "idle" });
