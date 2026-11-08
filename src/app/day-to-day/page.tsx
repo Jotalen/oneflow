@@ -1,21 +1,25 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import { PageHeader, Panel, Row, Money, fmtDate, fmtSigned, initials } from "@/components/nova/ui";
-import { AreaTrend } from "@/components/nova/charts";
+import { PageHeader, Panel, Row, Money, Segmented, fmtDate, fmtSigned, initials } from "@/components/nova/ui";
+import { BalanceTrend } from "@/components/nova/charts";
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
 import { MoveMoneyForm } from "@/components/nova/everyday/MoveMoneyForm";
 import { DateChip } from "@/components/nova/everyday/DateChip";
 import { SendMoneyDialog } from "@/components/nova/everyday/SendMoneyDialog";
 import { WalletLoader } from "@/components/solana/WalletLoader";
-import { CATEGORY_LABEL, type BankView } from "@/lib/bank/view";
+import { CATEGORY_LABEL, type BankView, type LedgerTxn } from "@/lib/bank/view";
+import { BALANCE_RANGES, balanceSeries, type BalanceRange } from "@/lib/bank/balanceEstimate";
+import { billOptions } from "@/lib/bank/everyday";
+import type { Profile } from "@/lib/engine/types";
 import { fmtUSD } from "@/lib/money";
 
 const TITLE = "Day-to-day";
 const SUBTITLE = "Your everyday checking account.";
 const RECENT_COUNT = 4;
-type Action = "transfer" | "paycard" | null;
+const RANGE_LABEL: Record<BalanceRange, string> = { "1M": "last month", "3M": "last 3 months", "6M": "last 6 months" };
+type Action = "transfer" | "paybill" | null;
 
 function InOutPanel({ view }: { view: BankView }) {
   const { inflow, outflow, net, nextPayday, nextPaycheck } = view.inOut;
@@ -48,7 +52,7 @@ function UpcomingPanel({ view }: { view: BankView }) {
   return (
     <Panel title="Upcoming bills" right={last ? <span className="text-xs text-muted">{fmtUSD(total)} due by {fmtDate(last.date)}</span> : undefined}>
       {bills.length === 0 ? <p className="text-sm text-muted">No recurring bills on file.</p> : (
-        <ul className="divide-y divide-line">
+        <ul className="divide-y divide-line max-h-72 overflow-y-auto overscroll-contain pr-1 -mr-1" tabIndex={0} aria-label={`${bills.length} upcoming bills`}>
           {bills.map((b) => (
             <li key={b.id} className="flex items-center gap-3 py-2.5">
               <DateChip iso={b.date} />
@@ -73,6 +77,25 @@ function RecentPanel({ view }: { view: BankView }) {
   );
 }
 
+function BalanceChart({ profile, ledger }: { profile: Profile; ledger: LedgerTxn[] }) {
+  const [range, setRange] = useState<BalanceRange>("1M");
+  const series = balanceSeries(profile, ledger, range);
+  return (
+    <div className="mt-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+        <div className="text-xs text-muted">Checking balance · {RANGE_LABEL[range]}</div>
+        <Segmented size="sm" value={range} onChange={setRange} options={BALANCE_RANGES.map((r) => ({ value: r, label: r }))} />
+      </div>
+      <BalanceTrend points={series.points} estimatedUntil={series.estimatedUntil} />
+      {series.estimatedUntil && (
+        <p className="text-[0.7rem] text-muted mt-1">
+          Dashed line before {fmtDate(series.estimatedUntil, true)} is an estimate. The bank keeps about 8 weeks of your history, so we rebuilt earlier days from your paychecks and recurring bills.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function DayToDayPage() {
   const b = useReadyBank();
   const [action, setAction] = useState<Action>(null);
@@ -81,8 +104,7 @@ export default function DayToDayPage() {
   const p = analysis.profile;
   const checking = p.accounts.find((a) => a.kind === "checking");
   const hasSavings = p.accounts.some((a) => a.kind === "savings");
-  const cardBill = view.upcoming.find((u) => u.id === "card");
-  const canPayCard = view.cardBalance > 0;
+  const bills = billOptions(view.upcoming, view.cardBalance);
   const toggle = (a: Exclude<Action, null>) => setAction((cur) => (cur === a ? null : a));
 
   return (
@@ -98,16 +120,13 @@ export default function DayToDayPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {hasSavings && checking && <button className={`btn ${action === "transfer" ? "btn-primary" : ""}`} aria-expanded={action === "transfer"} onClick={() => toggle("transfer")}>Transfer</button>}
-              {canPayCard && checking && <button className={`btn ${action === "paycard" ? "btn-primary" : ""}`} aria-expanded={action === "paycard"} onClick={() => toggle("paycard")}>Pay a bill</button>}
+              {checking && <button className={`btn ${action === "paybill" ? "btn-primary" : ""}`} aria-expanded={action === "paybill"} onClick={() => toggle("paybill")}>Pay a bill</button>}
               {b.live && checking && <SendMoneyDialog availableCents={checking.available} />}
               <Link href="/solana" className="btn">Pay with Solana</Link>
             </div>
           </div>
-          {action && <MoveMoneyForm key={action} mode={action} onClose={() => setAction(null)} cardBalance={view.cardBalance} minDue={cardBill?.amount} />}
-          <div className="mt-4">
-            <div className="text-xs text-muted mb-1">Cash in checking + savings · last 30 days</div>
-            <AreaTrend points={view.cashHistory} step />
-          </div>
+          {action && <MoveMoneyForm key={action} mode={action} onClose={() => setAction(null)} cardBalance={view.cardBalance} bills={bills} />}
+          <BalanceChart profile={p} ledger={view.ledger} />
         </Panel>
         <InOutPanel view={view} />
       </div>
