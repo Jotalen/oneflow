@@ -20,7 +20,7 @@ export function Card({ title, eyebrow, right, children, expandable, defaultExpan
   return (
     <section className={`glass glass-hover p-4 sm:p-5 ${open ? "sm:col-span-2 lg:col-span-3" : ""} ${className}`}>
       {(title || eyebrow || right) && (
-        <header
+        <div
           className={`flex flex-wrap items-start justify-between gap-3 ${expandable ? "cursor-pointer select-none" : ""}`}
           onClick={expandable ? toggle : undefined}
           onKeyDown={expandable ? onKey : undefined}
@@ -36,7 +36,7 @@ export function Card({ title, eyebrow, right, children, expandable, defaultExpan
             {right}
             {expandable && <span className="text-muted text-xs">{open ? "▲" : "▼"}</span>}
           </div>
-        </header>
+        </div>
       )}
       <div className="mt-3">{children}</div>
       {open && expanded && <div className="mt-4 border-t border-line pt-4">{expanded}</div>}
