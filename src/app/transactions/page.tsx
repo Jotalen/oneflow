@@ -98,7 +98,7 @@ function TransactionsInner({ initialQ }: { initialQ: string }) {
           {AMOUNT_FILTERS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
         </select>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[3fr_2fr] items-start">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[3fr_2fr] items-start">
         <Panel subtitle={`${rows.length} of ${view.ledger.length} transactions · last 8 weeks`}>
           <PointsSummary rows={rows} meta={meta} />
           {rows.length === 0 ? <p className="text-sm text-muted py-6 text-center">No transactions match.</p> : groupByDay(rows).map((g) => (
