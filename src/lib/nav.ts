@@ -15,6 +15,7 @@ export const NAV: NavGroup[] = [
     { href: "/net-worth", label: "Net worth" },
     { href: "/goals", label: "Savings goals" },
     { href: "/safety-net", label: "Safety net" },
+    { href: "/what-if", label: "What if" },
   ] },
   { label: "Borrowing", items: [
     { href: "/debt", label: "Debt & liquidity" },
