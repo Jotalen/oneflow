@@ -15,6 +15,14 @@ const tier = (m: Move, p: Profile): number => {
   return 2;
 };
 
+/** A move that names a TFS offer: car options, the human handoff, or a bank move tagged with one (AUTOPAY). */
+export const carriesTfsOffer = (m: Move): boolean => m.kind === "car" || m.kind === "human" || !!m.tfs;
+
+/** The top-ranked move that names a TFS offer: the one the golden badge is judged on. */
+export function topTfsMove<T extends Move>(ranked: T[]): T | undefined {
+  return ranked.find(carriesTfsOffer);
+}
+
 /** impact24 = netWorth24(applied) − netWorth24(base), or the move's fixed estimate when the projection cannot express it. */
 export function rankMoves(p: Profile, moves: Move[], t: ToyotaData): RankedMove[] {
   const baseline = project(p);
@@ -26,7 +34,7 @@ export function rankMoves(p: Profile, moves: Move[], t: ToyotaData): RankedMove[
   });
   ranked.sort((a, b) => tier(a, p) - tier(b, p) || b.impact24 - a.impact24);
   // Golden answers name a TFS offer; compare with the top-ranked move that carries one (car, human, or AUTOPAY).
-  const topCar = ranked.find((m) => m.kind === "car" || m.kind === "human" || m.tfs);
+  const topCar = topTfsMove(ranked);
   if (topCar && golden && topCar.tfs && topCar.tfs.optionId === golden.offer_id && topCar.tfs.eligibility === "Y") {
     topCar.goldenMatch = true;
   }

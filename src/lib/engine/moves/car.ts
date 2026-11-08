@@ -9,7 +9,8 @@ const EXTEND_LEASE_MONTHS = 6;
 const BUYOUT_LOAN_TERM = 48;
 const RENEW_LEASE_TERM = 36;
 
-const eligible = (o: OptionScenario) => /^(Y|Review)/i.test(o.eligibility);
+/** A TFS option the customer qualifies for, outright or after specialist review. */
+export const isEligibleOption = (o: OptionScenario): boolean => /^(Y|Review)/i.test(o.eligibility);
 
 function refiApr(t: ToyotaData, tier: string, months: number): number | undefined {
   const rows = t.rates.filter((r) => r.credit_tier === tier).sort((a, b) => a.term_months - b.term_months);
@@ -82,7 +83,7 @@ export function carMoves(p: Profile, t: ToyotaData): Move[] {
   const g = guardrails(p);
   if (g.humanHandoff) return [humanMove(p, t)];
   return p.carOptions
-    .filter((o) => o.option_id !== "KEEP" && eligible(o))
+    .filter((o) => o.option_id !== "KEEP" && isEligibleOption(o))
     .filter((o) => !(g.noNewVehicleOffers && NEW_VEHICLE_OPTIONS.has(o.option_id)))
     .map((o) => {
       const { overrides, impactKind, fixedImpact24 } = overridesFor(o, p, t);
