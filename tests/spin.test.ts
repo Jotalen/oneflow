@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { blend, framesFor, normalizeYaw, SPIN_MODELS, clampYaw, nearestFrame } from "@/lib/cars/spin";
+import { blend, framesFor, normalizeYaw, SPIN_MODELS, clampYaw, nearestFrame, restFrame, canRotate, startsRotateDrag } from "@/lib/cars/spin";
 
 describe("car spin frames", () => {
   test("spin models get 8 frames covering both sides, sorted by yaw", () => {
@@ -84,5 +84,40 @@ describe("nearestFrame (single visible frame, no ghosting)", () => {
   test("single-image models clamp to their swing", () => {
     const s = framesFor("camry");
     expect(nearestFrame(0, s).frame.yaw).toBe(40);
+  });
+});
+
+describe("static car by default", () => {
+  test("a spin model rests on its front three-quarter render (Toyota frame 1, unmirrored)", () => {
+    const f = restFrame(framesFor("rav4"));
+    expect(f.src).toBe("/cars/spin/rav4/1.png");
+    expect(f.mirror).toBe(false);
+  });
+  test("a single-image model rests on its one render, unmirrored", () => {
+    const f = restFrame(framesFor("camry"));
+    expect(f.src).toBe("/cars/camry.png");
+    expect(f.mirror).toBe(false);
+  });
+  test("only real multi-angle sets can be rotated; single images stay static", () => {
+    expect(canRotate(framesFor("rav4"))).toBe(true);
+    expect(canRotate(framesFor("camry"))).toBe(false);
+    expect(canRotate(framesFor("delorean"))).toBe(false);
+  });
+});
+
+describe("startsRotateDrag", () => {
+  test("a plain left-button mouse drag rotates", () => {
+    expect(startsRotateDrag({ pointerType: "mouse", button: 0 })).toBe(true);
+  });
+  test("middle and right mouse buttons never rotate", () => {
+    expect(startsRotateDrag({ pointerType: "mouse", button: 1 })).toBe(false);
+    expect(startsRotateDrag({ pointerType: "mouse", button: 2 })).toBe(false);
+  });
+  test("touch and pen contacts rotate", () => {
+    expect(startsRotateDrag({ pointerType: "touch", button: 0 })).toBe(true);
+    expect(startsRotateDrag({ pointerType: "pen", button: 0 })).toBe(true);
+  });
+  test("a pen barrel button does not rotate", () => {
+    expect(startsRotateDrag({ pointerType: "pen", button: 2 })).toBe(false);
   });
 });
