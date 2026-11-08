@@ -1,9 +1,10 @@
 import { GoogleGenerativeAI, SchemaType, type Content, type FunctionDeclaration, type Part } from "@google/generative-ai";
 import type { LlmProvider, LlmTurn, Msg, ToolDef } from "./provider";
 
-const DEFAULT_MODEL = "gemini-3.8-flash";
+/** Narration only (the engine does the math), so the fastest model wins: ~0.7 s vs ~6 s for 3.5-flash on our prompts. */
+const DEFAULT_MODEL = "gemini-3.1-flash-lite";
 /** Tried in order after the configured model when it is overloaded, rate limited or retired. */
-const FALLBACK_MODELS = ["gemini-3.1-flash-lite"];
+const FALLBACK_MODELS = ["gemini-3.5-flash"];
 const RETRYABLE = /\[(503|429|404)\s*\]|high demand|overloaded|no longer available|Role 'function' is not supported/i;
 
 export const isRetryableGeminiError = (e: unknown): boolean => RETRYABLE.test(e instanceof Error ? e.message : String(e));

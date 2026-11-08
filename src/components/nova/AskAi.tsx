@@ -1,5 +1,6 @@
 "use client";
 import { useId, useRef, useState, type FormEvent } from "react";
+import { RichText } from "./RichText";
 import { useBank } from "@/components/nova/BankProvider";
 
 /**
@@ -63,8 +64,8 @@ function AnswerView({ answer }: { answer: Answer }) {
   return (
     <div className="mt-4 space-y-3" role="status" aria-live="polite">
       <div className="rounded-xl bg-surface-2 p-3 text-sm leading-relaxed">
-        <p className="font-semibold">{lead}</p>
-        {rest.length > 0 && <div className="mt-2 space-y-1.5">{rest.map((l, i) => <p key={i}>{l}</p>)}</div>}
+        <RichText text={lead} className="font-semibold" />
+        {rest.length > 0 && <RichText text={rest.join("\n")} className="mt-2" />}
       </div>
       <p className="text-xs text-muted">{SOURCE_NOTE[answer.source]} Not financial advice.</p>
     </div>

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { RichText } from "@/components/nova/RichText";
 import { Card } from "./ui/Card";
 
 interface Turn { role: "user" | "assistant"; content: string; toolTrace?: string[]; provider?: string }
@@ -49,8 +50,8 @@ export function CoachPanel({ personaId, onBrief }: Props) {
       <div className="space-y-3 max-h-80 overflow-auto pr-1">
         {turns.length === 0 && <p className="text-sm text-muted">The coach narrates tool results from the engine. It never does arithmetic.</p>}
         {turns.map((t, i) => (
-          <div key={i} className={`text-sm whitespace-pre-wrap rounded-xl p-3 ${t.role === "user" ? "bg-surface-2 ml-8" : "bg-surface-2 mr-4"}`}>
-            {t.content}
+          <div key={i} className={`text-sm rounded-xl p-3 ${t.role === "user" ? "bg-surface-2 ml-8 whitespace-pre-wrap" : "bg-surface-2 mr-4"}`}>
+            {t.role === "user" ? t.content : <RichText text={t.content} />}
             {t.toolTrace && t.toolTrace.length > 0 && (
               <details className="mt-2 text-[0.7rem] text-muted">
                 <summary className="cursor-pointer">tools used ({t.toolTrace.length})</summary>
