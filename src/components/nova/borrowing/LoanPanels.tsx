@@ -36,7 +36,7 @@ export function LoanTiles({ car, contract }: { car: Car; contract: Contract }) {
         {car.purchasePrice !== undefined && <Tile label="Price you paid" value={fmtUSD(car.purchasePrice)} note={contract.contractStart ? fmtMonth(contract.contractStart) : undefined} />}
         {contract.amountFinanced !== undefined && <Tile label="Financing amount" value={fmtUSD(contract.amountFinanced)} note="What you borrowed" />}
         <Tile dark label="Payment left" value={fmtUSD(contract.payoffQuote)} note="To pay it off today" />
-        <Tile label="Equity" value={fmtSigned(contract.estEquity)} note="Market value − payment left" />
+        <Tile label="Equity" value={fmtSigned(contract.estEquity)} note="Market value − loan balance" />
         {contract.aprPct !== undefined && <Tile label="Rate and term" value={`${contract.aprPct}% APR`} note={`${contract.termMonths} months`} />}
       </div>
     </Panel>
