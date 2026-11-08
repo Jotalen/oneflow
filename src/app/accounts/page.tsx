@@ -85,7 +85,7 @@ export default function AccountsPage() {
         <Tile label="Credit cards" value={fmtSigned(sum(cards)).replace("+", "")} />
         <Tile label="Loans" value={fmtSigned(sum(loans)).replace("+", "")} note={p.contract?.type === "lease" ? "Includes remaining lease payments" : undefined} />
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Group title="Cash" rows={cash} empty="No deposit accounts." />
         <Group title="Credit cards" rows={cards} empty="No credit cards." />
         <Group title="Loans" rows={loans} empty="No loans or leases." />

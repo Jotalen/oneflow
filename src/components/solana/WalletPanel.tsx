@@ -45,6 +45,15 @@ function Connection({ payments }: { payments: boolean }) {
   const [balanceRevision, setBalanceRevision] = useState(0);
   const busy = paymentBusy || connect.isRunning || disconnect.isRunning || status === "pending" || status === "reconnecting";
 
+  // Outside /solana, an unconnected wallet gets one line, not the full setup guide.
+  if (!payments && !connected && !busy) {
+    return (
+      <Panel title="Solana wallet" right={<span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold">Solana Devnet</span>}>
+        <p className="text-sm text-muted">Pay in test USDC, checked against your budget. <Link href="/solana" className="underline font-semibold text-fg">Connect a Devnet wallet →</Link></p>
+      </Panel>
+    );
+  }
+
   return (
     <div className="space-y-4">
     <Panel title="Your Solana wallet" right={<span className="rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold">Solana Devnet</span>}>
