@@ -6,6 +6,8 @@ import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
 import { FraudTile } from "@/components/FraudTile";
 import { useDashboardPrefs } from "@/lib/bank/useDashboard";
+import { applyPrefs, recommendBubbles, setAutoPick } from "@/lib/bank/bubbles";
+import { useGoals } from "@/lib/bank/goals";
 
 const TITLE = "Settings";
 const SUBTITLE = "Your profile, security, and how OneFlow works for you.";
@@ -86,12 +88,16 @@ function ThemePanel() {
   );
 }
 
-function DashboardPanel({ personaId }: { personaId: string }) {
-  const { prefs, save, reset } = useDashboardPrefs(personaId);
+type ReadyBank = NonNullable<ReturnType<typeof useReadyBank>>;
+
+function DashboardPanel({ bank }: { bank: ReadyBank }) {
+  const { prefs, save, reset } = useDashboardPrefs(bank.personaId);
+  const { goals } = useGoals(bank.personaId);
   const [didReset, setDidReset] = useState(false);
+  const current = applyPrefs(recommendBubbles(bank.analysis, bank.view, { hasGoal: goals.length > 0 }), prefs);
   return (
     <Panel title="Dashboard">
-      <Toggle label="Let OneFlow pick my bubbles" sub="Bubbles appear when you link a loan, start a goal, or something needs attention. Your changes always win." on={prefs.auto} onChange={(v) => { save({ ...prefs, auto: v }); setDidReset(false); }} />
+      <Toggle label="Let OneFlow pick my bubbles" sub="Bubbles appear when you link a loan, start a goal, or something needs attention. Your changes always win." on={prefs.auto} onChange={(v) => { save(setAutoPick(prefs, current, v)); setDidReset(false); }} />
       <div className="flex flex-wrap gap-2 mt-3">
         <Link href="/dashboard/edit" className="btn btn-primary">Edit dashboard</Link>
         <button type="button" className="btn" onClick={() => { reset(); setDidReset(true); }}>Reset to recommended</button>
@@ -124,7 +130,7 @@ export default function SettingsPage() {
           <FraudTile />
         </Panel>
         <NotificationsPanel />
-        <DashboardPanel personaId={b.personaId} />
+        <DashboardPanel bank={b} />
         <Panel title="Linked accounts">
           <p className="text-sm">{linked} account{linked === 1 ? "" : "s"} linked{p.contract ? " (including your Toyota Financial Services " + p.contract.type + ")" : ""}</p>
           <Link href="/accounts" className="btn mt-3 inline-block">Manage accounts</Link>
