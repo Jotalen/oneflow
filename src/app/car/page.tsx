@@ -4,15 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Empty, PageHeader, Segmented } from "@/components/nova/ui";
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
-import { TfsTab } from "@/components/tfs/TfsTab";
-import { CarSummary, LoanTiles, PaidSoFarPanel, PayFasterPanel, PaymentsPanel, RecallBanner, RecentPaymentsPanel } from "@/components/nova/borrowing/LoanPanels";
+import { CarSummary, LoanProgressPanel, LoanTiles, PayFasterPanel, RecallBanner } from "@/components/nova/borrowing/LoanPanels";
 import { LeaseTiles, LeaseTimePanel, MileagePanel } from "@/components/nova/borrowing/LeasePanels";
 import { CarOptions } from "@/components/nova/borrowing/CarOptions";
 import { ShopFinance } from "@/components/nova/borrowing/ShopFinance";
 import type { Analysis } from "@/lib/engine/analyze";
 import type { BankView } from "@/lib/bank/view";
 
-type Tab = "loan" | "shop" | "tfs";
+type Tab = "loan" | "shop";
 const TITLE = "Car financing";
 const SUBTITLE = "Your Toyota financing, and options for your next car.";
 /** First tab names the customer's actual contract: "My lease" for lessees, "My car" with none. */
@@ -21,10 +20,9 @@ function tabsFor(contractType: string | undefined): { value: Tab; label: string 
   return [
     { value: "loan", label: mine },
     { value: "shop", label: "Shop & finance" },
-    { value: "tfs", label: "TFS view" },
   ];
 }
-const parseTab = (t: string | null): Tab => (t === "shop" || t === "tfs" ? t : "loan");
+const parseTab = (t: string | null): Tab => (t === "shop" ? t : "loan");
 
 export default function CarPage() {
   return (
@@ -54,7 +52,6 @@ function CarPageInner() {
       <div className="mb-4"><Segmented<Tab> value={tab} options={tabsFor(analysis.profile.contract?.type)} onChange={setTab} /></div>
       {tab === "loan" && <MyCar analysis={analysis} view={view} />}
       {tab === "shop" && <ShopFinance profile={analysis.profile} view={view} />}
-      {tab === "tfs" && <TfsTab analysis={analysis} />}
     </>
   );
 }
@@ -80,10 +77,8 @@ function MyCar({ analysis, view }: { analysis: Analysis; view: BankView }) {
         </div>
       ) : view.loan && (
         <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <PaymentsPanel contract={contract} loan={view.loan} />
-          <PaidSoFarPanel contract={contract} loan={view.loan} />
+          <LoanProgressPanel contract={contract} loan={view.loan} />
           <PayFasterPanel contract={contract} loan={view.loan} />
-          <RecentPaymentsPanel contract={contract} loan={view.loan} />
         </div>
       )}
       <CarOptions ranked={analysis.ranked} />
