@@ -1,5 +1,5 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { useState, type KeyboardEvent, type ReactNode } from "react";
 
 interface CardProps {
   title?: ReactNode;
@@ -15,12 +15,17 @@ interface CardProps {
 /** Glass card. Click the header to expand when `expandable`. */
 export function Card({ title, eyebrow, right, children, expandable, defaultExpanded = false, expanded, className = "" }: CardProps) {
   const [open, setOpen] = useState(defaultExpanded);
+  const toggle = () => setOpen((v) => !v);
+  const onKey = (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } };
   return (
     <section className={`glass glass-hover p-4 sm:p-5 ${open ? "sm:col-span-2 lg:col-span-3" : ""} ${className}`}>
       {(title || eyebrow || right) && (
         <header
-          className={`flex items-start justify-between gap-3 ${expandable ? "cursor-pointer select-none" : ""}`}
-          onClick={expandable ? () => setOpen((v) => !v) : undefined}
+          className={`flex flex-wrap items-start justify-between gap-3 ${expandable ? "cursor-pointer select-none" : ""}`}
+          onClick={expandable ? toggle : undefined}
+          onKeyDown={expandable ? onKey : undefined}
+          role={expandable ? "button" : undefined}
+          tabIndex={expandable ? 0 : undefined}
           aria-expanded={expandable ? open : undefined}
         >
           <div>
