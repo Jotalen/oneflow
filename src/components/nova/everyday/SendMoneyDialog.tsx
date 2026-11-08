@@ -42,12 +42,15 @@ export function SendMoneyDialog({ availableCents }: { availableCents: number }) 
   const [memo, setMemo] = useState("");
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<P2PResult | null>(null);
+  const [reviewing, setReviewing] = useState(false); // real money: a second, explicit confirm before sending
   if (!b) return null;
   const people = recipientsFor(personas, b.personaId);
+  const toName = people.find((p) => p.id === to)?.name ?? "";
+  const edit = (set: (v: string) => void) => (v: string) => { set(v); setReviewing(false); };
 
-  const open = () => { setResult(null); ref.current?.showModal(); };
+  const open = () => { setResult(null); setReviewing(false); ref.current?.showModal(); };
   const close = () => ref.current?.close();
-  const reset = () => { setResult(null); setAmount(""); setMemo(""); };
+  const reset = () => { setResult(null); setReviewing(false); setAmount(""); setMemo(""); };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -56,6 +59,7 @@ export function SendMoneyDialog({ availableCents }: { availableCents: number }) 
     if (cents === null) return setResult({ ok: false, error: "Enter an amount greater than $0" });
     if (cents > MAX_P2P_CENTS) return setResult({ ok: false, error: `At most ${fmtUSD(MAX_P2P_CENTS)} per send` });
     if (cents > availableCents) return setResult({ ok: false, error: `Only ${fmtUSD(availableCents)} available in checking` });
+    if (!reviewing) { setResult(null); setReviewing(true); return; }
     setSending(true);
     const r = await postP2P({ persona: b.personaId, to, amountCents: cents, memo: memo.trim() || undefined });
     setSending(false);
@@ -80,21 +84,22 @@ export function SendMoneyDialog({ availableCents }: { availableCents: number }) 
         ) : (
           <form onSubmit={submit} className="mt-4 space-y-3">
             <label className="text-xs text-muted flex flex-col gap-1">To
-              <select className={FIELD} value={to} onChange={(e) => setTo(e.target.value)} required>
-                <option value="" disabled>Choose a person</option>
+              <select className={FIELD} value={to} onChange={(e) => edit(setTo)(e.target.value)} required>
+                <option value="">Choose a person</option>
                 {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </label>
             <label className="text-xs text-muted flex flex-col gap-1">Amount ($) · {fmtUSD(availableCents)} available
-              <input inputMode="decimal" className={FIELD} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" required />
+              <input inputMode="decimal" className={FIELD} value={amount} onChange={(e) => edit(setAmount)(e.target.value)} placeholder="0.00" required />
             </label>
             <label className="text-xs text-muted flex flex-col gap-1">Memo (optional)
-              <input className={FIELD} value={memo} maxLength={MAX_MEMO_CHARS} onChange={(e) => setMemo(e.target.value)} placeholder="What's it for?" />
+              <input className={FIELD} value={memo} maxLength={MAX_MEMO_CHARS} onChange={(e) => edit(setMemo)(e.target.value)} placeholder="What's it for?" />
             </label>
+            {reviewing && <p role="status" className="rounded-xl bg-surface-2 p-3 text-sm">Send <span className="font-semibold money">{amount && fmtUSD(parseDollarInput(amount) ?? 0)}</span> to <span className="font-semibold">{toName}</span> from checking? This can&apos;t be undone.</p>}
             {result && !result.ok && <p role="alert" className="text-sm text-bad">Couldn&apos;t send: {result.error}</p>}
             <div className="flex gap-2 justify-end">
-              <button type="button" className="btn" onClick={close}>Cancel</button>
-              <button type="submit" className="btn btn-primary" disabled={sending}>{sending ? "Sending…" : "Send"}</button>
+              <button type="button" className="btn" onClick={reviewing ? () => setReviewing(false) : close}>{reviewing ? "Back" : "Cancel"}</button>
+              <button type="submit" className="btn btn-primary" disabled={sending}>{sending ? "Sending…" : reviewing ? "Confirm send" : "Review"}</button>
             </div>
           </form>
         )}
