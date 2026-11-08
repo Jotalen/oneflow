@@ -6,6 +6,7 @@ import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
 import { useStored } from "@/components/nova/everyday/useStored";
 import { TxnDetail } from "@/components/nova/everyday/TxnDetail";
+import { WalletLoader } from "@/components/solana/WalletLoader";
 import { CATEGORY_LABEL, addDays, type Category, type LedgerTxn } from "@/lib/bank/view";
 import { AS_OF } from "@/lib/engine/types";
 import {
@@ -60,6 +61,7 @@ function TransactionsInner({ initialQ }: { initialQ: string }) {
     <>
       <PageHeader title={TITLE} subtitle={SUBTITLE}
         actions={<button className="btn" disabled={rows.length === 0} onClick={() => downloadCsv(ledgerCsv(rows, meta), `transactions-${personaId}-${AS_OF}.csv`)}>Export CSV</button>} />
+      <div className="mb-4"><WalletLoader mode="activity" /></div>
       <div className="flex flex-wrap gap-2 mb-4">
         <input type="search" aria-label="Search transactions" placeholder="Search merchants, categories or amounts" value={q} onChange={(e) => setQ(e.target.value)}
           className="flex-1 min-w-[12rem] rounded-full border border-line bg-surface px-4 py-2 text-sm" />

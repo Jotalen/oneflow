@@ -63,6 +63,7 @@ OneFlow answers it on one screen. In her case it says: **buy the car at lease en
 - An open **What-if simulator**: change your income, add a one-time expense, put extra toward a debt, cancel real bills or add a new one, and see both futures, your lowest cash point and which indicators get worse.
 
 **Also:**
+- **MLH Solana:** connect a Devnet wallet alongside bank accounts, review USDC payments against a clearly labeled demo budget, approve in the wallet, and see server-verified receipts in Transactions. Receipts show actual network fees and measured submission-to-verification time. [Successful 1-USDC Devnet payment](https://explorer.solana.com/tx/3SWY7KHErQBrxzp4st6bEGqMU7LwdYKZobc1xHz6jeAKvFoNvnXHwsrF4R7P8tNbzz94sSKza1GCaYG9dXzaQGPk?cluster=devnet).
 - **HackUTD Design:** built from our own desktop and mobile wireframes. Works at phone width.
 - **MLH Gemini:** the coach's first choice of model.
 - **MLH Tiger Data:** every bank event is streamed into a TimescaleDB time series.
@@ -78,6 +79,7 @@ OneFlow answers it on one screen. In her case it says: **buy the car at lease en
 | Bank | Real accounts and money movement, event feed, pending-transaction decisions | Capital One Nessie v2 |
 | AI coach | Narrates the engine's tool results. Six approved tools; the one that moves money only asks you to confirm. Falls back Gemini → OpenRouter → an offline narrator, so the demo never breaks on a model outage | Gemini, OpenRouter |
 | History | Every Nessie event goes into a hypertable; a 15-minute continuous aggregate gives each account a real balance history | Tiger Data (TimescaleDB) |
+| Solana payments | Exact USDC units, wallet-approved transactions, recipient token-account creation, server-side transfer verification, and shared device receipts. Devnet funds stay separate from bank balances | Solana Kit, SPL Token, Wallet Standard |
 | App | 17 pages, light and dark, phone and desktop | Next.js 16, React, Tailwind 4, Recharts, Vercel |
 
 ```
@@ -121,7 +123,7 @@ Letting the model only narrate isn't a limitation, it's the product. Every numbe
 
 ## Honest notes
 
-- **All data is synthetic.** Toyota's pack says so, and our bank data is generated from it. Nothing here is financial advice.
+- **Bank and vehicle data are synthetic.** Toyota's pack says so, and our bank data is generated from it. Solana balances and transactions are read from Devnet, where test tokens have no monetary value. Nothing here is financial advice.
 - **Estimates are labelled.** Credit score is an estimate, not a bureau score, and the Toyota expected values come straight from the pack's own take rates.
 - **What we don't model.** No customer has a mortgage, investments or insurance, so those pages are calculators or empty, never filled with fake data.
 - **What the reference matches miss.** The nine customers whose top move differs from Toyota's do so for stated reasons:
@@ -143,6 +145,10 @@ Switch customers with `?p=C001` … `?p=C020`, or from the avatar menu. Good one
 - `C003` Priya: lease ending
 - `C018` Brian: card debt
 - `C014` Kevin: vulnerable
+
+For Solana, open `/solana`, connect a Devnet wallet, fund it with free test SOL and test USDC, and send to a second wallet. Accounts shows the connected wallet; Day-to-day links to payments; Transactions shows receipts. The payment review compares spending with the selected synthetic profile's budget without modifying it. Devnet tokens have no monetary value, and receipts are saved in this browser. Optional RPC variables are documented in `.env.example`; no wallet private key is needed.
+
+Browser checks use an ephemeral fixture wallet and mocked APIs: run `pnpm exec playwright install chromium`, then `pnpm test:browser` with the app running. Real on-chain proof is linked in the Solana track description above.
 
 ## Built with
 

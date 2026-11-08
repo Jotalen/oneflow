@@ -8,6 +8,7 @@ import { useReadyBank } from "@/components/nova/BankProvider";
 import { MoveMoneyForm } from "@/components/nova/everyday/MoveMoneyForm";
 import { DateChip } from "@/components/nova/everyday/DateChip";
 import { SendMoneyDialog } from "@/components/nova/everyday/SendMoneyDialog";
+import { WalletLoader } from "@/components/solana/WalletLoader";
 import { CATEGORY_LABEL, type BankView } from "@/lib/bank/view";
 import { fmtUSD } from "@/lib/money";
 
@@ -99,6 +100,7 @@ export default function DayToDayPage() {
               {hasSavings && checking && <button className={`btn ${action === "transfer" ? "btn-primary" : ""}`} aria-expanded={action === "transfer"} onClick={() => toggle("transfer")}>Transfer</button>}
               {canPayCard && checking && <button className={`btn ${action === "paycard" ? "btn-primary" : ""}`} aria-expanded={action === "paycard"} onClick={() => toggle("paycard")}>Pay a bill</button>}
               {b.live && checking && <SendMoneyDialog availableCents={checking.available} />}
+              <Link href="/solana" className="btn">Pay with Solana</Link>
             </div>
           </div>
           {action && <MoveMoneyForm key={action} mode={action} onClose={() => setAction(null)} cardBalance={view.cardBalance} minDue={cardBill?.amount} />}
@@ -113,6 +115,7 @@ export default function DayToDayPage() {
         <UpcomingPanel view={view} />
         <RecentPanel view={view} />
       </div>
+      <div className="mt-4"><WalletLoader mode="activity" /></div>
     </>
   );
 }
