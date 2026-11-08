@@ -84,16 +84,16 @@ export function SendMoneyDialog({ availableCents }: { availableCents: number }) 
         ) : (
           <form onSubmit={submit} className="mt-4 space-y-3">
             <label className="text-xs text-muted flex flex-col gap-1">To
-              <select className={FIELD} value={to} onChange={(e) => edit(setTo)(e.target.value)} required>
+              <select name="to" className={FIELD} value={to} onChange={(e) => edit(setTo)(e.target.value)} required>
                 <option value="">Choose a person</option>
                 {people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </label>
             <label className="text-xs text-muted flex flex-col gap-1">Amount ($) · {fmtUSD(availableCents)} available
-              <input inputMode="decimal" className={FIELD} value={amount} onChange={(e) => edit(setAmount)(e.target.value)} placeholder="0.00" required />
+              <input name="amount" inputMode="decimal" className={FIELD} value={amount} onChange={(e) => edit(setAmount)(e.target.value)} placeholder="0.00" required />
             </label>
             <label className="text-xs text-muted flex flex-col gap-1">Memo (optional)
-              <input className={FIELD} value={memo} maxLength={MAX_MEMO_CHARS} onChange={(e) => edit(setMemo)(e.target.value)} placeholder="What's it for?" />
+              <input name="memo" className={FIELD} value={memo} maxLength={MAX_MEMO_CHARS} onChange={(e) => edit(setMemo)(e.target.value)} placeholder="What's it for?" />
             </label>
             {reviewing && <p role="status" className="rounded-xl bg-surface-2 p-3 text-sm">Send <span className="font-semibold money">{amount && fmtUSD(parseDollarInput(amount) ?? 0)}</span> to <span className="font-semibold">{toName}</span> from checking? This can&apos;t be undone.</p>}
             {result && !result.ok && <p role="alert" className="text-sm text-bad">Couldn&apos;t send: {result.error}</p>}

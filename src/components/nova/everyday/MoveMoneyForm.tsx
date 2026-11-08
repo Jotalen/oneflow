@@ -25,7 +25,7 @@ const optionText = (o: BillOption) => `${o.label} · ${fmtUSD(o.amount)} · due 
 function BillPicker({ options, value, onChange, cardBalance }: { options: BillOption[]; value: string; onChange: (id: string) => void; cardBalance: Cents }) {
   return (
     <label className="text-xs text-muted flex flex-col gap-1 min-w-0 w-full sm:w-auto">Bill
-      <select className={`${FIELD} w-full sm:w-auto sm:max-w-md`} value={value} onChange={(e) => onChange(e.target.value)} required>
+      <select name="bill" className={`${FIELD} w-full sm:w-auto sm:max-w-md`} value={value} onChange={(e) => onChange(e.target.value)} required>
         {value === "" && <option value="" disabled>Choose a bill</option>}
         {options.map((o) => <option key={o.id} value={o.id} disabled={!o.payable}>{optionText(o)}</option>)}
       </select>
@@ -84,14 +84,14 @@ export function MoveMoneyForm({ mode, onClose, cardBalance, bills = [] }: { mode
       <div className="flex flex-wrap items-end gap-2">
         {mode === "transfer" ? (
           <label className="text-xs text-muted flex flex-col gap-1">From
-            <select className={FIELD} value={from} onChange={(e) => setFrom(e.target.value as From)}>
+            <select name="from" className={FIELD} value={from} onChange={(e) => setFrom(e.target.value as From)}>
               <option value="checking">Checking → Savings</option>
               <option value="savings">Savings → Checking</option>
             </select>
           </label>
         ) : <BillPicker options={bills} value={billId} onChange={pickBill} cardBalance={cardBalance} />}
         <label className="text-xs text-muted flex flex-col gap-1">Amount ($)
-          <input inputMode="decimal" className={`w-32 ${FIELD}`} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
+          <input name="amount" inputMode="decimal" className={`w-32 ${FIELD}`} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0.00" />
         </label>
         <button type="submit" className="btn btn-primary" disabled={b.transferring}>{b.transferring ? "Moving…" : mode === "paybill" ? "Pay bill" : "Transfer"}</button>
         <button type="button" className="btn" onClick={onClose}>Close</button>

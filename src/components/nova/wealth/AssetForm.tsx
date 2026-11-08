@@ -21,10 +21,10 @@ export function AssetForm({ initial, submitLabel, onSubmit, onCancel }: {
   return (
     <form onSubmit={submit} className="grid gap-2 sm:grid-cols-[1fr_10rem] rounded-xl bg-surface-2 p-3 mt-2">
       <label className="text-xs text-muted">What is it?
-        <input className={FIELD} value={name} maxLength={MAX_ASSET_NAME} onChange={(e) => setName(e.target.value)} placeholder="Home, boat, jewelry…" />
+        <input name="assetName" className={FIELD} value={name} maxLength={MAX_ASSET_NAME} onChange={(e) => setName(e.target.value)} placeholder="Home, boat, jewelry…" />
       </label>
       <label className="text-xs text-muted">Your estimate ($)
-        <input className={FIELD} inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder="25000" />
+        <input name="assetValue" className={FIELD} inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder="25000" />
       </label>
       {err && <p role="alert" className="text-xs text-bad sm:col-span-2">{err}</p>}
       <p className="text-xs text-muted sm:col-span-2">Only you see this. It&apos;s your estimate, not a bank valuation, and it&apos;s saved on this device.</p>

@@ -87,7 +87,7 @@ export function ScenarioControls({ scenario: s, incomeMonthly, debts, bills, onC
           <>
             <label className="block text-sm">
               <span className="sr-only">Debt to pay down</span>
-              <select className={SELECT} value={target} onChange={(e) => set("extraToDebtTargetId", e.target.value)}>
+              <select name="extraToDebtTarget" className={SELECT} value={target} onChange={(e) => set("extraToDebtTargetId", e.target.value)}>
                 {debts.map((d) => <option key={d.id} value={d.id}>{d.label} · {d.aprPct}% APR · {fmtWhole(d.balance)}</option>)}
               </select>
             </label>
@@ -104,7 +104,7 @@ export function ScenarioControls({ scenario: s, incomeMonthly, debts, bills, onC
             {bills.map((b) => (
               <li key={b.id}>
                 <label className="flex items-center gap-3 rounded-lg px-2 py-1.5 -mx-2 hover:bg-surface-2 cursor-pointer text-sm">
-                  <input type="checkbox" checked={s.cancelBillIds.includes(b.id)} onChange={() => toggleBill(b.id)} className="h-4 w-4 accent-[var(--accent)]" />
+                  <input type="checkbox" name={`cancel-${b.id}`} checked={s.cancelBillIds.includes(b.id)} onChange={() => toggleBill(b.id)} className="h-4 w-4 accent-[var(--accent)]" />
                   <span className="flex-1 min-w-0 truncate">{b.label}{b.isSubscription ? "" : " (bill)"}</span>
                   <span className="money text-muted">{fmtWhole(b.amount)}/mo</span>
                 </label>

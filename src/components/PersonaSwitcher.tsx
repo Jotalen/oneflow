@@ -7,6 +7,7 @@ export function PersonaSwitcher() {
     <label className="flex items-center gap-2 text-sm">
       <span className="text-muted hidden sm:inline">Persona</span>
       <select
+        name="persona"
         aria-label="Persona"
         value={personaId}
         onChange={(e) => setPersonaId(e.target.value)}

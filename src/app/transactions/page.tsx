@@ -84,17 +84,17 @@ function TransactionsInner({ initialQ }: { initialQ: string }) {
         actions={<button className="btn" disabled={rows.length === 0} onClick={() => downloadCsv(ledgerCsv(rows, meta), `transactions-${personaId}-${AS_OF}.csv`)}>Export CSV</button>} />
       <div className="mb-4"><WalletLoader mode="activity" /></div>
       <div className="flex flex-wrap gap-2 mb-4">
-        <input type="search" aria-label="Search transactions" placeholder="Search merchants, categories or amounts" value={q} onChange={(e) => setQ(e.target.value)}
+        <input type="search" name="q" aria-label="Search transactions" placeholder="Search merchants, categories or amounts" value={q} onChange={(e) => setQ(e.target.value)}
           className="flex-1 min-w-[12rem] rounded-full border border-line bg-surface px-4 py-2 text-sm" />
-        <select aria-label="Account" className={SELECT} value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+        <select name="account" aria-label="Account" className={SELECT} value={accountId} onChange={(e) => setAccountId(e.target.value)}>
           <option value="">All accounts</option>
           {analysis.profile.accounts.map((a) => <option key={a.id} value={a.id}>{a.nickname}</option>)}
         </select>
-        <select aria-label="Category" className={SELECT} value={category} onChange={(e) => setCategory(isCategory(e.target.value) ? e.target.value : "")}>
+        <select name="category" aria-label="Category" className={SELECT} value={category} onChange={(e) => setCategory(isCategory(e.target.value) ? e.target.value : "")}>
           <option value="">All categories</option>
           <CategoryOptions />
         </select>
-        <select aria-label="Amount" className={SELECT} value={amount} onChange={(e) => setAmount(e.target.value as AmountFilter)}>
+        <select name="amount" aria-label="Amount" className={SELECT} value={amount} onChange={(e) => setAmount(e.target.value as AmountFilter)}>
           {AMOUNT_FILTERS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
         </select>
       </div>

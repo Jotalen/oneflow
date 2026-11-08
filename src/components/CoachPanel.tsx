@@ -66,7 +66,7 @@ export function CoachPanel({ personaId, onBrief }: Props) {
         className="mt-3 flex gap-2"
         onSubmit={(e) => { e.preventDefault(); const m = input.trim(); if (!m) return; setInput(""); void send("chat", m); }}
       >
-        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about your next move…" className="glass flex-1 px-3 py-2 text-sm bg-transparent outline-none focus:border-accent" />
+        <input name="question" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about your next move…" className="glass flex-1 px-3 py-2 text-sm bg-transparent outline-none focus:border-accent" />
         <button type="submit" disabled={busy !== null} className="glass px-3 py-2 text-sm disabled:opacity-50">Send</button>
       </form>
       <div className="mt-2 flex flex-wrap gap-2">

@@ -49,8 +49,8 @@ export function GoalForm({ initial, saved = 0, submitLabel, onSubmit, onCancel }
 
   return (
     <form onSubmit={submit} className="grid gap-3 sm:grid-cols-2">
-      <label className="text-xs text-muted">Goal name<input className={FIELD} value={name} onChange={(e) => setName(e.target.value)} maxLength={MAX_NAME} placeholder="Spring trip" /></label>
-      <label className="text-xs text-muted">Target ($)<input className={FIELD} inputMode="decimal" value={target} onChange={(e) => setTarget(e.target.value)} placeholder="2000" /></label>
+      <label className="text-xs text-muted">Goal name<input name="goalName" className={FIELD} value={name} onChange={(e) => setName(e.target.value)} maxLength={MAX_NAME} placeholder="Spring trip" /></label>
+      <label className="text-xs text-muted">Target ($)<input name="goalTarget" className={FIELD} inputMode="decimal" value={target} onChange={(e) => setTarget(e.target.value)} placeholder="2000" /></label>
       <fieldset className="sm:col-span-2">
         <legend className="text-xs text-muted mb-1">Plan it</legend>
         <div className="inline-flex flex-wrap rounded-full bg-surface-2 p-1 gap-1">
@@ -64,11 +64,11 @@ export function GoalForm({ initial, saved = 0, submitLabel, onSubmit, onCancel }
       </fieldset>
       {mode === "deadline" ? (
         <label className="text-xs text-muted">Reach it by
-          <input type="date" className={FIELD} value={deadline} min={addMonths(AS_OF, 1)} onChange={(e) => setDeadline(e.target.value)} />
+          <input type="date" name="goalDeadline" className={FIELD} value={deadline} min={addMonths(AS_OF, 1)} onChange={(e) => setDeadline(e.target.value)} />
         </label>
       ) : (
         <label className="text-xs text-muted">Save per month ($)
-          <input className={FIELD} inputMode="decimal" value={monthly} onChange={(e) => setMonthly(e.target.value)} placeholder="100" />
+          <input name="goalMonthly" className={FIELD} inputMode="decimal" value={monthly} onChange={(e) => setMonthly(e.target.value)} placeholder="100" />
         </label>
       )}
       <p className="text-sm self-end sm:pb-1.5" role="status" aria-live="polite">

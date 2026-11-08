@@ -51,7 +51,7 @@ export function BudgetCategories({ rows, mode, canReset, onSave, onCancel, onRes
             </div>
             {c.fixed ? <div className="text-sm money">{fmtUSD(c.limit)}</div> : (
               <label className="inline-flex items-center gap-1 text-sm">$
-                <input aria-label={`${c.label} monthly budget in dollars`} inputMode="decimal" placeholder="0"
+                <input name={`budget-${c.key}`} aria-label={`${c.label} monthly budget in dollars`} inputMode="decimal" placeholder="0"
                   className="w-24 rounded-md border border-line bg-surface px-2 py-1 money"
                   value={draft[c.key] ?? ""} onChange={(e) => setDraft({ ...draft, [c.key]: e.target.value })} />
               </label>

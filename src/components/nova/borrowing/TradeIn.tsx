@@ -17,7 +17,7 @@ export function TradeInToggle({ car, info, checked, onChange }: { car: Car; info
   const owed = info.equity < 0;
   return (
     <label className="mt-3 flex gap-3 rounded-xl border border-line p-3 text-sm cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5" />
+      <input type="checkbox" name="tradeIn" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5" />
       <span>
         <b>Trade in my {car.year} {car.model}</b>
         <span className="block text-xs text-muted money">

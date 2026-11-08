@@ -27,13 +27,13 @@ export function TxnDetail({ txn, meta, budget, onChange }: { txn: LedgerTxn; met
         {txn.amount < 0 && <><dt className="text-muted">Budget</dt><dd>{budgetLine(budget, cat)}</dd></>}
       </dl>
       <label className="block text-sm font-semibold mt-4">Category
-        <select className="mt-1 w-full rounded-lg border border-line bg-surface px-2 py-2 text-sm font-normal" value={cat}
+        <select name="category" className="mt-1 w-full rounded-lg border border-line bg-surface px-2 py-2 text-sm font-normal" value={cat}
           onChange={(e) => onChange(txn.id, { category: e.target.value as Category })}>
           <CategoryOptions />
         </select>
       </label>
       <label className="block text-sm font-semibold mt-3">Note
-        <textarea className="mt-1 w-full rounded-lg border border-line bg-surface px-2 py-2 text-sm font-normal" rows={3} placeholder="Add a note"
+        <textarea name="note" className="mt-1 w-full rounded-lg border border-line bg-surface px-2 py-2 text-sm font-normal" rows={3} placeholder="Add a note"
           value={meta[txn.id]?.note ?? ""} onChange={(e) => onChange(txn.id, { note: e.target.value })} />
       </label>
       <p className="text-[0.7rem] text-muted mt-1">Category and note are saved on this device only.</p>
