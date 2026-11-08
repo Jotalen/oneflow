@@ -3,15 +3,9 @@ import { useId, useState } from "react";
 import { Bar, Panel } from "@/components/nova/ui";
 import { AskAi } from "@/components/nova/AskAi";
 import { AS_OF, type BankAccount, type Debt } from "@/lib/engine/types";
-import type { Rewards } from "@/lib/bank/view";
+import { REWARD_RULES, type Rewards } from "@/lib/bank/view";
 import { fmtUSD } from "@/lib/money";
 
-/** Card rewards rates; the same rates rewardsFor() in view.ts uses. */
-const EARN = [
-  { rate: "3x", what: "Dining and takeout" },
-  { rate: "2x", what: "Groceries and gas" },
-  { rate: "1x", what: "Everything else" },
-];
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const HIGH_USE_PCT = 30;
 
@@ -79,7 +73,7 @@ function RewardsDetails({ rewards }: { rewards: Rewards }) {
       <p className="text-xs text-muted">Worth {fmtUSD(rewards.valueCents)} · +{rewards.monthPoints.toLocaleString("en-US")} pts in {month}. 100 points = $1.</p>
       <div className="mt-2 text-xs font-semibold">How you earn</div>
       <ul className="mt-1 space-y-0.5">
-        {EARN.map((e) => <li key={e.rate} className="flex gap-3"><span className="w-7 font-semibold">{e.rate}</span><span>{e.what}</span></li>)}
+        {REWARD_RULES.map((r) => <li key={r.rate} className="flex gap-3"><span className="w-7 font-semibold">{r.rate}x</span><span>{r.label}</span></li>)}
       </ul>
     </div>
   );
