@@ -45,6 +45,8 @@ export interface Txn {
   status: string;
   amount: Cents;
   merchantId?: string;
+  /** Receiving account of a transfer; when it is this txn's own account, the money came in. */
+  payeeId?: string;
   description?: string;
   createdAt?: string;
 }

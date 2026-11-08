@@ -32,6 +32,18 @@ describe("buildLedger", () => {
     expect(ledger.find((t) => t.category === "income")!.amount).toBeGreaterThan(0);
     expect(ledger.find((t) => t.category === "groceries")!.amount).toBeLessThan(0);
   });
+  test("a transfer reads as money in on the receiving account and money out on the paying one", () => {
+    const profile = {
+      ...a.profile,
+      accounts: [{ id: "chk", kind: "checking" as const, nickname: "Checking", balance: 0, available: 0 }],
+      recentTxns: [
+        { id: "t_in", accountId: "chk", kind: "transfer", status: "completed", amount: 100, description: "P2P Brian → Priya", payeeId: "chk" },
+        { id: "t_out", accountId: "chk", kind: "transfer", status: "completed", amount: 250, description: "P2P Priya → Linda", payeeId: "chk_linda" },
+      ],
+    };
+    const byId = Object.fromEntries(buildLedger(profile).map((t) => [t.id, t.amount]));
+    expect(byId).toEqual({ t_in: 100, t_out: -250 });
+  });
 });
 
 describe("cashHistory", () => {
