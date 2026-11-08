@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Bar, Panel, Tile, fmtDate, fmtMonth, fmtSigned } from "@/components/nova/ui";
 import { CarSpinner } from "@/components/CarSpinner";
-import { extraPaymentPlan, recentScheduledPayments } from "@/lib/bank/borrowing";
+import { extraPaymentPlan } from "@/lib/bank/borrowing";
 import type { LoanStats } from "@/lib/bank/view";
 import type { Car, Contract } from "@/lib/engine/types";
 import { fmtUSD, type Cents } from "@/lib/money";
@@ -12,7 +12,6 @@ import { LegendRow, SplitBar } from "./SplitBar";
 const EXTRA_MAX_DOLLARS = 500;
 const EXTRA_STEP_DOLLARS = 10;
 const EXTRA_DEFAULT: Cents = 5_000;
-const RECENT_COUNT = 3;
 
 export function CarSummary({ car, contract, autopay }: { car: Car; contract: Contract; autopay: boolean }) {
   return (
@@ -44,7 +43,8 @@ export function LoanTiles({ car, contract }: { car: Car; contract: Contract }) {
   );
 }
 
-export function PaymentsPanel({ contract, loan }: { contract: Contract; loan: LoanStats }) {
+/** Payments made, the schedule and what's been paid so far (principal vs interest), in one panel. */
+export function LoanProgressPanel({ contract, loan }: { contract: Contract; loan: LoanStats }) {
   return (
     <Panel title="Payments">
       <p className="text-sm"><span className="text-3xl font-semibold">{loan.paymentsMade}</span> of {contract.termMonths} made · {loan.paymentsLeft} left</p>
@@ -54,18 +54,16 @@ export function PaymentsPanel({ contract, loan }: { contract: Contract; loan: Lo
         <div><div className="text-xs text-muted">Next payment</div><div className="font-semibold">{fmtDate(loan.nextPaymentDate, true)}</div></div>
         <div><div className="text-xs text-muted">Paid off</div><div className="font-semibold">{fmtMonth(loan.paidOffDate)}</div></div>
       </div>
+      <div className="mt-4 border-t border-line pt-4">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-xs font-semibold uppercase text-muted">Paid so far</span>
+          <span className="text-xl font-semibold money">{fmtUSD(loan.totalPaid)}</span>
+        </div>
+        <div className="my-3"><SplitBar principal={loan.principalPaid} interest={loan.interestPaid} /></div>
+        <LegendRow label="Car only (principal)" cents={loan.principalPaid} />
+        <LegendRow label="Interest only" cents={loan.interestPaid} hatched />
+      </div>
       <p className="mt-3 rounded-xl bg-surface-2 p-3 text-sm">Interest still ahead if you pay on schedule: <b className="money">{fmtUSD(loan.interestAhead)}</b></p>
-    </Panel>
-  );
-}
-
-export function PaidSoFarPanel({ contract, loan }: { contract: Contract; loan: LoanStats }) {
-  return (
-    <Panel title="Paid so far">
-      <div className="text-3xl font-semibold money">{fmtUSD(loan.totalPaid)}</div>
-      <div className="my-3"><SplitBar principal={loan.principalPaid} interest={loan.interestPaid} /></div>
-      <LegendRow label="Car only (principal)" cents={loan.principalPaid} />
-      <LegendRow label="Interest only" cents={loan.interestPaid} hatched />
       <p className="text-xs text-muted mt-2">
         Total interest over the whole loan, on schedule: {fmtUSD(loan.interestPaid + loan.interestAhead)}
         {contract.amountFinanced === undefined && " · split estimated (original amount financed not on file)"}
@@ -88,24 +86,6 @@ export function PayFasterPanel({ contract, loan }: { contract: Contract; loan: L
       <p className="text-xs text-muted mt-3">
         Next step: ask Toyota Financial Services to apply the extra amount to principal. OneFlow can&apos;t send loan payments to TFS from here yet, so nothing is scheduled by this slider.
       </p>
-    </Panel>
-  );
-}
-
-export function RecentPaymentsPanel({ contract, loan }: { contract: Contract; loan: LoanStats }) {
-  const rows = recentScheduledPayments({ balance: contract.balance, aprPct: contract.aprPct ?? 0, monthly: contract.monthlyPayment, paymentsMade: loan.paymentsMade, nextPaymentDate: loan.nextPaymentDate, count: RECENT_COUNT });
-  return (
-    <Panel title="Recent payments" subtitle="Scheduled payments, split rebuilt from your loan terms">
-      {rows.length === 0 && <p className="text-sm text-muted">No payments made yet.</p>}
-      {rows.map((r) => (
-        <div key={r.number} className="flex items-center justify-between py-2 border-b border-line last:border-0">
-          <div>
-            <div className="text-sm font-semibold">{fmtDate(r.date)} · payment {r.number} <span className="chip ml-1">Scheduled</span></div>
-            <div className="text-xs text-muted money">{fmtUSD(r.principal)} car + {fmtUSD(r.interest)} interest</div>
-          </div>
-          <div className="text-sm font-semibold money">{fmtUSD(r.amount)}</div>
-        </div>
-      ))}
     </Panel>
   );
 }

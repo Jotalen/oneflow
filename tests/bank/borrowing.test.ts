@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { affordability, extraPaymentPlan, financeOptions, leasePace, recentScheduledPayments } from "@/lib/bank/borrowing";
+import { affordability, extraPaymentPlan, financeOptions, leasePace } from "@/lib/bank/borrowing";
 import { amortize } from "@/lib/engine/amortize";
 import type { RateRow } from "@/lib/toyota/types";
 
@@ -48,19 +48,6 @@ describe("extraPaymentPlan", () => {
     const r = extraPaymentPlan({ balance: 1_000_000, aprPct: 5, monthly: 30_000, extra: 0, nextPaymentDate: "2026-12-01" });
     expect(r.monthsSaved).toBe(0);
     expect(r.interestSaved).toBe(0);
-  });
-});
-
-describe("recentScheduledPayments", () => {
-  test("walks back from the balance; principal + interest = payment, newest first", () => {
-    const rows = recentScheduledPayments({ balance: 1_874_858, aprPct: 6.29, monthly: 46_879, paymentsMade: 15, nextPaymentDate: "2026-11-15", count: 3 });
-    expect(rows.map((r) => r.number)).toEqual([15, 14, 13]);
-    expect(rows[0].date).toBe("2026-10-15");
-    for (const r of rows) expect(r.principal + r.interest).toBe(46_879);
-    expect(rows[0].principal).toBeGreaterThan(rows[2].principal);
-  });
-  test("never returns more than payments made", () => {
-    expect(recentScheduledPayments({ balance: 100_000, aprPct: 5, monthly: 10_000, paymentsMade: 1, nextPaymentDate: "2026-12-01", count: 3 })).toHaveLength(1);
   });
 });
 

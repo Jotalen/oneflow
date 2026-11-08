@@ -3,7 +3,8 @@ import { Panel, fmtSigned } from "@/components/nova/ui";
 import { useBank } from "@/components/nova/BankProvider";
 import type { RankedMove } from "@/lib/engine/moves/rank";
 
-const MAX_OPTIONS = 4;
+/** Only the top-ranked car moves; the engine ranks them best first. */
+const MAX_OPTIONS = 2;
 
 /** Toyota car moves from the ranked engine. A vulnerable customer gets only the specialist card. */
 export function CarOptions({ ranked }: { ranked: RankedMove[] }) {

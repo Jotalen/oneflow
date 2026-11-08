@@ -2,8 +2,8 @@
  * Borrowing math for the car and house pages. Pure, deterministic, integer cents.
  * Rates come from the Toyota Financial Services hackathon rate sheet (RateRow).
  */
-import { amortize, monthlyInterest } from "@/lib/engine/amortize";
-import type { RateRow } from "@/lib/toyota/types";
+import { amortize } from "@/lib/engine/amortize";
+import type { RateRow, ToyotaVehicle } from "@/lib/toyota/types";
 import type { Cents } from "@/lib/money";
 import { addMonths, payoffWithExtra } from "./view";
 
@@ -46,23 +46,6 @@ export function extraPaymentPlan(i: { balance: Cents; aprPct: number; monthly: C
   };
 }
 
-export interface ScheduledPayment { number: number; date: string; amount: Cents; principal: Cents; interest: Cents }
-
-/** Last `count` scheduled payments, newest first, rebuilt by walking the amortization back from today's balance. */
-export function recentScheduledPayments(i: { balance: Cents; aprPct: number; monthly: Cents; paymentsMade: number; nextPaymentDate: string; count: number }): ScheduledPayment[] {
-  const r = i.aprPct / 100 / 12;
-  const n = Math.max(0, Math.min(i.count, i.paymentsMade));
-  const out: ScheduledPayment[] = [];
-  let after = i.balance;
-  for (let k = 0; k < n; k++) {
-    const before = Math.round((after + i.monthly) / (1 + r));
-    const interest = Math.min(i.monthly, monthlyInterest(before, i.aprPct));
-    out.push({ number: i.paymentsMade - k, date: addMonths(i.nextPaymentDate, -(k + 1)), amount: i.monthly, principal: i.monthly - interest, interest });
-    after = before;
-  }
-  return out;
-}
-
 export interface LeasePace { projectedMiles: number; overBy: number; underBy: number; pctOfAllowance: number }
 
 const MONTHS_PER_YEAR = 12;
@@ -95,4 +78,87 @@ export function affordability(i: { price: Cents; down: Cents; aprPct: number; te
     totalPayments, totalInterest: Math.max(0, totalPayments - financed),
     ratioPct: i.incomeMonthly > 0 ? Math.round((monthly / i.incomeMonthly) * 1000) / 10 : 0,
   };
+}
+
+/** Amount to finance: price − down − trade-in equity. Positive equity lowers it; negative equity (owed more than the car is worth) raises it. */
+export function amountToFinance(i: { price: Cents; down: Cents; tradeEquity: Cents | null; useTrade: boolean }): Cents {
+  const equity = i.useTrade && i.tradeEquity !== null ? i.tradeEquity : 0;
+  return Math.max(0, i.price - i.down - equity);
+}
+
+export interface CatalogCar { id: string; label: string; model: string; trim: string; year: number; price: Cents }
+
+const carId = (v: ToyotaVehicle) => `${v.model_year}-${v.model}-${v.trim}`.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+/** New Toyotas from the TFS data pack (vehicles.csv), one per model + trim (newest year), by model then price. */
+export function carCatalog(vehicles: ToyotaVehicle[]): CatalogCar[] {
+  const newest = new Map<string, ToyotaVehicle>();
+  for (const v of vehicles.filter((x) => x.condition_at_purchase === "New")) {
+    const key = `${v.model}|${v.trim}`;
+    const seen = newest.get(key);
+    if (!seen || v.model_year > seen.model_year) newest.set(key, v);
+  }
+  return [...newest.values()]
+    .map((v) => ({ id: carId(v), label: `${v.model_year} Toyota ${v.model} ${v.trim}`, model: v.model, trim: v.trim, year: v.model_year, price: v.purchase_price_or_msrp }))
+    .sort((a, b) => a.model.localeCompare(b.model) || a.price - b.price);
+}
+
+export type PayoffStrategy = "avalanche" | "snowball" | "minimums";
+export interface PayoffDebt { id: string; label: string; balance: Cents; aprPct: number; minPayment: Cents }
+export interface PayoffRun { months: number | null; interest: Cents | null; order: string[] }
+export interface StrategyResult extends PayoffRun { strategy: PayoffStrategy; interestSaved: Cents | null; monthsSooner: number | null }
+
+const MAX_PAYOFF_MONTHS = 600;
+
+/** Avalanche: highest APR first. Snowball: smallest balance first. */
+function targetOrder(debts: PayoffDebt[], strategy: PayoffStrategy): PayoffDebt[] {
+  return [...debts].sort((a, b) => (strategy === "snowball" ? a.balance - b.balance || b.aprPct - a.aprPct : b.aprPct - a.aprPct || a.balance - b.balance));
+}
+
+/** One month: interest accrues, every open debt gets its minimum, and `pool` goes to open debts in order. */
+function payMonth(debts: PayoffDebt[], balances: Cents[], pool: Cents): { balances: Cents[]; interest: Cents } {
+  const accrued = debts.map((d, k) => (balances[k] > 0 ? Math.round((balances[k] * d.aprPct) / 100 / MONTHS_PER_YEAR) : 0));
+  const owed = balances.map((b, k) => b + accrued[k]);
+  const afterMin = owed.map((b, k) => b - Math.min(b, debts[k].minPayment));
+  const minPaid = owed.reduce((s, b, k) => s + (b - afterMin[k]), 0);
+  let left = pool - minPaid;
+  const next = afterMin.map((b) => { const pay = Math.max(0, Math.min(b, left)); left -= pay; return b - pay; });
+  return { balances: next, interest: accrued.reduce((s, i) => s + i, 0) };
+}
+
+/**
+ * Month-by-month payoff. Minimums: each debt at its own minimum. Avalanche/snowball: the same total
+ * budget (all minimums + extra) every month; what's left after minimums goes to the first open debt
+ * in order, so paid-off minimums roll over. Null when it never finishes in 50 years.
+ */
+export function simulatePayoff(debts: PayoffDebt[], extra: Cents, strategy: PayoffStrategy): PayoffRun {
+  const ordered = targetOrder(debts, strategy);
+  // Minimums-only gets no pool, so a paid-off debt's minimum is not reused.
+  const pool = strategy === "minimums" ? 0 : ordered.reduce((s, d) => s + d.minPayment, 0) + extra;
+  let balances = ordered.map((d) => d.balance);
+  let interest = 0;
+  let months = 0;
+  while (balances.some((b) => b > 0) && months < MAX_PAYOFF_MONTHS) {
+    const step = payMonth(ordered, balances, pool);
+    balances = step.balances;
+    interest += step.interest;
+    months++;
+  }
+  const order = ordered.map((d) => d.id);
+  return balances.some((b) => b > 0) ? { months: null, interest: null, order } : { months, interest, order };
+}
+
+/** Avalanche, snowball and minimums-only. Savings and months sooner are vs minimums only, null when minimums never finish. */
+export function compareStrategies(debts: PayoffDebt[], extra: Cents): StrategyResult[] {
+  const payable = debts.filter((d) => d.balance > 0);
+  if (payable.length === 0) return [];
+  const min = simulatePayoff(payable, 0, "minimums");
+  const vsMin = (r: PayoffRun) => ({
+    interestSaved: min.interest !== null && r.interest !== null ? min.interest - r.interest : null,
+    monthsSooner: min.months !== null && r.months !== null ? min.months - r.months : null,
+  });
+  return (["avalanche", "snowball", "minimums"] as const).map((strategy) => {
+    const r = strategy === "minimums" ? min : simulatePayoff(payable, extra, strategy);
+    return { strategy, ...r, ...vsMin(r) };
+  });
 }
