@@ -51,7 +51,7 @@ export function TopActions() {
           {(unread > 0 || offline) && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-bad" />}
         </button>
         {bell && (
-          <div className="absolute right-0 mt-2 w-[min(92vw,26rem)] z-40 space-y-3 max-h-[75vh] overflow-auto rounded-2xl bg-bg p-2 border border-line shadow-xl">
+          <div className="fixed inset-x-2 top-16 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[26rem] z-40 space-y-3 max-h-[75vh] overflow-auto rounded-2xl bg-bg p-2 border border-line shadow-xl">
             {offline && <div className="panel p-3 text-sm">Showing an offline snapshot. Live bank actions are simulated.</div>}
             {analysis && <PendingGuard hasKey={live} guard={guard} />}
             <EventFeed hasKey={live} />
