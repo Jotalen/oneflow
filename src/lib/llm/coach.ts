@@ -5,7 +5,7 @@ import { StubProvider } from "./stub";
 import { runTool, TOOL_DEFS, type ToolCtx } from "./tools";
 
 /** Per-model budget for a whole coach run (tool calls included); past it the next provider answers. */
-export const COACH_PROVIDER_TIMEOUT_MS = 30_000;
+export const COACH_PROVIDER_TIMEOUT_MS = 15_000;
 
 export const MAX_TOOL_CALLS = 4;
 const ANALYZE_PROMPT = "Analyze my whole picture and brief me on my next best move, with one or two alternatives and the trade-offs.";
