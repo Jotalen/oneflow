@@ -45,6 +45,13 @@ describe("buildProfile", () => {
     expect(debt?.aprPct).toBeGreaterThan(0);
   });
 
+  test("transactions keep the payee account, so an incoming transfer can be told apart", () => {
+    const p = buildProfile(bundle({ transactionsByAccount: {
+      chk: [{ id: "t9", kind: "transfer", status: "completed", amount_cents: 100, payer_id: "chk_other", payee_id: "chk", description: "P2P Brian → Priya" }],
+    } }), t, "C003");
+    expect(p.recentTxns.find((x) => x.id === "t9")?.payeeId).toBe("chk");
+  });
+
   test("savings nicknamed CD maps to kind cd", () => {
     const p = buildProfile(bundle(), t, "C003");
     expect(p.accounts.find((a) => a.id === "cd")?.kind).toBe("cd");

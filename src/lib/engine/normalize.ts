@@ -64,6 +64,7 @@ function toTxns(b: NessieBundle): Txn[] {
       status: t.status,
       amount: t.amount_cents,
       merchantId: t.merchant_id ?? undefined,
+      payeeId: t.payee_id ?? undefined,
       description: t.description ?? undefined,
       createdAt: t.created_at,
     })),

@@ -66,7 +66,8 @@ export function buildLedger(p: Profile): LedgerTxn[] {
   return ordered.map((t: Txn, i) => {
     const acct = accounts.get(t.accountId);
     const category = categorize(t.kind, t.description);
-    const sign = t.kind === "deposit" ? 1 : -1;
+    const incoming = t.kind === "deposit" || (t.kind === "transfer" && t.payeeId === t.accountId);
+    const sign = incoming ? 1 : -1;
     const dayOffset = n <= 1 ? 0 : Math.floor((i * (WINDOW_DAYS - 1)) / (n - 1));
     return {
       id: t.id,
