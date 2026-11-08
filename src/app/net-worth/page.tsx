@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { PageHeader, Panel, Tile, Segmented, fmtSigned } from "@/components/nova/ui";
 import { AreaTrend } from "@/components/nova/charts";
 import { Loading } from "@/components/nova/Loading";
@@ -74,6 +75,7 @@ export default function NetWorthPage() {
           </div>
           <div className="mt-4"><AreaTrend points={series} height={200} /></div>
           <p className="text-xs text-muted mt-1">Last 30 days. Longer ranges need more history. Car value is held at today&apos;s estimate.</p>
+          <Link href="/what-if" className="btn mt-3">Try a what-if: see the next 24 months</Link>
         </Panel>
 
         <div className="grid gap-4 lg:grid-cols-2">
