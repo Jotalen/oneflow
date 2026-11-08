@@ -6,7 +6,7 @@ Your bank already knows your money. Ours also knows your car, and tells you the 
 
 Live: **https://www.one-flow.us** · Built in 24 hours at HackUTD 2026: Zero Day
 
-![OneFlow overview: the next best move pinned on top](screenshots/01-overview.png)
+![OneFlow overview for Priya: her own dashboard, with the next best move at the bottom](screenshots/01-overview.png)
 
 ## The problem
 
@@ -25,15 +25,20 @@ OneFlow answers it on one screen. In her case it says: **buy the car at lease en
 5. **Does it for you.** Accepting a move sends a real transaction through the bank, and you watch it settle in the live feed.
 6. **Protects you before money leaves.** Every pending card charge is checked by our rules before it settles. An $800 Target swipe that fits your budget is approved. An $800 casino charge is declined, and the bank releases the hold.
 7. **Knows when not to sell.** A customer flagged as vulnerable with missed payments gets one card: talk to a specialist. No offers, no upsell.
+8. **A dashboard that fits you.** Each customer starts with the bubbles that matter to them (a lease ending, a house, a savings goal), and can add, remove and reorder them. The next best move stays on the page, last by default.
+9. **The rest of a real bank.** A budget you can set yourself or let us suggest, drawn as a pizza wheel that fills from the centre. Sixteen spending categories, with reward points on every card purchase. A credit score estimate with six factors, steps to raise it and a goal with a date. Debt payoff plans that show the interest each one saves. Car shopping across 19 Toyota models, with your trade-in worked out as value minus payoff.
+10. **Ask AI where it helps.** Ask which card to use for a purchase, or how to make your money last longer if your paycheck stops. The answer is worded by a model from numbers we computed, and if a model answer contains a number we didn't give it, we show our own offline answer instead.
 
 | | |
 |---|---|
-| ![Why this move: two futures and the AI coach](screenshots/02-why-this.png) | ![Pending-transaction guard in the bell](screenshots/05-guard.png) |
-| *Why this?* Two futures, and a coach that explains but never calculates | The guard decides card holds before they settle |
-| ![What-if simulator](screenshots/04-what-if.png) | ![TFS portfolio across all 20 customers](screenshots/03-tfs-portfolio.png) |
-| What if Brian lost $1,000 a month? Out of cash in month 17 | Toyota's view: 20 customers, 11 match their reference answer |
-| ![Vulnerable customer gets a person, not a pitch](screenshots/07-guardrail.png) | ![Balance history from Tiger Data](screenshots/06-balance-history.png) |
-| Guardrails in code: a person, not a pitch | Balance history the bank itself doesn't give you |
+| ![Why this move: two futures and the AI coach](screenshots/02-why-this.png) | ![What-if simulator](screenshots/03-what-if.png) |
+| *Why this?* Two futures, and a coach that explains but never calculates | What if Brian lost $1,000 a month? Out of cash in month 17 |
+| ![Budget pizza wheel](screenshots/04-budget.png) | ![Debt and payoff plan](screenshots/05-debt.png) |
+| A budget wheel: slices fill from the centre, amber means over | Card details, rewards, and the interest each payoff plan saves |
+| ![Credit score factors and goal](screenshots/06-credit.png) | ![Pending-transaction guard in the bell](screenshots/07-guard.png) |
+| Six credit factors, estimates labelled, and a score goal with a date | The guard decides card holds before they settle |
+| ![Balance history from Tiger Data](screenshots/08-balance-history.png) | |
+| Balance history the bank itself doesn't give you | |
 
 ## How each track is answered
 
@@ -49,23 +54,20 @@ OneFlow answers it on one screen. In her case it says: **buy the car at lease en
 - *Personalize:* each of the 20 customers in Toyota's data pack drives their own vehicle, contract and situation.
 - *Simplify:* every option shows the payment, the total cost against keeping things as they are, the assumption and the trade-off.
 - *Guide:* every move ends in a next step: self-service, a follow-up, or an eligible offer. "No eligible offer" is an allowed answer.
-- *Value:* a portfolio view shows all 20 customers from Toyota's side.
-  - Our top move matches their reference answer for **11 of 20**.
-  - Those matches carry **$2,278 of the pack's $7,773** expected value.
-  - Seven customers finish in self-service.
-  - Six sales offers are held back from vulnerable customers.
+- *Value:* our top move matches Toyota's reference answer for **11 of the 20** customers, by computation. When you shop for your next Toyota, your trade-in is shown as value minus payoff, and rates come from the pack's rate sheet for your credit tier.
 
 **PNC: 360° Financial Health Navigator.**
 - One view across every account type in the bank.
 - Eight health indicators, reimplemented from PNC's workshop package.
+- A budget, a safety net measured in months and days, savings goals by deadline or by monthly amount, and a credit score goal.
 - A 24-month forecast of balances and obligations.
 - A coach grounded in the engine.
 - An open **What-if simulator**: change your income, add a one-time expense, put extra toward a debt, cancel real bills or add a new one, and see both futures, your lowest cash point and which indicators get worse.
 
 **Also:**
-- **MLH Solana:** connect a Devnet wallet alongside bank accounts, review USDC payments against a clearly labeled demo budget, approve in the wallet, and see server-verified receipts in Transactions. Receipts show actual network fees and measured submission-to-verification time. [Successful 1-USDC Devnet payment](https://explorer.solana.com/tx/3SWY7KHErQBrxzp4st6bEGqMU7LwdYKZobc1xHz6jeAKvFoNvnXHwsrF4R7P8tNbzz94sSKza1GCaYG9dXzaQGPk?cluster=devnet).
-- **HackUTD Design:** built from our own desktop and mobile wireframes. Works at phone width.
-- **MLH Gemini:** the coach's first choice of model.
+- **MLH Solana:** connect a Phantom wallet on Devnet, check a USDC payment against the customer's budget, approve it in the wallet, and get a receipt we verify on-chain. Receipts show the actual network fee and how long verification took, and they appear next to bank transactions. Wallet money is never added to bank totals. [Successful 1-USDC Devnet payment](https://explorer.solana.com/tx/3SWY7KHErQBrxzp4st6bEGqMU7LwdYKZobc1xHz6jeAKvFoNvnXHwsrF4R7P8tNbzz94sSKza1GCaYG9dXzaQGPk?cluster=devnet).
+- **HackUTD Design:** built from our own desktop and mobile wireframes. A navy palette on plain light and dark backgrounds, hand-drawn sidebar icons, a collapsible sidebar, and a phone layout with a bottom tab bar.
+- **MLH Gemini:** the first choice of model for the coach and for Ask AI.
 - **MLH Tiger Data:** every bank event is streamed into a TimescaleDB time series.
 - **MLH GoDaddy Registry:** one-flow.us.
 
@@ -77,7 +79,7 @@ OneFlow answers it on one screen. In her case it says: **buy the car at lease en
 |---|---|---|
 | Engine | Normalizes the bank and Toyota data into one profile, projects 24 months, computes 8 health indicators, ranks moves, applies guardrails. Pure functions, integer cents everywhere | TypeScript |
 | Bank | Real accounts and money movement, event feed, pending-transaction decisions | Capital One Nessie v2 |
-| AI coach | Narrates the engine's tool results. Six approved tools; the one that moves money only asks you to confirm. Falls back Gemini → OpenRouter → an offline narrator, so the demo never breaks on a model outage | Gemini, OpenRouter |
+| AI coach | Narrates the engine's tool results. Six approved tools; the one that moves money only asks you to confirm. Falls back Gemini → OpenRouter → an offline narrator, each with its own timeout, so the demo never breaks on a model outage | Gemini, OpenRouter |
 | History | Every Nessie event goes into a hypertable; a 15-minute continuous aggregate gives each account a real balance history | Tiger Data (TimescaleDB) |
 | Solana payments | Exact USDC units, wallet-approved transactions, recipient token-account creation, server-side transfer verification, and shared device receipts. Devnet funds stay separate from bank balances | Solana Kit, SPL Token, Wallet Standard |
 | App | 17 pages, light and dark, phone and desktop | Next.js 16, React, Tailwind 4, Recharts, Vercel |
@@ -92,7 +94,7 @@ Nessie (bank)  ───┘                       ├─ execute  → real Nessi
                                           └─ events   → shared poller → Tiger Data hypertable → balance history
 ```
 
-369 automated tests cover the engine, the guard, the coach fallback, P2P, the portfolio, what-if and every API route.
+654 automated tests in 64 files cover the engine, the guard, the coach fallback, Ask AI, P2P, budgets, credit, what-if, Solana payments and every API route.
 
 ## Challenges we ran into
 
@@ -102,6 +104,7 @@ Nessie (bank)  ───┘                       ├─ execute  → real Nessi
 - **Tiger signs its certificates with a private CA** that Node doesn't trust. Rather than turning off certificate checks, we pinned Tiger's root and kept full verification.
 - **Nessie has no loan-payment endpoint.** Extra car payments are set aside in a labelled savings transfer instead of faking a payment.
 - **A transfer showed as money out on both sides.** Nessie lists it under both accounts, so the receiving side now reads it as money in.
+- **The bank only keeps about eight weeks of history.** A six-month balance chart would have been mostly empty. Older days are rebuilt from paychecks and recurring bills, drawn dashed and labelled as an estimate.
 
 ## What we're proud of
 
@@ -124,7 +127,7 @@ Letting the model only narrate isn't a limitation, it's the product. Every numbe
 ## Honest notes
 
 - **Bank and vehicle data are synthetic.** Toyota's pack says so, and our bank data is generated from it. Solana balances and transactions are read from Devnet, where test tokens have no monetary value. Nothing here is financial advice.
-- **Estimates are labelled.** Credit score is an estimate, not a bureau score, and the Toyota expected values come straight from the pack's own take rates.
+- **Estimates are labelled.** The credit score is an estimate, not a bureau score, and three of its six factors (derogatory marks, credit age, hard inquiries) are inferred from the Toyota credit tier. Balance history older than the bank keeps is an estimate. Things you add to net worth are your own estimate.
 - **What we don't model.** No customer has a mortgage, investments or insurance, so those pages are calculators or empty, never filled with fake data.
 - **What the reference matches miss.** The nine customers whose top move differs from Toyota's do so for stated reasons:
   - our vulnerable-customer handoff overrides two of them
@@ -146,7 +149,7 @@ Switch customers with `?p=C001` … `?p=C020`, or from the avatar menu. Good one
 - `C018` Brian: card debt
 - `C014` Kevin: vulnerable
 
-For Solana, open `/solana`, connect a Devnet wallet, fund it with free test SOL and test USDC, and send to a second wallet. Accounts shows the connected wallet; Day-to-day links to payments; Transactions shows receipts. The payment review compares spending with the selected synthetic profile's budget without modifying it. Devnet tokens have no monetary value, and receipts are saved in this browser. Optional RPC variables are documented in `.env.example`; no wallet private key is needed.
+For Solana, open **Solana** in the sidebar (under Everyday), connect a Phantom wallet on Devnet, fund it with free test SOL and test USDC, and send to a second wallet. Accounts shows the connected wallet, Day-to-day has a *Pay with Solana* button, and Transactions shows receipts. The payment review compares spending with the selected synthetic profile's budget without modifying it. Devnet tokens have no monetary value, and receipts are saved in this browser. Optional RPC variables are documented in `.env.example`; no wallet private key is needed.
 
 Browser checks use an ephemeral fixture wallet and mocked APIs: run `pnpm exec playwright install chromium`, then `pnpm test:browser` with the app running. Real on-chain proof is linked in the Solana track description above.
 
@@ -154,7 +157,7 @@ Browser checks use an ephemeral fixture wallet and mocked APIs: run `pnpm exec p
 
 ## Built with
 
-TypeScript · Next.js 16 · React · Tailwind CSS 4 · Recharts · Zod · Vitest · Capital One Nessie v2 · Google Gemini API · OpenRouter · Tiger Data (TimescaleDB, PostgreSQL) · Vercel · GoDaddy Registry
+TypeScript · Next.js 16 · React · Tailwind CSS 4 · Recharts · Zod · Vitest · Playwright · Capital One Nessie v2 · Google Gemini API · OpenRouter · Tiger Data (TimescaleDB, PostgreSQL) · Solana (Kit, SPL Token, Wallet Standard, Devnet USDC, Phantom) · Vercel · GoDaddy Registry
 
 ## Credits
 

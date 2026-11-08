@@ -66,3 +66,6 @@ public/window.svg
 Dockerfile
 Caddyfile
 docker-compose.yml
+
+# Devpost screenshots (local only)
+/devpost-media/
