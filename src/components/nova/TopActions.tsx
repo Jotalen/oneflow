@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { usePersona } from "@/components/PersonaProvider";
 import { PendingGuard } from "@/components/PendingGuard";
+import { usePendingGuard } from "@/hooks/usePendingGuard";
 import { EventFeed } from "@/components/EventFeed";
 import { useBank } from "./BankProvider";
 
@@ -24,6 +25,7 @@ export function TopActions() {
   const router = useRouter();
   const { personaId, setPersonaId, personas } = usePersona();
   const { analysis, live, offline, receipts } = useBank();
+  const guard = usePendingGuard(personaId, live, analysis?.profile.accounts.map((a) => a.id) ?? []);
   const [q, setQ] = useState("");
   const [bell, setBell] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -51,7 +53,7 @@ export function TopActions() {
         {bell && (
           <div className="absolute right-0 mt-2 w-[min(92vw,26rem)] z-40 space-y-3 max-h-[75vh] overflow-auto rounded-2xl bg-bg p-2 border border-line shadow-xl">
             {offline && <div className="panel p-3 text-sm">Showing an offline snapshot. Live bank actions are simulated.</div>}
-            {analysis && <PendingGuard personaId={personaId} hasKey={live} accountIds={analysis.profile.accounts.map((a) => a.id)} />}
+            {analysis && <PendingGuard hasKey={live} guard={guard} />}
             <EventFeed hasKey={live} />
           </div>
         )}
