@@ -10,7 +10,6 @@ export const NAV: NavGroup[] = [
     { href: "/solana", label: "Solana" },
     { href: "/transactions", label: "Transactions" },
     { href: "/budget", label: "Budget" },
-    { href: "/rewards", label: "Rewards" },
   ] },
   { label: "Wealth", items: [
     { href: "/net-worth", label: "Net worth" },
@@ -26,11 +25,34 @@ export const NAV: NavGroup[] = [
   ] },
 ];
 
+export const SETTINGS_ITEM: NavItem = { href: "/settings", label: "Settings" };
+export const MORE_ITEM: NavItem = { href: "/more", label: "More" };
+
 /** Mobile bottom bar: four destinations plus More. */
 export const MOBILE_TABS: NavItem[] = [
   { href: "/", label: "Overview" },
   { href: "/day-to-day", label: "Day-to-day" },
   { href: "/transactions", label: "Transactions" },
   { href: "/budget", label: "Budget" },
-  { href: "/more", label: "More" },
+  MORE_ITEM,
 ];
+
+/** Whether `href` is the current section. Overview also owns the dashboard editor. */
+export function isNavActive(path: string, href: string): boolean {
+  if (href === "/") return path === "/" || path === "/dashboard" || path.startsWith("/dashboard/");
+  return path === href || path.startsWith(`${href}/`);
+}
+
+/** Desktop sidebar collapse choice, saved on this device. */
+export const SIDEBAR_KEY = "nova:sidebar-collapsed";
+export const SIDEBAR_EVENT = "nova:sidebar";
+
+export function parseCollapsed(raw: string | null): boolean {
+  return raw === "true";
+}
+
+/**
+ * Runs in <head> before first paint so a collapsed rail renders collapsed from the start
+ * (CSS keys the rail width off html[data-sidebar="collapsed"]).
+ */
+export const SIDEBAR_INIT_SCRIPT = `try{if(localStorage.getItem(${JSON.stringify(SIDEBAR_KEY)})==="true")document.documentElement.dataset.sidebar="collapsed"}catch(e){}`;
