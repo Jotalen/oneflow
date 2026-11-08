@@ -45,12 +45,14 @@ function NavLink({ item, path, collapsed }: NavLinkProps) {
 /** The intro ball lands on [data-logo-mark]; the mark stays hidden until then, then assembles. */
 function Logo() {
   const phase = useIntroPhase();
+  const inFlight = phase === "playing" || phase === "reveal";
   return (
     <Link href="/" className="flex items-center gap-2 px-2.5 py-1 font-semibold text-lg tracking-tight rail-collapsed:justify-center rail-collapsed:px-0">
       <span data-logo-mark className="h-7 w-7 shrink-0 grid place-items-center">
-        <LogoMark key={phase === "playing" ? "wait" : "show"} className="h-7 w-7" hidden={phase === "playing"} assemble={phase === "landing"} />
+        <LogoMark key={inFlight ? "wait" : "show"} className="h-7 w-7" hidden={inFlight} assemble={phase === "landing"} />
       </span>
-      <span className="rail-collapsed:sr-only">OneFlow</span>
+      {/* The wordmark waits until the big landing logo has settled, so the two never overlap. */}
+      <span className={`rail-collapsed:sr-only transition-opacity duration-500 ${inFlight || phase === "landing" ? "opacity-0" : "opacity-100"}`}>OneFlow</span>
     </Link>
   );
 }

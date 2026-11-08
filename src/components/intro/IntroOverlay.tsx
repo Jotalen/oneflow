@@ -1,23 +1,27 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { TIMELINE, buildScene, easeInOut, jumpPoint, type Pt } from "@/lib/intro/geometry";
+import { buildScene, easeInOut, jumpPoint, type Pt } from "@/lib/intro/geometry";
 import { INTRO_KEY } from "@/lib/intro/init";
 import { setIntroPhase, useIntroPhase } from "@/lib/motion";
-import { LOGO, logoPointFraction } from "@/components/brand/LogoMark";
-import { drawIntroFrame, litDots } from "./drawIntro";
+import { LAND_SCALE, LAND_SECONDS, LOGO, logoPointFraction } from "@/components/brand/LogoMark";
+import { MERGED_BALL_R, drawIntroFrame, litDots } from "./drawIntro";
 
 const FALLBACK_TARGET: Pt = { x: 24, y: 24 };
 const JUMP_LIFT = 0.22;
-const BALL_R = 8;
-/** Scroll distance, in screen heights, that carries the balls from the left edge to the right end. */
-const SCROLL_SCREENS = 1.6;
+/** The arc's highest point stays at least this far below the top of the screen, so the ball never leaves view. */
+const PEAK_MIN_PX = 56;
+/** Extra size the ball gains at the top of its arc. */
+const JUMP_SWELL_PX = 9;
+/** Scroll distance, in screen heights: the flow left → right, then the slower jump up to the logo. */
+const TRAVEL_SCREENS = 1.6;
+const JUMP_SCREENS = 1.3;
+const TOTAL_SCREENS = TRAVEL_SCREENS + JUMP_SCREENS;
 /** Per-frame smoothing toward the scrolled position, so wheel steps glide instead of jump. */
 const SMOOTH = 0.14;
 const KEY_STEP_SCREENS = 0.25;
 const LINE_HEIGHT_PX = 16;
 const DRAW_S = 0.45;
-const JUMP_S = TIMELINE.jump[1] - TIMELINE.jump[0];
-const LAND_S = TIMELINE.land[1] - TIMELINE.land[0];
+const LANDED_K = 0.995;
 const HINT_FADE_U = 0.06;
 const FORWARD_KEYS = new Set(["ArrowDown", "PageDown", " "]);
 const BACK_KEYS = new Set(["ArrowUp", "PageUp"]);
@@ -27,14 +31,19 @@ const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2;
 
 interface LandingSpot { at: Pt; r: number }
 
-/** Where the ball lands: the hub of the sidebar logo mark (or the top-left corner on phones). */
+/**
+ * Where the ball lands: the hub of the sidebar logo mark as it will be drawn at LAND_SCALE
+ * (scaled from its left edge), or the top-left corner on phones where the sidebar is hidden.
+ */
 function landingSpot(): LandingSpot {
   const el = document.querySelector("[data-logo-mark]");
   const rect = el?.getBoundingClientRect();
   if (!rect || rect.width === 0) return { at: FALLBACK_TARGET, r: 0 };
   const { fx, fy } = logoPointFraction(LOGO.hub.x, LOGO.hub.y);
   const size = Number(LOGO.viewBox.split(" ")[2]);
-  return { at: { x: rect.left + fx * rect.width, y: rect.top + fy * rect.height }, r: (LOGO.dot.r / size) * rect.width };
+  const cy = rect.top + rect.height / 2;
+  const at = { x: rect.left + fx * rect.width * LAND_SCALE, y: cy + (rect.top + fy * rect.height - cy) * LAND_SCALE };
+  return { at, r: (LOGO.dot.r / size) * rect.width * LAND_SCALE };
 }
 
 function setupCanvas(canvas: HTMLCanvasElement, w: number, h: number): CanvasRenderingContext2D | null {
@@ -77,20 +86,28 @@ function listenScroll(onDelta: (dy: number) => void, screen: number): () => void
 
 interface Refs { cover: HTMLDivElement; canvas: HTMLCanvasElement; ball: HTMLDivElement; hint: HTMLDivElement }
 
+/** Lift for the jump arc, capped so its peak (at k = 0.5) stays PEAK_MIN_PX inside the screen. */
+function arcLift(from: Pt, to: Pt, h: number): number {
+  const minY = Math.min(from.y, to.y);
+  const controlY = Math.max(minY - JUMP_LIFT * h, 2 * PEAK_MIN_PX - (from.y + to.y) / 2);
+  return minY - controlY;
+}
+
 /** Moves the DOM ball along the jump arc (k: 0 → 1) and fades the cover. */
 function stepJump({ cover, ball }: Refs, from: Pt, k: number, h: number): void {
   cover.style.opacity = String(1 - easeInOutSine(k));
   const spot = landingSpot();
-  const p = jumpPoint(from, spot.at, JUMP_LIFT * h, easeInOutSine(k));
-  const r = BALL_R + ((spot.r || BALL_R / 2) - BALL_R) * k;
+  const p = jumpPoint(from, spot.at, arcLift(from, spot.at, h), easeInOutSine(k));
+  const end = spot.r || MERGED_BALL_R / 2;
+  const r = MERGED_BALL_R + (end - MERGED_BALL_R) * k + JUMP_SWELL_PX * Math.sin(Math.PI * k);
   ball.style.opacity = spot.r ? "1" : String(1 - k);
   ball.style.transform = `translate(${p.x - r}px, ${p.y - r}px)`;
   ball.style.width = ball.style.height = `${2 * r}px`;
 }
 
 /**
- * Scroll scrubs the flow (and scrolling up rewinds it). When the merged ball reaches the right end,
- * the jump to the logo plays on its own. Returns a stop function.
+ * Scroll scrubs the whole intro (scrolling up rewinds it): the flow, then the slower jump up to the
+ * logo. Once the ball touches down, the logo assembles on its own. Returns a stop function.
  */
 function runIntro(refs: Refs, onDone: () => void): () => void {
   const w = window.innerWidth;
@@ -101,24 +118,30 @@ function runIntro(refs: Refs, onDone: () => void): () => void {
   const start = performance.now();
   let target = 0;
   let shown = 0;
-  let jumpAt: number | null = null;
-  let landed = false;
+  let landedAt: number | null = null;
   let raf = 0;
-  const detach = listenScroll((dy) => { if (jumpAt === null) target = clamp01(target + dy / (SCROLL_SCREENS * h)); }, h);
+  const detach = listenScroll((dy) => { if (landedAt === null) target = clamp01(target + dy / (TOTAL_SCREENS * h)); }, h);
   const frame = (now: number) => {
     const drawn = easeInOut(clamp01((now - start) / 1000 / DRAW_S));
     shown = Math.abs(target - shown) < 1e-4 ? target : shown + (target - shown) * SMOOTH;
-    if (jumpAt === null && shown >= 0.995) jumpAt = now;
-    const sinceJump = jumpAt === null ? 0 : (now - jumpAt) / 1000;
+    const u = clamp01((shown * TOTAL_SCREENS) / TRAVEL_SCREENS);
+    const k = clamp01((shown * TOTAL_SCREENS - TRAVEL_SCREENS) / JUMP_SCREENS);
     refs.hint.style.opacity = String(drawn * (1 - clamp01(shown / HINT_FADE_U)));
-    if (ctx && sinceJump < JUMP_S) drawIntroFrame(ctx, scene, dots, { drawn, u: jumpAt === null ? shown : 1, balls: jumpAt === null && drawn >= 1 }, w, h);
-    if (jumpAt !== null) stepJump(refs, scene.end, clamp01(sinceJump / JUMP_S), h);
-    if (sinceJump >= JUMP_S && !landed) {
-      landed = true;
-      refs.ball.style.opacity = "0";
-      setIntroPhase("landing");
+    if (ctx) drawIntroFrame(ctx, scene, dots, { drawn, u, balls: k === 0 && drawn >= 1 }, w, h);
+    if (landedAt === null) {
+      if (k > 0) {
+        stepJump(refs, scene.end, k, h);
+        setIntroPhase("reveal");
+      }
+      else refs.ball.style.opacity = "0";
+      if (k >= LANDED_K) {
+        landedAt = now;
+        refs.ball.style.opacity = "0";
+        refs.cover.style.opacity = "0";
+        setIntroPhase("landing");
+      }
     }
-    if (sinceJump >= JUMP_S + LAND_S) return onDone();
+    if (landedAt !== null && (now - landedAt) / 1000 >= LAND_SECONDS) return onDone();
     raf = requestAnimationFrame(frame);
   };
   raf = requestAnimationFrame(frame);

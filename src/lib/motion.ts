@@ -12,9 +12,10 @@ export const PRESS_SCALE = 0.98;
 /**
  * Intro state, shared by the overlay, the sidebar logo and count-up numbers.
  * "off": no intro this load (already played, reduced motion, or skipped).
- * "playing": overlay on screen. "landing": the ball reached the logo spot and the logo assembles.
+ * "playing": overlay on screen. "reveal": the ball is jumping and the dashboard fades in under it
+ * (cards and numbers animate now). "landing": the ball reached the logo spot and the logo assembles.
  */
-export type IntroPhase = "off" | "playing" | "landing";
+export type IntroPhase = "off" | "playing" | "reveal" | "landing";
 
 let phase: IntroPhase = "off";
 const listeners = new Set<() => void>();

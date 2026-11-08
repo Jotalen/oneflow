@@ -16,6 +16,12 @@ const LINE_FADE_U = 0.06;
 const DOT_FADE_U = 0.1;
 const BALL_R = 8;
 const GLOW_R = 26;
+/** After the merge the single ball is bigger and glows harder. */
+export const MERGED_BALL_R = 11;
+const MERGED_GLOW = 1.9;
+/** Pulse ring when the three balls become one (in travel progress after the merge). */
+const PULSE_U = 0.1;
+const PULSE_MAX_R = 70;
 
 /** A grid dot near a path, lit once the ball passes travel progress `u`. */
 export interface LitDot { x: number; y: number; u: number; strength: number }
@@ -78,10 +84,10 @@ function drawLit(ctx: CanvasRenderingContext2D, p: SampledPath, litTo: number, f
   ctx.globalAlpha = 1;
 }
 
-export function drawBall(ctx: CanvasRenderingContext2D, at: Pt, r = BALL_R): void {
-  const glow = GLOW_R * (r / BALL_R);
+export function drawBall(ctx: CanvasRenderingContext2D, at: Pt, r = BALL_R, glowBoost = 1): void {
+  const glow = GLOW_R * (r / BALL_R) * glowBoost;
   const g = ctx.createRadialGradient(at.x, at.y, 0, at.x, at.y, glow);
-  g.addColorStop(0, "rgba(57,255,136,0.45)");
+  g.addColorStop(0, `rgba(57,255,136,${Math.min(0.75, 0.45 * glowBoost)})`);
   g.addColorStop(1, "rgba(57,255,136,0)");
   ctx.fillStyle = g;
   ctx.beginPath();
@@ -106,6 +112,18 @@ function drawDots(ctx: CanvasRenderingContext2D, dots: LitDot[], u: number): voi
   ctx.globalAlpha = 1;
 }
 
+/** A ring that expands and fades from the merge point as the balls become one. */
+function drawPulse(ctx: CanvasRenderingContext2D, at: Pt, k: number): void {
+  if (k <= 0 || k >= 1) return;
+  ctx.strokeStyle = NEON;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.7 * (1 - k);
+  ctx.beginPath();
+  ctx.arc(at.x, at.y, MERGED_BALL_R + (PULSE_MAX_R - MERGED_BALL_R) * k, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
 /** What one frame shows: how far the grey lines have drawn on (0 → 1) and travel progress u (0 → 1). */
 export interface IntroFrame { drawn: number; u: number; balls: boolean }
 
@@ -124,5 +142,13 @@ export function drawIntroFrame(ctx: CanvasRenderingContext2D, scene: IntroScene,
     const local = i < 3 ? Math.min(1, f.u / MERGE_SHARE) : Math.max(0, (f.u - MERGE_SHARE) / share);
     if (local > 0) drawLit(ctx, p, local, LINE_FADE_U / share);
   });
-  if (f.balls) ballPositions(scene, f.u).forEach((b) => drawBall(ctx, b));
+  if (!f.balls) return;
+  if (f.u <= MERGE_SHARE) {
+    ballPositions(scene, f.u).forEach((b) => drawBall(ctx, b));
+    return;
+  }
+  const [ball] = ballPositions(scene, f.u);
+  const grow = Math.min(1, (f.u - MERGE_SHARE) / PULSE_U);
+  drawPulse(ctx, scene.merge, grow);
+  drawBall(ctx, ball, BALL_R + (MERGED_BALL_R - BALL_R) * grow, 1 + (MERGED_GLOW - 1) * grow);
 }
