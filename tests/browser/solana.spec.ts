@@ -85,10 +85,18 @@ async function connect(page: Page) {
 }
 
 test("shows recovery guidance without an extension and fits the viewport", async ({ page }) => {
+  const renderingErrors: string[] = [];
+  page.on("pageerror", (error) => renderingErrors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error" && /Could not validate|instant UI|Browser-only rendering/.test(message.text())) {
+      renderingErrors.push(message.text());
+    }
+  });
   await setup(page, false);
   await page.goto("/solana?p=C018");
   await expect(page.getByText("Your Devnet wallet is not available in this tab yet.")).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  expect(renderingErrors).toEqual([]);
 });
 
 test("reviews a budget-aware payment, signs, verifies once, and shares the receipt with Transactions", async ({ page }) => {
