@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { RichText } from "./RichText";
 import { useEffect, useState } from "react";
 import type { RankedMove } from "@/lib/engine/moves/rank";
 import { fmtUSD } from "@/lib/money";
@@ -115,7 +116,7 @@ function WhyDrawer({ move, personaId, onClose }: { move: RankedMove; personaId: 
             <p className="text-xs text-muted mt-2">Every number here comes from OneFlow&apos;s projection engine, not the AI.</p>
           </div>
         )}
-        {brief && <div className="panel p-4 text-sm whitespace-pre-wrap leading-relaxed">{brief}</div>}
+        {brief && <div className="panel p-4 text-sm leading-relaxed"><RichText text={brief} /></div>}
         <CoachPanel personaId={personaId} onBrief={setBrief} />
       </div>
     </div>
