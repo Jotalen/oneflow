@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Analysis } from "@/lib/engine/analyze";
 import { buildBankView } from "@/lib/bank/view";
+import { viewWithPlan } from "@/lib/bank/budgetPlan";
 import {
   addBubble, applyPrefs, BUBBLES, canAddBubble, DEFAULT_PREFS, dropBubble, houseSummary, moveBubble,
   parseDashboardPrefs, recommendBubbles, removeBubble, setAutoPick, type BubbleId, type DashboardPrefs,
@@ -75,6 +76,14 @@ describe("recommendBubbles: rules", () => {
     const r = recommendBubbles(a, v, NO_GOAL);
     expect(r).toContain("budget_left");
     expect(r.indexOf("budget_left")).toBeLessThan(r.indexOf("day_to_day"));
+  });
+  test("Budget left follows the user's own limits, not the suggestion", () => {
+    const { a, v } = load("C004");
+    const roomy = Object.fromEntries(v.budget.categories.map((c) => [c.key, 9_000_000]));
+    expect(recommendBubbles(a, viewWithPlan(v, { mode: "manual", auto: {}, manual: roomy }), NO_GOAL)).not.toContain("budget_left");
+    const { a: a2, v: v2 } = load("C003");
+    const tight = Object.fromEntries(v2.budget.categories.filter((c) => !c.fixed && c.spent > 0).map((c) => [c.key, 1]));
+    expect(recommendBubbles(a2, viewWithPlan(v2, { mode: "manual", auto: {}, manual: tight }), NO_GOAL)).toContain("budget_left");
   });
   test("customers flagged for extra care are not shown the car-shopping pitch unless their lease is ending", () => {
     const { a, v } = load("C005"); // loan 90% paid, not vulnerable: suggested

@@ -7,6 +7,8 @@ import { useReadyBank } from "@/components/nova/BankProvider";
 import { FraudTile } from "@/components/FraudTile";
 import { useDashboardPrefs } from "@/lib/bank/useDashboard";
 import { applyPrefs, recommendBubbles, setAutoPick } from "@/lib/bank/bubbles";
+import { viewWithPlan } from "@/lib/bank/budgetPlan";
+import { useBudgetPlan } from "@/components/nova/everyday/useBudgetPlan";
 import { useGoals } from "@/lib/bank/goals";
 
 const TITLE = "Settings";
@@ -93,8 +95,9 @@ type ReadyBank = NonNullable<ReturnType<typeof useReadyBank>>;
 function DashboardPanel({ bank }: { bank: ReadyBank }) {
   const { prefs, save, reset } = useDashboardPrefs(bank.personaId);
   const { goals } = useGoals(bank.personaId);
+  const [plan] = useBudgetPlan(bank.personaId);
   const [didReset, setDidReset] = useState(false);
-  const current = applyPrefs(recommendBubbles(bank.analysis, bank.view, { hasGoal: goals.length > 0 }), prefs);
+  const current = applyPrefs(recommendBubbles(bank.analysis, viewWithPlan(bank.view, plan), { hasGoal: goals.length > 0 }), prefs);
   return (
     <Panel title="Dashboard">
       <Toggle label="Let OneFlow pick my bubbles" sub="Bubbles appear when you link a loan, start a goal, or something needs attention. Your changes always win." on={prefs.auto} onChange={(v) => { save(setAutoPick(prefs, current, v)); setDidReset(false); }} />

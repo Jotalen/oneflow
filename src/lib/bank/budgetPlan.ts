@@ -5,7 +5,7 @@
  * Pure: storage lives in the components (useBudgetPlan).
  */
 import { z } from "zod";
-import { CATEGORY_LABEL, SPENDING_CATEGORIES, budgetNote, isSpendingCategory, type Budget, type BudgetCategory, type LedgerTxn } from "@/lib/bank/view";
+import { CATEGORY_LABEL, SPENDING_CATEGORIES, budgetNote, isSpendingCategory, type BankView, type Budget, type BudgetCategory, type LedgerTxn } from "@/lib/bank/view";
 import type { BudgetOverrides } from "@/lib/bank/everyday";
 import type { Cents } from "@/lib/money";
 
@@ -18,8 +18,18 @@ export const MAX_CATEGORY_LIMIT: Cents = 10_000_000;
 
 const isValidLimit = (v: unknown): v is Cents => typeof v === "number" && Number.isInteger(v) && v >= 0 && v <= MAX_CATEGORY_LIMIT;
 
-const Amounts = z.record(z.string(), z.unknown()).catch({}).transform((rec): BudgetOverrides =>
-  Object.fromEntries(Object.entries(rec).filter(([k, v]) => isSpendingCategory(k) && isValidLimit(v))) as BudgetOverrides);
+const validAmounts = (rec: Record<string, unknown>): BudgetOverrides =>
+  Object.fromEntries(Object.entries(rec).filter(([k, v]) => isSpendingCategory(k) && isValidLimit(v))) as BudgetOverrides;
+
+const Amounts = z.record(z.string(), z.unknown()).catch({}).transform(validAmounts);
+
+/** Category keys renamed when the 16 categories arrived; an amount already saved under the new key wins. */
+const RENAMED_KEYS: Readonly<Record<string, string>> = { dining: "food" };
+
+function migrateLegacy(legacy: Record<string, unknown>): BudgetOverrides {
+  const renamed = Object.fromEntries(Object.entries(legacy).filter(([k]) => k in RENAMED_KEYS).map(([k, v]) => [RENAMED_KEYS[k], v]));
+  return validAmounts({ ...renamed, ...legacy });
+}
 
 const PlanSchema = z.object({ mode: z.enum(["auto", "manual"]), auto: Amounts.default({}), manual: Amounts.default({}) });
 
@@ -36,7 +46,7 @@ export function parsePlan(raw: string | null): BudgetPlan | null {
 
 /** A stored plan, or the older "Edit budget" overrides carried over as auto-mode tweaks. */
 export function resolvePlan(stored: BudgetPlan | null, legacy: BudgetOverrides): BudgetPlan {
-  return stored ?? { ...EMPTY_PLAN, auto: legacy };
+  return stored ?? { ...EMPTY_PLAN, auto: migrateLegacy(legacy) };
 }
 
 const totals = (budget: Budget, categories: BudgetCategory[]): Budget => ({
@@ -74,6 +84,11 @@ export function planBudget(suggested: Budget, ledger: LedgerTxn[], plan: BudgetP
     return !c.fixed && isValidLimit(o) ? withLimit(c, o) : c;
   });
   return totals(suggested, categories);
+}
+
+/** The bank view with its budget replaced by the user's plan, so every screen shows the same limits. */
+export function viewWithPlan(view: BankView, plan: BudgetPlan): BankView {
+  return { ...view, budget: planBudget(view.budget, view.ledger, plan) };
 }
 
 /** Starting amounts for "Set my own": the flexible suggested limits. */

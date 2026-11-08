@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import type { Budget, LedgerTxn } from "@/lib/bank/view";
+import type { BankView, Budget, LedgerTxn } from "@/lib/bank/view";
 import {
-  EMPTY_PLAN, MAX_CATEGORY_LIMIT, effectiveOverrides, parsePlan, planBudget, resolvePlan, seedManual, switchMode, wheelSlices,
+  EMPTY_PLAN, MAX_CATEGORY_LIMIT, effectiveOverrides, parsePlan, planBudget, resolvePlan, seedManual, switchMode, viewWithPlan, wheelSlices,
 } from "@/lib/bank/budgetPlan";
 
 const tx = (o: Partial<LedgerTxn>): LedgerTxn => ({
@@ -45,6 +45,13 @@ describe("resolvePlan", () => {
   });
   test("without a plan, older 'Edit budget' overrides become auto-mode tweaks", () => {
     expect(resolvePlan(null, { food: 9 })).toEqual({ ...EMPTY_PLAN, auto: { food: 9 } });
+  });
+  test("older overrides: dining becomes food, unknown keys and bad amounts are dropped", () => {
+    const legacy = { dining: 9, transport: 5, groceries: 3, home: -1 } as Record<string, number>;
+    expect(resolvePlan(null, legacy)).toEqual({ ...EMPTY_PLAN, auto: { food: 9, groceries: 3 } });
+  });
+  test("older overrides: an existing food amount wins over dining", () => {
+    expect(resolvePlan(null, { dining: 9, food: 4 } as Record<string, number>).auto).toEqual({ food: 4 });
   });
 });
 
@@ -126,5 +133,19 @@ describe("wheelSlices", () => {
     expect(s.map((x) => x.over)).toEqual([false, false, false, true, true, false]);
     expect(s[3].overBy).toBe(5_000);
     expect(s[3].pct).toBe(150);
+  });
+});
+
+describe("viewWithPlan", () => {
+  const view = { ledger, budget: suggested } as unknown as BankView;
+  test("the view's budget becomes the user's plan", () => {
+    const plan = { mode: "manual" as const, auto: {}, manual: { food: 1_000, groceries: 2_000 } };
+    expect(viewWithPlan(view, plan).budget).toEqual(planBudget(suggested, ledger, plan));
+  });
+  test("never mutates the view, and the default plan keeps the suggestion", () => {
+    const next = viewWithPlan(view, EMPTY_PLAN);
+    expect(next).not.toBe(view);
+    expect(view.budget).toBe(suggested);
+    expect(next.budget.categories).toEqual(suggested.categories);
   });
 });

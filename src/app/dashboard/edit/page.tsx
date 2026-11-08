@@ -11,6 +11,8 @@ import {
 } from "@/lib/bank/bubbles";
 import { useDashboardPrefs } from "@/lib/bank/useDashboard";
 import { useGoals } from "@/lib/bank/goals";
+import { useBudgetPlan } from "@/components/nova/everyday/useBudgetPlan";
+import { viewWithPlan } from "@/lib/bank/budgetPlan";
 
 const ICON_BTN = "h-7 w-7 rounded-full border border-line text-xs disabled:opacity-40";
 
@@ -20,10 +22,11 @@ export default function EditDashboardPage() {
   const personaId = b?.personaId ?? "";
   const { prefs, save, reset } = useDashboardPrefs(personaId);
   const { goals } = useGoals(personaId);
+  const [plan] = useBudgetPlan(personaId);
   const [dragId, setDragId] = useState<BubbleId | null>(null);
   if (!b) return <><PageHeader title="Edit dashboard" /><Loading /></>;
 
-  const recommended = recommendBubbles(b.analysis, b.view, { hasGoal: goals.length > 0 });
+  const recommended = recommendBubbles(b.analysis, viewWithPlan(b.view, plan), { hasGoal: goals.length > 0 });
   const current = applyPrefs(recommended, prefs);
   const available = BUBBLES.filter((x) => !current.includes(x.id));
   const hasContract = !!b.analysis.profile.contract;
