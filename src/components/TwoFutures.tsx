@@ -1,7 +1,7 @@
 "use client";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Projection } from "@/lib/engine/project";
-import { fmtUSD } from "@/lib/money";
+import { fmtAxisK, fmtUSD } from "@/lib/money";
 
 const EVENT_LABEL: Record<string, string> = { lease_end: "Lease ends", payoff: "Loan paid off", card_paid: "Card paid", expense: "One-time cost" };
 
@@ -20,9 +20,9 @@ export function TwoFutures({ baseline, applied, appliedLabel = "Do this" }: { ba
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
             <XAxis dataKey="month" stroke="#a5b0d6" tick={{ fontSize: 11 }} tickFormatter={(m) => (m === 0 ? "now" : `${m}m`)} />
-            <YAxis stroke="#a5b0d6" tick={{ fontSize: 11 }} width={56} tickFormatter={(v) => `$${Math.round(v / 1000)}k`} />
+            <YAxis stroke="#a5b0d6" tick={{ fontSize: 11 }} width={56} tickFormatter={(v: number) => fmtAxisK(v * 100)} />
             <Tooltip
-              contentStyle={{ background: "#141b34", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12, fontSize: 12 }}
+              contentStyle={{ background: "var(--surface)", border: "1px solid var(--line)", borderRadius: 12, fontSize: 12 }}
               formatter={(v, name) => [fmtUSD(Math.round(Number(v) * 100)), name === "base" ? "Do nothing" : appliedLabel]}
               labelFormatter={(m) => (m === 0 ? "Today" : `Month ${m}`)}
             />
