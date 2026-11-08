@@ -9,6 +9,7 @@ import { fmtUSD, type Cents } from "@/lib/money";
 import { addMonths, buildBankView, monthsToTarget, REWARD_RATE, type Category } from "@/lib/bank/view";
 import { applyEssentialOverrides, essentialsTotal, runway, type EssentialItem, type EssentialOverrides } from "@/lib/bank/wealth";
 import type { LlmProvider, Msg } from "./provider";
+import { withTimeout } from "@/lib/llm/timeout";
 
 export type AssistTopic = "safety_net" | "which_card";
 export type AssistSource = "gemini" | "openrouter" | "offline";
@@ -286,12 +287,6 @@ function offlineFor(input: AssistInput): { text: string; lead: string } {
 
 /** A slow model must not keep the customer waiting: past this, the next provider (or offline) answers. */
 export const PROVIDER_TIMEOUT_MS = 15_000;
-
-function withTimeout<T>(p: Promise<T>, ms: number, name: string): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${name} timed out after ${ms}ms`)), ms); });
-  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
-}
 
 /** Tries each real model in order; any failure, timeout or invented number falls through to the offline answer. */
 export async function answerAssist(input: AssistInput, chain: readonly LlmProvider[], timeoutMs: number = PROVIDER_TIMEOUT_MS): Promise<AssistAnswer> {

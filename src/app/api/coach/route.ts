@@ -3,7 +3,8 @@ import { NessieError } from "@/lib/nessie/client";
 import { getAnalysis, knownPersona } from "@/lib/server/analysis";
 import { providerChain } from "@/lib/llm";
 import type { LlmProvider } from "@/lib/llm/provider";
-import { coachAnalyze, runCoach } from "@/lib/llm/coach";
+import { COACH_PROVIDER_TIMEOUT_MS, coachAnalyze, runCoach } from "@/lib/llm/coach";
+import { withTimeout } from "@/lib/llm/timeout";
 import type { Msg } from "@/lib/llm/provider";
 
 const MAX_HISTORY = 8;
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
     const failed: string[] = [];
     for (const provider of chain) {
       try {
-        const result = await run(provider);
+        const result = provider.name === "stub" ? await run(provider) : await withTimeout(run(provider), COACH_PROVIDER_TIMEOUT_MS, provider.name);
         const notice = failed.length ? `${failed.join(" and ")} ${failed.length > 1 ? "were" : "was"} busy, so ${provider.name === "stub" ? "OneFlow's built-in narrator" : provider.name} answered. Same numbers, same rules.` : undefined;
         return NextResponse.json({ ...result, provider: provider.name, ...(notice ? { notice } : {}) });
       } catch (llmErr) {

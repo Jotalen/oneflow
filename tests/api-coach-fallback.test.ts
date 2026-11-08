@@ -22,6 +22,22 @@ describe("POST /api/coach provider chain", () => {
     expect(json.text).toBe("Buy the car.");
     expect(json.notice).toMatch(/gemini/i);
   });
+  test("Gemini hangs → times out and OpenRouter answers", async () => {
+    const { COACH_PROVIDER_TIMEOUT_MS } = await import("@/lib/llm/coach");
+    await import("@/app/api/coach/route");
+    chain = () => [{ name: "gemini", chat: () => new Promise(() => {}) }, { name: "openrouter", chat: async () => ({ text: "Keep the car." }) }];
+    vi.useFakeTimers();
+    try {
+      const pending = ask();
+      await vi.advanceTimersByTimeAsync(COACH_PROVIDER_TIMEOUT_MS + 1);
+      const json = await (await pending).json();
+      expect(json.provider).toBe("openrouter");
+      expect(json.text).toBe("Keep the car.");
+      expect(json.notice).toMatch(/gemini/i);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
   test("every LLM busy → built-in narrator, never a 502", async () => {
     const { StubProvider } = await import("@/lib/llm/stub");
     chain = () => [busy("gemini"), busy("openrouter"), new StubProvider()];
