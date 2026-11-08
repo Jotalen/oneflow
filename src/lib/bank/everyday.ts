@@ -2,8 +2,8 @@
  * Pure helpers for the Everyday pages (day-to-day, transactions, budget, rewards).
  * Deterministic, no I/O: localStorage reads/writes live in the components.
  */
-import { CATEGORY_LABEL, REWARD_RATE, type Budget, type BudgetCategory, type Category, type LedgerTxn } from "@/lib/bank/view";
-import { fmtUSD, parseCents, type Cents } from "@/lib/money";
+import { CATEGORY_LABEL, REWARD_RATE, budgetNote, isCategory, type Budget, type Category, type LedgerTxn, type UpcomingBill } from "@/lib/bank/view";
+import { parseCents, type Cents } from "@/lib/money";
 
 export type AmountFilter = "any" | "under25" | "25to100" | "over100";
 const SMALL: Cents = 2_500;
@@ -27,7 +27,11 @@ const inBucket = (amount: Cents, f: AmountFilter): boolean => {
 export interface TxnMeta { category?: Category; note?: string }
 export type TxnMetaMap = Record<string, TxnMeta>;
 
-export const categoryOf = (t: LedgerTxn, meta: TxnMetaMap = {}): Category => meta[t.id]?.category ?? t.category;
+/** The user's category for a row if it is a current one (older saved keys like "dining" are ignored). */
+export const categoryOf = (t: LedgerTxn, meta: TxnMetaMap = {}): Category => {
+  const chosen = meta[t.id]?.category;
+  return isCategory(chosen) ? chosen : t.category;
+};
 
 export interface LedgerFilter { q?: string; accountId?: string; category?: Category; amount?: AmountFilter }
 
@@ -66,18 +70,13 @@ export function ledgerCsv(ledger: LedgerTxn[], meta: TxnMetaMap = {}): string {
 
 export type BudgetOverrides = Record<string, Cents>;
 
-const noteFor = (c: BudgetCategory): string => {
-  if (c.fixed) return c.spent >= c.limit ? "Paid" : "Due this month";
-  return c.spent > c.limit ? `Over by ${fmtUSD(c.spent - c.limit)}` : `${fmtUSD(c.limit - c.spent)} left`;
-};
-
 /** Apply user-edited limits (valid non-negative cents only); returns a new Budget with totals recomputed. */
 export function applyBudgetOverrides(budget: Budget, overrides: BudgetOverrides): Budget {
   const categories = budget.categories.map((c) => {
     const o = overrides[c.key];
     const limit = typeof o === "number" && Number.isFinite(o) && o >= 0 ? Math.round(o) : c.limit;
     const next = { ...c, limit };
-    return { ...next, note: noteFor(next) };
+    return { ...next, note: budgetNote(next) };
   });
   return {
     ...budget,
@@ -104,6 +103,33 @@ export function monthlySpend(ledger: LedgerTxn[]): { month: string; spent: Cents
 export function pointsForTxn(t: LedgerTxn): number {
   if (t.accountKind !== "card" || t.kind !== "purchase" || t.amount >= 0) return 0;
   return Math.round((Math.abs(t.amount) / 100) * (REWARD_RATE[t.category] ?? 1));
+}
+
+/** Points earned across the given rows (card purchases only), at each row's current category. */
+export function pointsSummary(rows: LedgerTxn[], meta: TxnMetaMap = {}): { points: number; purchases: number } {
+  const earned = rows.map((t) => pointsForTxn({ ...t, category: categoryOf(t, meta) })).filter((p) => p > 0);
+  return { points: earned.reduce((s, p) => s + p, 0), purchases: earned.length };
+}
+
+/** A real upcoming bill in the "Pay a bill" picker. Only bills the /api/transfer flow can pay are payable. */
+export interface BillOption { id: string; label: string; amount: Cents; date: string; payable: boolean; reason: string }
+
+/** The card bill is paid by a checking → card transfer; other bills are autopay or paid with the biller. */
+export const CARD_BILL_ID = "card";
+
+export function billOptions(upcoming: UpcomingBill[], cardBalance: Cents): BillOption[] {
+  return upcoming.map((b) => {
+    const isCard = b.id === CARD_BILL_ID;
+    const payable = isCard && cardBalance > 0;
+    const reason = payable ? "" : isCard ? "Nothing owed" : /autopay on/i.test(b.detail) ? "On autopay" : "Pay this one with the biller";
+    return { id: b.id, label: b.label, amount: b.amount, date: b.date, payable, reason };
+  });
+}
+
+/** Preselect a bill only when exactly one can be paid. */
+export function defaultBillId(options: BillOption[]): string {
+  const payable = options.filter((o) => o.payable);
+  return payable.length === 1 ? payable[0].id : "";
 }
 
 export interface Redemption { id: string; points: number; at: string; label: string }

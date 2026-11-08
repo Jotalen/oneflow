@@ -11,7 +11,7 @@ const tx = (o: Partial<LedgerTxn>): LedgerTxn => ({
 });
 
 const ledger: LedgerTxn[] = [
-  tx({ id: "a", date: "2026-11-07", merchant: "Starbucks", category: "dining", amount: -1248 }),
+  tx({ id: "a", date: "2026-11-07", merchant: "Starbucks", category: "food", amount: -1248 }),
   tx({ id: "b", date: "2026-11-06", merchant: "Amazon", category: "shopping", amount: -6499 }),
   tx({ id: "c", date: "2026-11-06", merchant: "Paycheck", category: "income", amount: 125000, accountKind: "checking", accountId: "a2", accountLabel: "Checking", kind: "deposit" }),
   tx({ id: "d", date: "2026-10-02", merchant: "QuikTrip", category: "gas", amount: -3820 }),
@@ -24,7 +24,7 @@ describe("filterLedger", () => {
   });
   test("matches merchant, category label and amount text, case-insensitive", () => {
     expect(filterLedger(ledger, { q: "amaz" }).map((t) => t.id)).toEqual(["b"]);
-    expect(filterLedger(ledger, { q: "dining" }).map((t) => t.id)).toEqual(["a"]);
+    expect(filterLedger(ledger, { q: "food & drink" }).map((t) => t.id)).toEqual(["a"]);
     expect(filterLedger(ledger, { q: "64.99" }).map((t) => t.id)).toEqual(["b"]);
   });
   test("filters by account, category and amount bucket", () => {
@@ -52,7 +52,7 @@ describe("ledgerCsv", () => {
     expect(lines[1]).toBe('2026-11-06,"Shop, ""Inc""",Rewards Card,Shopping,-12.34,gift');
   });
   test("uses overridden category", () => {
-    expect(ledgerCsv([tx({})], { t1: { category: "fun" } }).split("\n")[1]).toContain(",Fun,");
+    expect(ledgerCsv([tx({})], { t1: { category: "entertainment" } }).split("\n")[1]).toContain(",Entertainment,");
   });
 });
 
@@ -61,11 +61,11 @@ describe("applyBudgetOverrides", () => {
     month: "2026-11", dayOfMonth: 7, daysInMonth: 30, spent: 20000, limit: 40000,
     categories: [
       { key: "groceries", label: "Groceries", spent: 15000, limit: 30000, note: "", fixed: false },
-      { key: "dining", label: "Dining out", spent: 5000, limit: 10000, note: "", fixed: false },
+      { key: "food", label: "Food & Drink", spent: 5000, limit: 10000, note: "", fixed: false },
     ],
   };
   test("replaces limits, recomputes totals and notes, without mutating input", () => {
-    const out = applyBudgetOverrides(budget, { dining: 4000 });
+    const out = applyBudgetOverrides(budget, { food: 4000 });
     expect(out.limit).toBe(34000);
     expect(out.categories[1].limit).toBe(4000);
     expect(out.categories[1].note).toBe("Over by $10.00");
@@ -73,7 +73,7 @@ describe("applyBudgetOverrides", () => {
     expect(budget.categories[1].limit).toBe(10000);
   });
   test("ignores invalid overrides", () => {
-    expect(applyBudgetOverrides(budget, { dining: -5, groceries: Number.NaN }).limit).toBe(40000);
+    expect(applyBudgetOverrides(budget, { food: -5, groceries: Number.NaN }).limit).toBe(40000);
   });
 });
 
@@ -90,7 +90,7 @@ describe("monthlySpend", () => {
 
 describe("rewards helpers", () => {
   test("pointsForTxn: card purchases only, at the category rate", () => {
-    expect(pointsForTxn(tx({ category: "dining", amount: -1248 }))).toBe(37);
+    expect(pointsForTxn(tx({ category: "food", amount: -1248 }))).toBe(37);
     expect(pointsForTxn(tx({ category: "shopping", amount: -6499 }))).toBe(65);
     expect(pointsForTxn(tx({ accountKind: "checking" }))).toBe(0);
   });

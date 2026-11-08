@@ -9,22 +9,10 @@
 import { AS_OF, type Contract, type Profile, type Txn } from "@/lib/engine/types";
 import type { Analysis } from "@/lib/engine/analyze";
 import { fmtUSD, type Cents } from "@/lib/money";
+import { CATEGORY_LABEL, SPENDING_CATEGORIES, categorize, type Category, type SpendingCategory } from "@/lib/bank/categories";
 
-export type Category =
-  | "income" | "transfer" | "groceries" | "dining" | "gas" | "shopping" | "subscriptions"
-  | "health" | "transport" | "fun" | "home" | "car" | "debt";
-
-export const CATEGORY_LABEL: Record<Category, string> = {
-  income: "Income", transfer: "Transfer", groceries: "Groceries", dining: "Dining out", gas: "Gas",
-  shopping: "Shopping", subscriptions: "Subscriptions", health: "Health", transport: "Rides",
-  fun: "Fun", home: "Home", car: "Car payment", debt: "Other debt",
-};
-
-const MERCHANT_CATEGORY: Record<string, Category> = {
-  "tom thumb": "groceries", "quiktrip": "gas", "torchy's tacos": "dining", "starbucks": "dining",
-  "cvs pharmacy": "health", "uber": "transport", "target": "shopping", "amazon": "shopping",
-  "amc theatres": "fun", "home depot": "home",
-};
+export { CATEGORY_LABEL, SPENDING_CATEGORIES, categorize, isCategory, isSpendingCategory } from "@/lib/bank/categories";
+export type { Category, SpendingCategory } from "@/lib/bank/categories";
 
 export const WINDOW_DAYS = 56;
 const MS_DAY = 86_400_000;
@@ -36,13 +24,6 @@ export const addMonths = (iso: string, n: number) => {
   d.setUTCMonth(d.getUTCMonth() + n);
   return isoDay(d);
 };
-
-export function categorize(kind: string, description = ""): Category {
-  const d = description.toLowerCase();
-  if (kind === "deposit") return "income";
-  if (kind === "transfer" || kind === "withdrawal") return "transfer";
-  return MERCHANT_CATEGORY[d] ?? "shopping";
-}
 
 export interface LedgerTxn {
   id: string;
@@ -102,11 +83,19 @@ export function cashHistory(p: Profile, ledger: LedgerTxn[], days: number): Poin
   return out.reverse();
 }
 
-export const REWARD_RATE: Partial<Record<Category, number>> = { dining: 3, groceries: 2, gas: 2 };
+/** Card earn rates. "Dining" is the Food & Drink category (restaurants and coffee). */
+export const REWARD_RATE: Partial<Record<Category, number>> = { food: 3, groceries: 2, gas: 2 };
+
+/** The same rules in display order, for "How you earn" copy. */
+export const REWARD_RULES: { rate: number; label: string }[] = [
+  { rate: 3, label: `Dining (${CATEGORY_LABEL.food})` },
+  { rate: 2, label: `${CATEGORY_LABEL.groceries} and ${CATEGORY_LABEL.gas}` },
+  { rate: 1, label: "Everything else" },
+];
 
 export interface Rewards { points: number; valueCents: Cents; monthPoints: number; recent: { txn: LedgerTxn; points: number; rate: number }[] }
 
-/** Card rewards: 3x dining, 2x groceries & gas, 1x everything else. 100 points = $1. */
+/** Card rewards: 3x dining (Food & Drink), 2x groceries & gas, 1x everything else. 100 points = $1. */
 export function rewardsFor(ledger: LedgerTxn[]): Rewards {
   const earned = ledger
     .filter((t) => t.accountKind === "card" && t.kind === "purchase" && t.amount < 0)
@@ -208,13 +197,42 @@ export function monthsToTarget(have: Cents, target: Cents, monthly: Cents): numb
   return Math.ceil((target - have) / monthly);
 }
 
-export interface BudgetCategory { key: Category | "bills"; label: string; spent: Cents; limit: Cents; note: string; fixed: boolean }
+/**
+ * One budget line per spending category. `fixed` lines are set by recurring bills (car payment under
+ * Automotive; subscriptions, phone and other debt under Bills & Utilities) and are not user-editable.
+ * `key` stays `Category | "bills"` for older callers; "bills" is now itself a SpendingCategory.
+ */
+export interface BudgetCategory { key: Category | "bills"; label: string; spent: Cents; limit: Cents; note: string; fixed: boolean; detail?: string }
 export interface Budget { month: string; dayOfMonth: number; daysInMonth: number; spent: Cents; limit: Cents; categories: BudgetCategory[] }
 
-const FLEX: Category[] = ["groceries", "dining", "gas", "shopping", "health", "transport", "fun", "home"];
 const roundUpTo = (c: Cents, step: Cents) => Math.ceil(c / step) * step;
 const BUDGET_STEP: Cents = 1_000;
 const WEEKS_PER_MONTH = 4.33;
+
+/** "Paid" / "Due this month" for bill-set lines; "$x left" / "Over by $x" otherwise. */
+export function budgetNote(c: Pick<BudgetCategory, "fixed" | "spent" | "limit">): string {
+  if (c.fixed) return c.spent >= c.limit ? "Paid" : "Due this month";
+  return c.spent > c.limit ? `Over by ${fmtUSD(c.spent - c.limit)}` : `${fmtUSD(c.limit - c.spent)} left`;
+}
+
+interface RecurringLine { limit: Cents; paid: Cents; detail: string }
+
+const sumBills = (bills: Profile["bills"], dayOfMonth: number): { limit: Cents; paid: Cents } => ({
+  limit: bills.reduce((s, b) => s + b.amount, 0),
+  paid: bills.filter((b) => (b.dueDay ?? 1) <= dayOfMonth).reduce((s, b) => s + b.amount, 0),
+});
+
+const subscriptionBills = (p: Profile) => p.bills.filter((b) => b.isSubscription && b.status === "recurring");
+const debtBills = (p: Profile) => p.bills.filter((b) => b.isDebtPayment && b.status === "recurring");
+
+function recurringLines(p: Profile, dayOfMonth: number): Partial<Record<SpendingCategory, RecurringLine>> {
+  const c = p.contract;
+  const bills = [...subscriptionBills(p), ...debtBills(p)];
+  return {
+    ...(c ? { automotive: { limit: c.monthlyPayment, paid: c.dueDay <= dayOfMonth ? c.monthlyPayment : 0, detail: c.type === "lease" ? "Car lease" : "Car payment" } } : {}),
+    ...(bills.length ? { bills: { ...sumBills(bills, dayOfMonth), detail: "Subscriptions, phone and other debt payments" } } : {}),
+  };
+}
 
 function buildBudget(p: Profile, ledger: LedgerTxn[]): Budget {
   const month = AS_OF.slice(0, 7);
@@ -222,33 +240,18 @@ function buildBudget(p: Profile, ledger: LedgerTxn[]): Budget {
   const daysInMonth = 30;
   const thisMonth = ledger.filter((t) => t.date.startsWith(month) && t.amount < 0);
   const weeks = WINDOW_DAYS / 7;
-  const flex: BudgetCategory[] = FLEX.map((cat) => {
+  const recurring = recurringLines(p, dayOfMonth);
+  const lines: BudgetCategory[] = SPENDING_CATEGORIES.map((cat) => {
     const all = ledger.filter((t) => t.category === cat && t.amount < 0).reduce((s, t) => s - t.amount, 0);
-    const spent = thisMonth.filter((t) => t.category === cat).reduce((s, t) => s - t.amount, 0);
-    const limit = roundUpTo((all / weeks) * WEEKS_PER_MONTH, BUDGET_STEP);
-    return { key: cat, label: CATEGORY_LABEL[cat], spent, limit, note: "", fixed: false };
-  }).filter((c) => c.limit > 0);
-  const fixed: BudgetCategory[] = [];
-  if (p.contract) {
-    const paid = p.contract.dueDay <= dayOfMonth;
-    fixed.push({ key: "car", label: p.contract.type === "lease" ? "Car lease" : "Car payment", spent: paid ? p.contract.monthlyPayment : 0, limit: p.contract.monthlyPayment, note: "", fixed: true });
-  }
-  const subs = p.bills.filter((b) => b.isSubscription && b.status === "recurring");
-  if (subs.length) {
-    const limit = subs.reduce((s, b) => s + b.amount, 0);
-    const spent = subs.filter((b) => (b.dueDay ?? 1) <= dayOfMonth).reduce((s, b) => s + b.amount, 0);
-    fixed.push({ key: "subscriptions", label: "Subscriptions & phone", spent, limit, note: "", fixed: true });
-  }
-  const other = p.bills.filter((b) => b.isDebtPayment && b.status === "recurring");
-  if (other.length) {
-    const limit = other.reduce((s, b) => s + b.amount, 0);
-    const spent = other.filter((b) => (b.dueDay ?? 1) <= dayOfMonth).reduce((s, b) => s + b.amount, 0);
-    fixed.push({ key: "debt", label: "Other debt", spent, limit, note: "", fixed: true });
-  }
-  const categories = [...fixed, ...flex].map((c) => ({
-    ...c,
-    note: c.fixed ? (c.spent >= c.limit ? "Paid" : "Due this month") : c.spent > c.limit ? `Over by ${fmtUSD(c.spent - c.limit)}` : `${fmtUSD(c.limit - c.spent)} left`,
-  }));
+    const flexSpent = thisMonth.filter((t) => t.category === cat).reduce((s, t) => s - t.amount, 0);
+    const flexLimit = roundUpTo((all / weeks) * WEEKS_PER_MONTH, BUDGET_STEP);
+    const rec = recurring[cat];
+    return {
+      key: cat, label: CATEGORY_LABEL[cat], spent: (rec?.paid ?? 0) + flexSpent, limit: (rec?.limit ?? 0) + flexLimit,
+      note: "", fixed: Boolean(rec), ...(rec ? { detail: rec.detail } : {}),
+    };
+  });
+  const categories = lines.filter((c) => c.limit > 0 || c.spent > 0).map((c) => ({ ...c, note: budgetNote(c) }));
   return {
     month, dayOfMonth, daysInMonth,
     spent: categories.reduce((s, c) => s + c.spent, 0),
@@ -281,11 +284,11 @@ function buildSafetyNet(p: Profile, budget: Budget): SafetyNet {
   const fund = p.accounts.filter((a) => isCash(a.kind)).reduce((s, a) => s + a.balance, 0);
   const lim = (k: string) => budget.categories.find((c) => c.key === k)?.limit ?? 0;
   const essentials = [
-    { label: p.contract?.type === "lease" ? "Car lease" : "Car payment", value: lim("car") },
+    { label: p.contract?.type === "lease" ? "Car lease" : "Car payment", value: p.contract?.monthlyPayment ?? 0 },
     { label: "Groceries", value: lim("groceries") },
     { label: "Gas", value: lim("gas") },
-    { label: "Phone & subscriptions", value: lim("subscriptions") },
-    { label: "Other debt payments", value: lim("debt") },
+    { label: "Phone & subscriptions", value: sumBills(subscriptionBills(p), 0).limit },
+    { label: "Other debt payments", value: sumBills(debtBills(p), 0).limit },
     { label: "Health", value: lim("health") },
   ].filter((e) => e.value > 0);
   const essentialsMonthly = Math.max(1, essentials.reduce((s, e) => s + e.value, 0));
