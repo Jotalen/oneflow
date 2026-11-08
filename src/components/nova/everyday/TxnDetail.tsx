@@ -1,10 +1,9 @@
 "use client";
 import { fmtDate, fmtSigned, initials } from "@/components/nova/ui";
-import { CATEGORY_LABEL, type Budget, type Category, type LedgerTxn } from "@/lib/bank/view";
+import type { Budget, Category, LedgerTxn } from "@/lib/bank/view";
+import { CategoryOptions } from "@/components/nova/everyday/CategoryOptions";
 import { categoryOf, pointsForTxn, type TxnMeta, type TxnMetaMap } from "@/lib/bank/everyday";
 import { fmtUSD } from "@/lib/money";
-
-const CATEGORIES = Object.keys(CATEGORY_LABEL) as Category[];
 
 function budgetLine(budget: Budget, cat: Category): string {
   const c = budget.categories.find((x) => x.key === cat);
@@ -30,7 +29,7 @@ export function TxnDetail({ txn, meta, budget, onChange }: { txn: LedgerTxn; met
       <label className="block text-sm font-semibold mt-4">Category
         <select className="mt-1 w-full rounded-lg border border-line bg-surface px-2 py-2 text-sm font-normal" value={cat}
           onChange={(e) => onChange(txn.id, { category: e.target.value as Category })}>
-          {CATEGORIES.map((c) => <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>)}
+          <CategoryOptions />
         </select>
       </label>
       <label className="block text-sm font-semibold mt-3">Note

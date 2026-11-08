@@ -4,6 +4,7 @@ import path from "node:path";
 import type { Analysis } from "@/lib/engine/analyze";
 import {
   categorize, buildLedger, cashHistory, rewardsFor, estimateCreditScore, loanStats, payoffWithExtra, monthsToTarget, buildBankView,
+  CATEGORY_LABEL, REWARD_RATE, REWARD_RULES, budgetNote, isSpendingCategory, type SpendingCategory,
 } from "@/lib/bank/view";
 
 const snap = (id: string) => JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/snapshots", `${id}.json`), "utf8")) as Analysis;
@@ -11,11 +12,11 @@ const snap = (id: string) => JSON.parse(fs.readFileSync(path.join(process.cwd(),
 describe("categorize", () => {
   test("maps seeded merchant names to categories", () => {
     expect(categorize("purchase", "Tom Thumb")).toBe("groceries");
-    expect(categorize("purchase", "Torchy's Tacos")).toBe("dining");
+    expect(categorize("purchase", "Torchy's Tacos")).toBe("food");
     expect(categorize("purchase", "QuikTrip")).toBe("gas");
     expect(categorize("deposit", "Paycheck")).toBe("income");
     expect(categorize("transfer", "Runway: automatic savings")).toBe("transfer");
-    expect(categorize("purchase", "Unknown Shop")).toBe("shopping");
+    expect(categorize("purchase", "Unknown Shop")).toBe("misc");
   });
 });
 
@@ -57,9 +58,9 @@ describe("cashHistory", () => {
 });
 
 describe("rewards", () => {
-  test("3x dining, 2x groceries/gas, 1x else, card purchases only; 100 pts = $1", () => {
+  test("3x dining (Food & Drink), 2x groceries/gas, 1x else, card purchases only; 100 pts = $1", () => {
     const r = rewardsFor([
-      { id: "1", accountId: "card", accountKind: "card", accountLabel: "", date: "2026-11-01", merchant: "Torchy's Tacos", category: "dining", amount: -1000, status: "completed", kind: "purchase" },
+      { id: "1", accountId: "card", accountKind: "card", accountLabel: "", date: "2026-11-01", merchant: "Torchy's Tacos", category: "food", amount: -1000, status: "completed", kind: "purchase" },
       { id: "2", accountId: "card", accountKind: "card", accountLabel: "", date: "2026-11-01", merchant: "QuikTrip", category: "gas", amount: -1000, status: "completed", kind: "purchase" },
       { id: "3", accountId: "card", accountKind: "card", accountLabel: "", date: "2026-11-01", merchant: "Target", category: "shopping", amount: -1000, status: "completed", kind: "purchase" },
       { id: "4", accountId: "chk", accountKind: "checking", accountLabel: "", date: "2026-11-01", merchant: "Target", category: "shopping", amount: -5000, status: "completed", kind: "purchase" },
@@ -118,5 +119,55 @@ describe("buildBankView", () => {
   test("lease persona does not count the leased car as owned", () => {
     const v = buildBankView(snap("C003"));
     expect(v.netWorth.ownParts.some((p) => p.key === "car")).toBe(false);
+  });
+});
+
+describe("budget categories", () => {
+  test.each(["C001", "C003", "C014", "C018"])("%s: every budget line is one of the 16 spending categories, labelled", (id) => {
+    const v = buildBankView(snap(id));
+    for (const c of v.budget.categories) {
+      expect(isSpendingCategory(c.key)).toBe(true);
+      expect(c.label).toBe(CATEGORY_LABEL[c.key as SpendingCategory]);
+    }
+    expect(v.budget.limit).toBe(v.budget.categories.reduce((s, c) => s + c.limit, 0));
+  });
+  test("car payment is a fixed Automotive line; subscriptions + other debt are a fixed Bills & Utilities line", () => {
+    const a = snap("C001");
+    const v = buildBankView(a);
+    const auto = v.budget.categories.find((c) => c.key === "automotive")!;
+    expect(auto).toMatchObject({ fixed: true, limit: a.profile.contract!.monthlyPayment, detail: "Car payment" });
+    const recurring = a.profile.bills.filter((b) => b.status === "recurring" && (b.isSubscription || b.isDebtPayment));
+    const bills = v.budget.categories.find((c) => c.key === "bills")!;
+    expect(bills.fixed).toBe(true);
+    expect(bills.limit).toBe(recurring.reduce((s, b) => s + b.amount, 0));
+  });
+  test("flexible lines come from the ledger's spending, never income or transfers", () => {
+    const flex = buildBankView(snap("C001")).budget.categories.filter((c) => !c.fixed).map((c) => c.key);
+    expect(flex).toContain("groceries");
+    expect(flex).toContain("food");
+    expect(flex).not.toContain("income");
+    expect(flex).not.toContain("transfer");
+  });
+  test("safety-net essentials still use the car payment, subscriptions and debt bills directly", () => {
+    const a = snap("C001");
+    const v = buildBankView(a);
+    const byLabel = Object.fromEntries(v.safetyNet.essentials.map((e) => [e.label, e.value]));
+    expect(byLabel["Car payment"]).toBe(a.profile.contract!.monthlyPayment);
+    const subs = a.profile.bills.filter((b) => b.status === "recurring" && b.isSubscription).reduce((s, b) => s + b.amount, 0);
+    expect(byLabel["Phone & subscriptions"]).toBe(subs);
+    expect(byLabel["Groceries"]).toBe(v.budget.categories.find((c) => c.key === "groceries")!.limit);
+  });
+  test("budgetNote: bills read Paid / Due, flexible lines read left / over", () => {
+    expect(budgetNote({ fixed: true, spent: 100, limit: 100 })).toBe("Paid");
+    expect(budgetNote({ fixed: true, spent: 0, limit: 100 })).toBe("Due this month");
+    expect(budgetNote({ fixed: false, spent: 2_500, limit: 10_000 })).toBe("$75.00 left");
+    expect(budgetNote({ fixed: false, spent: 12_000, limit: 10_000 })).toBe("Over by $20.00");
+  });
+});
+
+describe("REWARD_RULES", () => {
+  test("matches REWARD_RATE: 3x dining, 2x groceries and gas, 1x everything else", () => {
+    expect(REWARD_RULES.map((r) => r.rate)).toEqual([3, 2, 1]);
+    expect(REWARD_RATE).toEqual({ food: 3, groceries: 2, gas: 2 });
   });
 });
