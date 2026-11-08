@@ -24,7 +24,7 @@ function impactLine(m: RankedMove): string {
   return m.impact24 >= 0 ? `About ${amt} better off over 24 months.` : `Costs about ${amt} over 24 months, but lowers risk.`;
 }
 
-/** Dark "Next best move" bubble, pinned to the top. Rotates through the top 3 engine-ranked moves. */
+/** Dark "Next best move" bubble (last on the Overview by default; the person can move it). Rotates through the top 3 engine-ranked moves. */
 export function NextMoveHero() {
   const b = useReadyBank();
   // Carousel position belongs to one persona; switching customers starts at their top move.

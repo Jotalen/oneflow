@@ -84,3 +84,23 @@ export function nearestFrame(yaw: number, set: SpinSet): { frame: SpinFrame; off
   }
   return { frame: best, offsetDeg: bestOffset };
 }
+
+/** Yaw of Toyota's front three-quarter render (frame 1). */
+const FRONT_THREE_QUARTER_YAW = 30;
+
+/** The one image shown at rest: the unmirrored front three-quarter render. */
+export function restFrame(set: SpinSet): SpinFrame {
+  const target = set.full360 ? FRONT_THREE_QUARTER_YAW : SINGLE_FRONT_YAW;
+  return set.frames.find((f) => !f.mirror && f.yaw === target) ?? set.frames[0];
+}
+
+/** Only real multi-angle sets rotate; a single photo stays static (mirroring it would flip badges and plates). */
+export const canRotate = (set: SpinSet): boolean => set.full360;
+
+/** Pointer button numbers from the DOM PointerEvent spec. */
+const PRIMARY_BUTTON = 0;
+
+/** A rotate drag starts only on a plain left-button press, or a touch / pen contact. Middle and right buttons never rotate. */
+export function startsRotateDrag(e: { pointerType: string; button: number }): boolean {
+  return e.button === PRIMARY_BUTTON && (e.pointerType === "mouse" || e.pointerType === "touch" || e.pointerType === "pen");
+}

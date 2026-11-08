@@ -4,8 +4,7 @@ import { useMemo, useSyncExternalStore } from "react";
 import { PageHeader } from "@/components/nova/ui";
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
-import { NextMoveHero } from "@/components/nova/NextMoveHero";
-import { Bubble } from "@/components/nova/bubbles";
+import { Bubble, BUBBLE_GRID, BUBBLE_SPAN } from "@/components/nova/bubbles";
 import { applyPrefs, bubbleDef, recommendBubbles } from "@/lib/bank/bubbles";
 import { useDashboardPrefs } from "@/lib/bank/useDashboard";
 import { useGoals } from "@/lib/bank/goals";
@@ -40,15 +39,9 @@ export default function OverviewPage() {
   return (
     <div className="space-y-4">
       <PageHeader title={title} subtitle={<>Here&apos;s your financial overview.{b.offline && <span className="chip ml-2">offline snapshot</span>}</>} actions={editBtn} />
-      <NextMoveHero />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {ids.filter((id) => bubbleDef(id).size === "small").map((id) => <div key={id}><Bubble id={id} a={b.analysis} v={b.view} goal={topGoal} /></div>)}
-      </div>
-      <div className="grid lg:grid-cols-3 gap-3 sm:gap-4 grid-flow-row-dense">
-        {ids.filter((id) => bubbleDef(id).size !== "small").map((id) => {
-          const el = <Bubble id={id} a={b.analysis} v={b.view} goal={topGoal} />;
-          return el ? <div key={id} className={bubbleDef(id).size === "large" ? "lg:col-span-2" : ""}>{el}</div> : null;
-        })}
+      {/* One grid in the saved order: small, medium and large bubbles can sit anywhere. */}
+      <div className={BUBBLE_GRID}>
+        {ids.map((id) => <div key={id} className={`min-w-0 ${BUBBLE_SPAN[bubbleDef(id).size]}`}><Bubble id={id} a={b.analysis} v={b.view} goal={topGoal} /></div>)}
       </div>
       <Link href="/dashboard/edit" className="btn w-full sm:hidden">✎ Edit dashboard</Link>
     </div>
