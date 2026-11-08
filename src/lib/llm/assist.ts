@@ -156,7 +156,7 @@ const PURCHASE_RULES: readonly [PurchaseKind, RegExp][] = [
 ];
 
 const KIND_CATEGORY: Record<PurchaseKind, Category> = {
-  groceries: "groceries", gas: "gas", dining: "dining", travel: "transport", online: "shopping", big: "shopping", other: "shopping",
+  groceries: "groceries", gas: "gas", dining: "food", travel: "travel", online: "shopping", big: "shopping", other: "shopping",
 };
 const KIND_LABEL: Record<PurchaseKind, string> = {
   groceries: "groceries", gas: "gas", dining: "dining", travel: "travel", online: "online shopping", big: "big purchases", other: "everyday purchases",

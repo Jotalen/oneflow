@@ -124,11 +124,16 @@ describe("whichCardFacts / offlineWhichCard", () => {
     expect(f.fitsAvailable).toBe(true);
     expect(f.utilAfterPct).toBe(Math.round(((286_050 + 20_000) / 500_000) * 100));
   });
+  test("dining earns the card's 3x Food & Drink rate, travel its own category", () => {
+    const a = snap("C001");
+    expect(whichCardFacts(a, "dinner out").best!.rate).toBe(3);
+    expect(whichCardFacts(a, "a flight to Denver").best!.rate).toBe(1);
+  });
   test("several cards: picks the higher multiplier and names the other", () => {
     const a = snap("C001");
     const second = { id: "k2", kind: "card" as const, nickname: "Travel Card", balance: 0, available: 300_000, creditLimit: 300_000 };
     const two = { ...a, profile: { ...a.profile, accounts: [...a.profile.accounts, second] } };
-    const f = whichCardFacts(two, "dining", { "Travel Card": { dining: 1 } });
+    const f = whichCardFacts(two, "dining", { "Travel Card": { food: 1 } });
     expect(f.cards).toHaveLength(2);
     expect(f.best!.name).toBe("Rewards Card");
     expect(offlineWhichCard(f)).toContain("Travel Card");
