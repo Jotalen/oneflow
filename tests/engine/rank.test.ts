@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { carMoves } from "@/lib/engine/moves/car";
 import { bankMoves } from "@/lib/engine/moves/bank";
-import { rankMoves } from "@/lib/engine/moves/rank";
+import { carriesTfsOffer, rankMoves, topTfsMove } from "@/lib/engine/moves/rank";
 import type { Move } from "@/lib/engine/types";
 import { profileFor, toyota } from "../fixtures/profiles";
 
@@ -88,5 +88,31 @@ describe("review fixes — ranking", () => {
       const p = profileFor(id);
       expect(rankMoves(p, carMoves(p, toyota), toyota).find((m) => m.kind === "car")!.tfs!.optionId).toBe("BUYOUT");
     }
+  });
+});
+
+describe("golden-match guards (all 11 current matches)", () => {
+  const MATCHED = ["C001", "C003", "C005", "C008", "C009", "C011", "C012", "C014", "C015", "C017", "C019"];
+  test.each(MATCHED)("%s top TFS move equals the golden offer and carries the badge", (id) => {
+    const p = profileFor(id);
+    const top = topTfsMove(rankMoves(p, [...carMoves(p, toyota), ...bankMoves(p)], toyota))!;
+    expect(top.tfs!.optionId).toBe(golden(id).offer_id);
+    expect(top.goldenMatch).toBe(true);
+  });
+
+  test("exactly one move per customer can carry the badge", () => {
+    for (const c of toyota.customers) {
+      const p = profileFor(c.customer_id);
+      const ranked = rankMoves(p, [...carMoves(p, toyota), ...bankMoves(p)], toyota);
+      expect(ranked.filter((m) => m.goldenMatch).length).toBeLessThanOrEqual(1);
+    }
+  });
+
+  test("carriesTfsOffer: car and human always, bank only when tagged with a TFS offer", () => {
+    const base: Move = { id: "x", kind: "bank", title: "", why: "", impactKind: "fees", overrides: {} };
+    expect(carriesTfsOffer(base)).toBe(false);
+    expect(carriesTfsOffer({ ...base, kind: "car" })).toBe(true);
+    expect(carriesTfsOffer({ ...base, kind: "human" })).toBe(true);
+    expect(carriesTfsOffer({ ...base, tfs: { optionId: "AUTOPAY", eligibility: "Y", tfsTotalVsKeep: null, nextStepType: "Self-service", plainSummary: "", assumption: "", tradeoff: "" } })).toBe(true);
   });
 });
