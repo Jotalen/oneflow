@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
-import type { LedgerTxn, Budget } from "@/lib/bank/view";
+import type { LedgerTxn } from "@/lib/bank/view";
 import {
-  filterLedger, groupByDay, ledgerCsv, applyBudgetOverrides, monthlySpend, pointsForTxn,
+  filterLedger, groupByDay, ledgerCsv, monthlySpend, pointsForTxn,
   parseDollarInput, AMOUNT_FILTERS,
 } from "@/lib/bank/everyday";
 
@@ -56,27 +56,6 @@ describe("ledgerCsv", () => {
   });
 });
 
-describe("applyBudgetOverrides", () => {
-  const budget: Budget = {
-    month: "2026-11", dayOfMonth: 7, daysInMonth: 30, spent: 20000, limit: 40000,
-    categories: [
-      { key: "groceries", label: "Groceries", spent: 15000, limit: 30000, note: "", fixed: false },
-      { key: "food", label: "Food & Drink", spent: 5000, limit: 10000, note: "", fixed: false },
-    ],
-  };
-  test("replaces limits, recomputes totals and notes, without mutating input", () => {
-    const out = applyBudgetOverrides(budget, { food: 4000 });
-    expect(out.limit).toBe(34000);
-    expect(out.categories[1].limit).toBe(4000);
-    expect(out.categories[1].note).toBe("Over by $10.00");
-    expect(out.categories[0].note).toBe("$150.00 left");
-    expect(budget.categories[1].limit).toBe(10000);
-  });
-  test("ignores invalid overrides", () => {
-    expect(applyBudgetOverrides(budget, { food: -5, groceries: Number.NaN }).limit).toBe(40000);
-  });
-});
-
 describe("monthlySpend", () => {
   test("only months with data, oldest first, spending only (no income/transfers)", () => {
     const out = monthlySpend([...ledger, tx({ id: "x", category: "transfer", amount: -99999, date: "2026-11-01" })]);
@@ -116,7 +95,6 @@ describe("all 20 persona snapshots", () => {
       const a = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/snapshots", `${id}.json`), "utf8"));
       const v = buildBankView(a);
       expect(groupByDay(v.ledger).reduce((s, g) => s + g.txns.length, 0)).toBe(v.ledger.length);
-      expect(applyBudgetOverrides(v.budget, {}).limit).toBe(v.budget.limit);
       expect(monthlySpend(v.ledger).every((m) => m.spent > 0)).toBe(true);
       expect(ledgerCsv(v.ledger).split("\n").length).toBe(v.ledger.length + 1);
     }

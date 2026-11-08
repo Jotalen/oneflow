@@ -2,7 +2,7 @@
  * Pure helpers for the Everyday pages (day-to-day, transactions, budget, rewards).
  * Deterministic, no I/O: localStorage reads/writes live in the components.
  */
-import { CATEGORY_LABEL, REWARD_RATE, budgetNote, isCategory, type Budget, type Category, type LedgerTxn, type UpcomingBill } from "@/lib/bank/view";
+import { CATEGORY_LABEL, REWARD_RATE, isCategory, type Category, type LedgerTxn, type UpcomingBill } from "@/lib/bank/view";
 import { parseCents, type Cents } from "@/lib/money";
 
 export type AmountFilter = "any" | "under25" | "25to100" | "over100";
@@ -69,22 +69,6 @@ export function ledgerCsv(ledger: LedgerTxn[], meta: TxnMetaMap = {}): string {
 }
 
 export type BudgetOverrides = Record<string, Cents>;
-
-/** Apply user-edited limits (valid non-negative cents only); returns a new Budget with totals recomputed. */
-export function applyBudgetOverrides(budget: Budget, overrides: BudgetOverrides): Budget {
-  const categories = budget.categories.map((c) => {
-    const o = overrides[c.key];
-    const limit = typeof o === "number" && Number.isFinite(o) && o >= 0 ? Math.round(o) : c.limit;
-    const next = { ...c, limit };
-    return { ...next, note: budgetNote(next) };
-  });
-  return {
-    ...budget,
-    categories,
-    spent: categories.reduce((s, c) => s + c.spent, 0),
-    limit: categories.reduce((s, c) => s + c.limit, 0),
-  };
-}
 
 const NOT_SPENDING: Category[] = ["income", "transfer"];
 
