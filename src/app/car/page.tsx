@@ -15,12 +15,16 @@ import type { TfsMeta } from "@/lib/server/tfs-meta";
 
 type Tab = "loan" | "shop" | "tfs";
 const TITLE = "Car financing";
-const SUBTITLE = "Your Toyota loan, and options for your next car.";
-const TABS: { value: Tab; label: string }[] = [
-  { value: "loan", label: "My loan" },
-  { value: "shop", label: "Shop & finance" },
-  { value: "tfs", label: "TFS view" },
-];
+const SUBTITLE = "Your Toyota financing, and options for your next car.";
+/** First tab names the customer's actual contract: "My lease" for lessees, "My car" with none. */
+function tabsFor(contractType: string | undefined): { value: Tab; label: string }[] {
+  const mine = contractType === "lease" ? "My lease" : contractType ? "My loan" : "My car";
+  return [
+    { value: "loan", label: mine },
+    { value: "shop", label: "Shop & finance" },
+    { value: "tfs", label: "TFS view" },
+  ];
+}
 const parseTab = (t: string | null): Tab => (t === "shop" || t === "tfs" ? t : "loan");
 
 export default function CarPage() {
@@ -48,7 +52,7 @@ function CarPageInner() {
   return (
     <>
       {header}
-      <div className="mb-4"><Segmented<Tab> value={tab} options={TABS} onChange={setTab} /></div>
+      <div className="mb-4"><Segmented<Tab> value={tab} options={tabsFor(analysis.profile.contract?.type)} onChange={setTab} /></div>
       {tab === "loan" && <MyCar analysis={analysis} view={view} />}
       {tab === "shop" && <ShopFinance profile={analysis.profile} view={view} />}
       {tab === "tfs" && <TfsTab analysis={analysis} />}

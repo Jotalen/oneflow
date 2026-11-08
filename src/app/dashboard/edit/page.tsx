@@ -95,7 +95,7 @@ export default function EditDashboardPage() {
               <div className="h-8 w-8 rounded-lg bg-surface-2 border border-line shrink-0" />
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold">{d.title} {recommended.includes(d.id) && <span className="chip ml-1">Suggested</span>}</div>
-                <div className="text-xs text-muted">{canAdd(d.id) ? `Added when: ${d.rule}` : d.id === "house" ? "Link a mortgage to use this bubble" : d.id === "savings_goal" ? "Start a goal to use this bubble" : "Link a car loan to use this bubble"}</div>
+                <div className="text-xs text-muted">{canAdd(d.id) ? `Added when: ${d.rule}` : d.id === "house" ? "Link a mortgage to use this bubble" : d.id === "savings_goal" ? "Start a goal to use this bubble" : "Link a car loan or lease to use this bubble"}</div>
               </div>
               <button className="h-8 w-8 rounded-full border border-line disabled:opacity-40" aria-label={`Add ${d.title}`} disabled={!canAdd(d.id)} onClick={() => add(d.id)}>+</button>
             </div>
