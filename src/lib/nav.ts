@@ -7,6 +7,7 @@ export const NAV: NavGroup[] = [
   { label: "Everyday", items: [
     { href: "/day-to-day", label: "Day-to-day" },
     { href: "/accounts", label: "Accounts" },
+    { href: "/solana", label: "Solana" },
     { href: "/transactions", label: "Transactions" },
     { href: "/budget", label: "Budget" },
     { href: "/rewards", label: "Rewards" },

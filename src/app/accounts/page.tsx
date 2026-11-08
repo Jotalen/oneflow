@@ -5,6 +5,7 @@ import { PageHeader, Panel, Tile, fmtSigned, initials } from "@/components/nova/
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
 import { BalanceHistory } from "@/components/nova/BalanceHistory";
+import { WalletLoader } from "@/components/solana/WalletLoader";
 import type { BankAccount, Profile } from "@/lib/engine/types";
 import { fmtUSD, type Cents } from "@/lib/money";
 
@@ -90,6 +91,7 @@ export default function AccountsPage() {
         <Group title="Loans" rows={loans} empty="No loans or leases." />
       </div>
       {b.live && <div className="mt-4"><BalanceHistory personaId={b.personaId} /></div>}
+      <div className="mt-4"><WalletLoader mode="account" /></div>
       <div className="flex flex-wrap items-center gap-3 mt-4 text-sm text-muted">
         <span>{count} accounts · {b.live ? "live from the bank" : "offline snapshot"}{syncedAt ? ` · last synced ${syncedAt}` : ""}</span>
         <button className="btn" onClick={() => void onRefresh()} disabled={refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button>
