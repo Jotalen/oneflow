@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { LedgerTxn, Budget } from "@/lib/bank/view";
 import {
   filterLedger, groupByDay, ledgerCsv, applyBudgetOverrides, monthlySpend, pointsForTxn,
-  availablePoints, parseDollarInput, AMOUNT_FILTERS,
+  parseDollarInput, AMOUNT_FILTERS,
 } from "@/lib/bank/everyday";
 
 const tx = (o: Partial<LedgerTxn>): LedgerTxn => ({
@@ -93,10 +93,6 @@ describe("rewards helpers", () => {
     expect(pointsForTxn(tx({ category: "food", amount: -1248 }))).toBe(37);
     expect(pointsForTxn(tx({ category: "shopping", amount: -6499 }))).toBe(65);
     expect(pointsForTxn(tx({ accountKind: "checking" }))).toBe(0);
-  });
-  test("availablePoints subtracts redemptions, never negative", () => {
-    expect(availablePoints(1000, [{ id: "r", points: 300, at: "x", label: "y" }])).toBe(700);
-    expect(availablePoints(100, [{ id: "r", points: 300, at: "x", label: "y" }])).toBe(0);
   });
 });
 

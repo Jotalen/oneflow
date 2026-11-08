@@ -132,12 +132,6 @@ export function defaultBillId(options: BillOption[]): string {
   return payable.length === 1 ? payable[0].id : "";
 }
 
-export interface Redemption { id: string; points: number; at: string; label: string }
-
-export function availablePoints(earned: number, redemptions: Redemption[]): number {
-  return Math.max(0, earned - redemptions.reduce((s, r) => s + r.points, 0));
-}
-
 /** "$12.50" → 1250; null for empty, non-numeric, zero or negative. */
 export function parseDollarInput(raw: string): Cents | null {
   const c = parseCents(raw);
