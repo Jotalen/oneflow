@@ -89,7 +89,7 @@ export function AskAi({ topic, essentialsOverrides }: AskAiProps) {
     ref.current?.showModal();
     if (topic !== "safety_net") return;
     const key = `${personaId}:${JSON.stringify(essentialsOverrides ?? {})}`;
-    if (key === askedFor && status.kind === "done") return;
+    if (status.kind === "loading" || (key === askedFor && status.kind === "done")) return;
     setAskedFor(key);
     void run();
   };

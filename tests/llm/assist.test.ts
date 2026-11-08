@@ -7,7 +7,7 @@ import { runway } from "@/lib/bank/wealth";
 import type { LlmProvider } from "@/lib/llm/provider";
 import {
   SAFETY_LEAD, CARD_LEAD, safetyFacts, offlineSafety, classifyPurchase, parseAmount, whichCardFacts, offlineWhichCard,
-  onlyKnownNumbers, answerAssist,
+  onlyKnownNumbers, answerAssist, articleFor,
 } from "@/lib/llm/assist";
 
 const snap = (id: string) => JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/snapshots", `${id}.json`), "utf8")) as Analysis;
@@ -140,6 +140,12 @@ describe("whichCardFacts / offlineWhichCard", () => {
   });
 });
 
+describe("articleFor", () => {
+  test.each([["$80.00", "An"], ["$800.00", "An"], ["$11,000.00", "An"], ["$18.50", "An"], ["$110.00", "A"], ["$200.00", "A"], ["$1,200.00", "A"]])("%s → %s", (m, art) => {
+    expect(articleFor(m)).toBe(art);
+  });
+});
+
 describe("onlyKnownNumbers", () => {
   test("allows numbers that appear in the facts and small list numbers", () => {
     expect(onlyKnownNumbers("1. Pause Netflix to save $15.99 a month at 22.99%", "Netflix $15.99 22.99% APR")).toBe(true);
@@ -166,6 +172,11 @@ describe("answerAssist", () => {
     const r = await answerAssist({ analysis: a, topic: "which_card", question: "groceries" }, [provider("gemini", "your Rewards Card, because it earns 2x points on groceries.")]);
     expect(r.source).toBe("gemini");
     expect(r.text.startsWith(CARD_LEAD)).toBe(true);
+  });
+  test("a provider that hangs times out and the next one answers", async () => {
+    const hang: LlmProvider = { name: "gemini", chat: () => new Promise(() => {}) };
+    const r = await answerAssist({ analysis: a, topic: "which_card", question: "gas" }, [hang, provider("openrouter", "your Rewards Card, because it earns 2x points on gas.")], 20);
+    expect(r.source).toBe("openrouter");
   });
   test("never calls the coach stub; with no keys it answers offline", async () => {
     const stub: LlmProvider = { name: "stub", chat: async () => { throw new Error("should not be called"); } };

@@ -214,12 +214,18 @@ export function whichCardFacts(a: Analysis, question: string, cardRates: CardRat
   };
 }
 
+/** "An $80.00", "An $11,000.00", "A $200.00": spoken numbers starting with eight, eleven or eighteen take "an". */
+export function articleFor(money: string): "A" | "An" {
+  const lead = money.replace(/^\$/, "").split(/[,.]/)[0];
+  return lead.startsWith("8") || lead === "11" || lead === "18" ? "An" : "A";
+}
+
 function cardAmountLine(f: WhichCardFacts, best: CardFacts): string | null {
   if (f.amount === null) return null;
   if (f.fitsAvailable === false) return `But ${fmtUSD(f.amount)} is more than the ${fmtUSD(best.available)} you have available on it, so pay from ${f.checkingName} or split the purchase.`;
   if (f.utilAfterPct === null) return null;
   const warn = f.utilAfterPct > UTIL_WARN_PCT ? ` Above ${UTIL_WARN_PCT}% can lower your credit score, so pay it down soon.` : "";
-  return `A ${fmtUSD(f.amount)} purchase would put the card at ${f.utilAfterPct}% of its ${fmtUSD(best.limit)} limit.${warn}`;
+  return `${articleFor(fmtUSD(f.amount))} ${fmtUSD(f.amount)} purchase would put the card at ${f.utilAfterPct}% of its ${fmtUSD(best.limit)} limit.${warn}`;
 }
 
 export function offlineWhichCard(f: WhichCardFacts): string {
@@ -278,14 +284,23 @@ function offlineFor(input: AssistInput): { text: string; lead: string } {
   return { text: offlineWhichCard(whichCardFacts(input.analysis, input.question ?? "")), lead: CARD_LEAD };
 }
 
-/** Tries each real model in order; any failure or invented number falls through to the offline answer. */
-export async function answerAssist(input: AssistInput, chain: readonly LlmProvider[]): Promise<AssistAnswer> {
+/** A slow model must not keep the customer waiting: past this, the next provider (or offline) answers. */
+export const PROVIDER_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number, name: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error(`${name} timed out after ${ms}ms`)), ms); });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+}
+
+/** Tries each real model in order; any failure, timeout or invented number falls through to the offline answer. */
+export async function answerAssist(input: AssistInput, chain: readonly LlmProvider[], timeoutMs: number = PROVIDER_TIMEOUT_MS): Promise<AssistAnswer> {
   const offline = offlineFor(input);
   const messages = promptFor(input.topic, offline.text, input.question);
   for (const provider of chain) {
     if (provider.name === "stub") continue;
     try {
-      const turn = await provider.chat(messages, []);
+      const turn = await withTimeout(provider.chat(messages, []), timeoutMs, provider.name);
       const text = turn.text ? tidy(turn.text, offline.lead) : "";
       if (text && onlyKnownNumbers(text, offline.text)) return { text, source: provider.name };
       console.warn(`[assist] ${provider.name} answer rejected: ${text ? "number not in facts" : "empty"}`);

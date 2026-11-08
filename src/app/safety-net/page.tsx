@@ -60,9 +60,9 @@ export default function SafetyNetPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
               {r && <span className="chip">{safetyStatus(months)}</span>}
-              <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="text-5xl font-semibold tracking-tight">{r ? `${months.toFixed(1)} months` : "—"}</span>
-                {r && <span className="text-lg font-semibold text-muted">· about {r.days} days</span>}
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="text-4xl sm:text-5xl font-semibold tracking-tight whitespace-nowrap">{r ? `${months.toFixed(1)} months` : "—"}</span>
+                {r && <span className="text-base sm:text-lg font-semibold text-muted whitespace-nowrap">· about {r.days} days</span>}
               </div>
               <p className="text-sm mt-1">{r ? "of essential expenses covered" : "Add your monthly essentials to see how long you'd be covered"}</p>
               <p className="text-xs text-muted">Cash {fmtUSD(sn.fund)} (checking, savings{hasCd ? ", CD" : ""}) ÷ essentials {fmtUSD(essentialsMonthly)} a month{adjusted ? ", with your changes" : ""}</p>
