@@ -3,13 +3,14 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Analysis } from "@/lib/engine/analyze";
 import type { BankView } from "@/lib/bank/view";
-import type { BubbleId } from "@/lib/bank/bubbles";
-import { bubbleDef } from "@/lib/bank/bubbles";
+import type { BubbleId, BubbleSize } from "@/lib/bank/bubbles";
+import { bubbleDef, houseSummary } from "@/lib/bank/bubbles";
 import type { Goal } from "@/lib/bank/goals";
 import { amortize } from "@/lib/engine/amortize";
 import { fmtUSD } from "@/lib/money";
 import { CarSpinner } from "@/components/CarSpinner";
 import { AreaTrend, Sparkline } from "./charts";
+import { NextMoveHero } from "./NextMoveHero";
 import { Bar, Row, fmtDate, fmtSigned, fmtWhole, initials } from "./ui";
 
 /** 60-month new-purchase APR by credit tier, from the Toyota rate sheet (data/toyota/rate_sheet.csv). */
@@ -18,6 +19,10 @@ const SHOP_PRICE = 2_000_000;
 const SHOP_TERM = 60;
 const RECENT_COUNT = 3;
 const SAFETY_SEGMENTS = 6;
+
+/** Grid spans for the Overview and the Edit preview (2 columns on phones, 4 on large screens). */
+export const BUBBLE_GRID = "grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 grid-flow-row-dense";
+export const BUBBLE_SPAN: Record<BubbleSize, string> = { small: "col-span-1", medium: "col-span-2", large: "col-span-2 lg:col-span-4" };
 
 function Shell({ id, children, right }: { id: BubbleId; children: ReactNode; right?: ReactNode }) {
   const d = bubbleDef(id);
@@ -133,7 +138,14 @@ export function Bubble({ id, a, v, goal }: { id: BubbleId; a: Analysis; v: BankV
         </Shell>
       );
     case "savings_goal":
-      if (!goal) return null;
+      if (!goal) {
+        return (
+          <Shell id={id} right={<span className="btn h-8">Start a goal</span>}>
+            <p className="text-sm">You don&apos;t have a savings goal yet.</p>
+            <Note>Name something you&apos;re saving for and OneFlow tracks it inside your savings account.</Note>
+          </Shell>
+        );
+      }
       return (
         <Shell id={id} right={<span className="btn h-8">View goal</span>}>
           <div className="text-xs text-muted">{goal.name}</div>
@@ -142,7 +154,20 @@ export function Bubble({ id, a, v, goal }: { id: BubbleId; a: Analysis; v: BankV
           <Note>{goal.pct >= 75 ? "Keep going! You're almost there." : `${fmtUSD(goal.monthly)}/mo toward it`}</Note>
         </Shell>
       );
-    case "house":
-      return <Shell id={id}><p className="text-sm text-muted">No mortgage linked. See what you could afford.</p></Shell>;
+    case "house": {
+      const h = houseSummary(p.incomeMonthly);
+      if (h.limit <= 0) return <Shell id={id}><p className="text-sm text-muted">No income on file, so we can&apos;t estimate a home budget yet.</p></Shell>;
+      return (
+        <Shell id={id}>
+          <div className="text-xs text-muted">Housing payment guideline</div>
+          <Big>up to {fmtWhole(h.limit)}/mo</Big>
+          <Note>{h.ratioPct}% of your {fmtWhole(p.incomeMonthly)} monthly income</Note>
+          <p className="text-sm mt-2">That roughly covers a <b>{fmtWhole(h.price)}</b> home with {h.downPct}% down at {h.aprPct}% over {h.termYears} years.</p>
+          <Note>Estimate, not an offer. Principal and interest only. No mortgage linked.</Note>
+        </Shell>
+      );
+    }
+    case "next_move":
+      return <NextMoveHero />;
   }
 }
