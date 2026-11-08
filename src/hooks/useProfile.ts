@@ -1,46 +1,43 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Analysis } from "@/lib/engine/analyze";
-
-const CACHE_KEY = (id: string) => `nm:analysis:${id}`;
+import { browserLoadDeps, loadAnalysis, type LoadResult } from "@/lib/bank/loadAnalysis";
 
 export interface ProfileState { data: Analysis | null; loading: boolean; offline: boolean; error: string | null; refresh: () => Promise<void> }
 
-/** Fetch analysis for a persona; fall back to cached copy (ADR-009) with an offline badge. */
-export function useProfile(personaId: string): ProfileState {
-  const [data, setData] = useState<Analysis | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [offline, setOffline] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const current = useRef(personaId);
-  current.current = personaId;
+interface Loaded extends LoadResult { id: string }
+
+/**
+ * Fetch analysis for a persona; fall back to cached copy (ADR-009) with an offline badge.
+ * State is keyed by persona id, so a switch never shows the previous customer's data.
+ * `enabled` = false waits (e.g. until the browser has resolved which persona is chosen).
+ */
+export function useProfile(personaId: string, enabled = true): ProfileState {
+  const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const latest = useRef(personaId);
+
+  useEffect(() => {
+    latest.current = personaId;
+    if (!enabled) return;
+    let cancelled = false;
+    void loadAnalysis(personaId, browserLoadDeps).then((r) => { if (!cancelled) setLoaded({ id: personaId, ...r }); });
+    return () => { cancelled = true; };
+  }, [personaId, enabled]);
 
   const refresh = useCallback(async () => {
     const id = personaId;
-    setLoading(true);
-    setError(null);
+    setRefreshing(true);
     try {
-      const res = await fetch(`/api/profile/${id}`, { cache: "no-store" });
-      if (!res.ok) throw new Error((await res.json().catch(() => ({})))?.error ?? `HTTP ${res.status}`);
-      const json = (await res.json()) as Analysis;
-      if (current.current !== id) return;
-      setData(json);
-      setOffline(json.profile.source === "snapshot");
-      try { localStorage.setItem(CACHE_KEY(id), JSON.stringify(json)); } catch { /* ignore */ }
-    } catch (e) {
-      if (current.current !== id) return;
-      let cached: Analysis | null = null;
-      try { const raw = localStorage.getItem(CACHE_KEY(id)); cached = raw ? (JSON.parse(raw) as Analysis) : null; } catch { /* ignore */ }
-      if (!cached) {
-        const snap = await fetch(`/snapshots/${id}.json`).then((r) => (r.ok ? (r.json() as Promise<Analysis>) : null)).catch(() => null);
-        cached = snap;
-      }
-      if (cached) { setData(cached); setOffline(true); } else { setError(e instanceof Error ? e.message : "Could not load profile"); }
+      const r = await loadAnalysis(id, browserLoadDeps);
+      if (latest.current !== id) return;
+      // Keep showing the data we have if a background refresh fails.
+      setLoaded((prev) => (r.data || prev?.id !== id ? { id, ...r } : prev));
     } finally {
-      if (current.current === id) setLoading(false);
+      setRefreshing(false);
     }
   }, [personaId]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
-  return { data, loading, offline, error, refresh };
+  const mine = loaded?.id === personaId ? loaded : null;
+  return { data: mine?.data ?? null, loading: !mine || refreshing, offline: mine?.offline ?? false, error: mine?.error ?? null, refresh };
 }

@@ -33,8 +33,8 @@ const REFRESH_AFTER_TRANSFER_MS = 1_500;
 
 /** One fetch per persona shared by every page; derived NovaBank numbers memoized. */
 export function BankProvider({ children }: { children: ReactNode }) {
-  const { personaId, personas } = usePersona();
-  const { data, loading, offline, error, refresh } = useProfile(personaId);
+  const { personaId, ready, personas } = usePersona();
+  const { data, loading, offline, error, refresh } = useProfile(personaId, ready);
   const live = !!data && data.profile.source === "nessie";
   const { accept, accepting, receipts } = useExecute(personaId, refresh, live);
   const [transferring, setTransferring] = useState(false);

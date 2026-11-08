@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createEventPoller, type EventItem, type EventPage } from "@/lib/events/poller";
 import { FEED_EVENT_TYPES, pendingEvents } from "@/lib/events/pending";
+import { mergeNewestFirst } from "@/lib/events/feed";
 
 export const POLL_INTERVAL_MS = 2_000;
 const KEEP = 50;
@@ -29,16 +30,14 @@ function ensurePoller() {
 /** Module-level singleton poller (one per tab). Components subscribe; last subscriber stops it. */
 export function useEventFeed(enabled = true) {
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [live, setLive] = useState(false);
   const mounted = useRef(true);
   useEffect(() => {
     if (!enabled) return;
     mounted.current = true;
-    const listener: Listener = (evts) => { if (mounted.current) setEvents((prev) => [...evts.reverse(), ...prev].slice(0, KEEP)); };
+    const listener: Listener = (evts) => { if (mounted.current) setEvents((prev) => mergeNewestFirst(prev, evts, KEEP)); };
     listeners.add(listener);
     const p = ensurePoller();
     p.start();
-    setLive(true);
     return () => {
       mounted.current = false;
       listeners.delete(listener);
@@ -46,5 +45,6 @@ export function useEventFeed(enabled = true) {
     };
   }, [enabled]);
   const pending = pendingEvents(events);
-  return { events, pending, live };
+  // The shared poller runs whenever the feed is enabled and mounted (client-only components).
+  return { events, pending, live: enabled };
 }
