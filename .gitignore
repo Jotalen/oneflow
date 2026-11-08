@@ -47,3 +47,19 @@ next-env.d.ts
 # private session notes
 SESSION_LOG.md
 HANDOFF.md
+
+# Public repo shows judges only what they need: README.md is the only markdown.
+# Internal notes (Devpost draft, demo script, ADRs, plans, teammate briefs) stay local.
+*.md
+!/README.md
+.claude/
+
+# Unused Next.js boilerplate and self-host files (we deploy on Vercel)
+public/file.svg
+public/globe.svg
+public/next.svg
+public/vercel.svg
+public/window.svg
+Dockerfile
+Caddyfile
+docker-compose.yml
