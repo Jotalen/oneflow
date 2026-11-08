@@ -47,7 +47,7 @@ export default function EditDashboardPage() {
           <p className="text-xs text-muted">We add a bubble when you link a loan, start a goal, or something needs your attention. Bubbles you remove stay removed.</p>
         </div>
         <button role="switch" aria-checked={prefs.auto} aria-label="Let OneFlow pick my bubbles" onClick={() => save(setAutoPick(prefs, current, !prefs.auto))}
-          className={`h-7 w-12 shrink-0 rounded-full p-1 transition-colors ${prefs.auto ? "bg-ink" : "bg-line"}`}>
+          className={`h-7 w-12 shrink-0 rounded-full p-1 transition-colors ${prefs.auto ? "bg-accent" : "bg-line"}`}>
           <span className={`block h-5 w-5 rounded-full bg-surface transition-transform ${prefs.auto ? "translate-x-5" : ""}`} />
         </button>
       </div>
