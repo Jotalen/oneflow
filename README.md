@@ -4,9 +4,9 @@
 
 NextMove is a banking dashboard built on **Capital One's Nessie v2** that shows a person's whole financial picture (PNC 360° Financial Health Navigator), folds in their **Toyota** vehicle and loan/lease (Toyota Financial Services "What's Your Next Move?"), ranks concrete moves by their dollar impact 24 months out, shows "do nothing vs do this" futures, narrates with an LLM that never does arithmetic, and **executes accepted moves in the bank**.
 
-**Tracks:** Capital One — Best Use of Nessie (primary) · Toyota Financial Services — What's Your Next Move? · PNC — 360° Financial Health Navigator · HackUTD — Design · MLH: Best Use of Gemini API.
+**Tracks:** Capital One — Best Use of Nessie (primary) · Toyota Financial Services — What's Your Next Move? · PNC — 360° Financial Health Navigator · HackUTD — Design · MLH: Best Use of Gemini API, Best Use of Tiger Data.
 
-**Repo:** https://github.com/moaizattiq/novabank-nextmove
+**Live:** https://oneflow-eosin.vercel.app · **Repo:** https://github.com/moaizattiq/novabank-nextmove
 
 ## 3-minute tour
 
@@ -34,7 +34,7 @@ Nessie v2  ──┘  (server proxy +      ├─ /api/execute → planExecution
 - `src/lib/nessie/` — typed client with a token bucket (120/min, burst 30) and `Retry-After` handling; every call goes through the server.
 - `src/lib/llm/` — provider interface with a fallback chain: `gemini` (function calling) → `openrouter` → `stub` (deterministic). Six approved tools (`execute_move` is confirm-only, so the model never moves money), Toyota starter prompt verbatim + a no-arithmetic rule.
 - `scripts/seed.ts` — resumable per-persona seeding into Nessie; `scripts/reset.ts`; `scripts/simulate.ts` (historical run, seed 42); `scripts/snapshot.ts` (offline fallback).
-- Decisions are recorded in `docs/adr/` (11 ADRs). Plan: `docs/superpowers/plans/2026-11-07-nextmove.md`.
+- Decisions are recorded in `docs/adr/` (12 ADRs). Plan: `docs/superpowers/plans/2026-11-07-nextmove.md`.
 
 ## NovaBank UI (wireframe build)
 
@@ -44,6 +44,7 @@ The app is skinned as **NovaBank**, a full banking app built from our desktop + 
 - **Next best move** stays pinned on top and rotates through the engine's top 3. Its button executes the move in Nessie; *Why this?* opens the two-futures chart and the AI coach.
 - **Every number** comes from `src/lib/bank/view.ts`, a pure, tested view model over the engine analysis.
 - **Real money moves:** `POST /api/transfer` (zod-validated, checks available balance, card payments capped at the balance) powers Add money, Pay card, and Move money. Engine move `pay_highest_apr` pays the card directly when the card is the highest-APR debt.
+- **Balance history in Tiger Data.** Every Nessie event is stored in a TimescaleDB hypertable (`nessie_events`); `account.balance_changed` events carry the new balance, so a 15-minute continuous aggregate (`account_balance_15m`, `time_bucket` + `last()`) gives a real per-account balance history, charted on Accounts. The shared event poller keeps it current; `pnpm tiger:setup` / `pnpm tiger:backfill` create and fill it. See ADR-012.
 - **Shared event cache:** `/api/events` keeps one upstream Nessie poll every 2 s and a bounded buffer. Without it, every tab replayed the whole event history, used up the 120 req/min budget, and pushed profile loads to over 90 s.
 
 NovaBank honesty notes:

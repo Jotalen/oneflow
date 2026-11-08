@@ -2,7 +2,7 @@
 
 **Tagline:** What's my next best move? The code computes, the AI explains, the bank executes.
 
-**Tracks:** Capital One: Best Use of Nessie · Toyota Financial Services: What's Your Next Move? · PNC: 360° Financial Health Navigator · HackUTD: Design · MLH: Best Use of Gemini API
+**Tracks:** Capital One: Best Use of Nessie · Toyota Financial Services: What's Your Next Move? · PNC: 360° Financial Health Navigator · HackUTD: Design · MLH: Best Use of Gemini API, Best Use of Tiger Data
 
 ## Inspiration
 PNC and Toyota both literally ask "what's your next move?", and Capital One asks us to reimagine banking. Your bank app doesn't know about your car, and your auto lender doesn't know your cash flow. So we built one bank that knows both, with one answer at the top of the screen.
@@ -37,6 +37,11 @@ NovaBank is a full banking app: overview, accounts, transactions, budget, reward
 - A 24-month **balance and obligation forecast** and a **what-if simulator** (two futures per move).
 - A **conversational coach** grounded in the engine.
 
+**MLH: Best Use of Tiger Data.** The bank only tells you balances *now*.
+- We stream every Nessie event into a TimescaleDB hypertable on Tiger Cloud. Balance-change events carry the new balance.
+- A 15-minute continuous aggregate (`time_bucket` + `last()`) turns that into a real balance history per account, shown on the Accounts page with live activity counts (events stored, transactions posted, declines).
+- The shared event poller keeps it current. TLS is verified against Tiger's pinned CA.
+
 **HackUTD: Design.** Built from our own desktop and mobile wireframes, light and dark.
 - The dashboard has rules that add bubbles when they matter, and the person can reorder, remove and add them.
 - The next best move stays pinned.
@@ -47,7 +52,8 @@ NovaBank is a full banking app: overview, accounts, transactions, budget, reward
 - A pure engine (`amortize`, `project`, `health`, `moves`, `guardrails`, `anomaly`, `guard`, `execute`), all in integer cents. 250+ Vitest tests; amortization is pinned to Toyota's own refinance payments.
 - A typed Nessie client with a token bucket and `Retry-After` handling, behind a server proxy.
 - LLM behind a provider interface with a fallback chain, **Gemini → OpenRouter → deterministic narrator**, so the coach never breaks the demo. Six approved tools; `execute_move` is confirm-only, so the model never moves money.
-- Eleven ADRs record the decisions.
+- Tiger Data (TimescaleDB) stores the bank's event stream as a hypertable with a continuous aggregate for balance history.
+- Twelve ADRs record the decisions.
 
 ## Challenges
 - Nessie's simulator creates its own customers, so per-person fraud history was impossible. We made the fraud monitor bank-wide and say so.
@@ -71,8 +77,9 @@ Deterministic math with an LLM that only narrates is not a limitation; it is the
 - Real TFS APIs.
 
 ## Built with
-nextjs, react, typescript, tailwindcss, recharts, zod, vitest, capital-one-nessie, gemini-api, openrouter
+nextjs, react, typescript, tailwindcss, recharts, zod, vitest, capital-one-nessie, gemini-api, openrouter, tiger-data, timescaledb, postgresql, vercel
 
 ## Links
+- Live: https://oneflow-eosin.vercel.app
 - Repo: https://github.com/moaizattiq/novabank-nextmove
 - Video: <add YouTube link>

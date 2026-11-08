@@ -2,13 +2,19 @@ import { connection, NextResponse } from "next/server";
 import { NessieError } from "@/lib/nessie/client";
 import { nessieApi } from "@/lib/nessie/api";
 import { createEventCache } from "@/lib/events/cache";
+import { recordEvents } from "@/lib/tiger/ingest";
 
 const UPSTREAM_INTERVAL_MS = 2_000;
 const UPSTREAM_PAGE = 500;
 
 /** One shared upstream poller for every browser tab (see src/lib/events/cache.ts). */
 const cache = createEventCache({
-  fetchPage: (after, limit) => nessieApi().listEvents({ after, limit }),
+  // Each upstream page is also written to Tiger Data (time-series history); see src/lib/tiger.
+  fetchPage: async (after, limit) => {
+    const page = await nessieApi().listEvents({ after, limit });
+    await recordEvents(page.items);
+    return page;
+  },
   minIntervalMs: UPSTREAM_INTERVAL_MS,
   pageSize: UPSTREAM_PAGE,
 });
