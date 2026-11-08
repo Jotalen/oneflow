@@ -1,17 +1,16 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Empty, PageHeader, Segmented } from "@/components/nova/ui";
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
-import { TfsView } from "@/components/TfsView";
+import { TfsTab } from "@/components/tfs/TfsTab";
 import { CarSummary, LoanTiles, PaidSoFarPanel, PayFasterPanel, PaymentsPanel, RecallBanner, RecentPaymentsPanel } from "@/components/nova/borrowing/LoanPanels";
 import { LeaseTiles, LeaseTimePanel, MileagePanel } from "@/components/nova/borrowing/LeasePanels";
 import { CarOptions } from "@/components/nova/borrowing/CarOptions";
 import { ShopFinance } from "@/components/nova/borrowing/ShopFinance";
 import type { Analysis } from "@/lib/engine/analyze";
 import type { BankView } from "@/lib/bank/view";
-import type { TfsMeta } from "@/lib/server/tfs-meta";
 
 type Tab = "loan" | "shop" | "tfs";
 const TITLE = "Car financing";
@@ -90,20 +89,4 @@ function MyCar({ analysis, view }: { analysis: Analysis; view: BankView }) {
       <CarOptions ranked={analysis.ranked} />
     </>
   );
-}
-
-function TfsTab({ analysis }: { analysis: Analysis }) {
-  const [meta, setMeta] = useState<TfsMeta | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/tfs-meta")
-      .then(async (r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return (await r.json()) as TfsMeta; })
-      .then((m) => { if (alive) setMeta(m); })
-      .catch((e: unknown) => { if (alive) setError(e instanceof Error ? e.message : "unavailable"); });
-    return () => { alive = false; };
-  }, []);
-  if (error) return <p className="panel p-4 text-sm text-bad" role="alert">Couldn&apos;t load the TFS view: {error}</p>;
-  if (!meta) return <Loading />;
-  return <TfsView analysis={analysis} meta={meta} />;
 }
