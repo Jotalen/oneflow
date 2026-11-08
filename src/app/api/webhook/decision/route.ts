@@ -58,9 +58,11 @@ export async function POST(req: Request) {
     const { analysis } = await getAnalysis(persona);
     const category = await merchantCategory(tx.merchant_id);
     const g = guardDecision({ id: tx.id ?? body.tx_id ?? "", kind: tx.kind ?? "purchase", amountCents: Number(tx.amount_cents ?? 0), description: tx.description, merchantCategory: category, payeeId: tx.payee_id }, analysis.profile, analysis.health);
-    const decision = g.decision === "ask" ? "approve" : g.decision; // a hook must answer; "ask" falls open and is surfaced in the UI log
-    if (eventId) remember(eventId, { decision, reason: g.reason, rule: g.rule });
-    return NextResponse.json({ decision, reason: g.reason.slice(0, 200), rule: g.rule, decision_source: "hook" });
+    // A hook must answer now and cannot wait for the owner, so "ask" fails safe: decline, and say why.
+    const decision = g.decision === "ask" ? "decline" : g.decision;
+    const reason = g.decision === "ask" ? `${g.reason} Declined until you approve it in NovaBank.` : g.reason;
+    if (eventId) remember(eventId, { decision, reason, rule: g.rule });
+    return NextResponse.json({ decision, reason: reason.slice(0, 200), rule: g.rule, decision_source: "hook" });
   } catch (e) {
     console.error("[webhook]", e);
     return NextResponse.json({ decision: "approve", reason: "engine error; fail open" });

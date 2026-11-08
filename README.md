@@ -89,7 +89,7 @@ Deployed on Vercel at https://www.one-flow.us. Self-hosting: `docker compose up 
 
 ## Webhook registration
 
-The decision-mode webhook lets Nessie ask our guard about a purchase before it settles. `pnpm webhook:register` is idempotent: it lists existing hooks first, accepts https URLs only, writes the signing secret to `.env.webhook-secret` (mode 600, git-ignored), and never prints it. `--dry-run` shows what it would do.
+The decision-mode webhook lets Nessie ask our guard about a purchase before it settles. `pnpm webhook:register` is idempotent: it lists existing hooks first, accepts https URLs only, writes the signing secret to `.env.webhook-secret` (mode 600, git-ignored), and never prints it. `--dry-run` shows what it would do. A hook must answer immediately, so a purchase the guard would normally *ask* you about (over $500 with under a month of runway) is **declined** with the reason "declined until you approve it in NovaBank"; register with `--on-error approve` so cards keep working if our server is unreachable.
 
 1. Redeploy from `release` (the live site runs an earlier build until then).
 2. `pnpm webhook:register --url https://www.one-flow.us/api/webhook/decision` saves `.env.webhook-secret`.

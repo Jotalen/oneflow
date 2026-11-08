@@ -1,12 +1,13 @@
 import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { profileFor } from "./fixtures/profiles";
+import { brokeBundle, profileFor } from "./fixtures/profiles";
 import { health } from "@/lib/engine/health";
 
 const p = profileFor("C018");
+let current = p;
 vi.mock("@/lib/server/analysis", () => ({
   readSeedIds: () => ({ C018: { checkingId: "chk", savingsId: "sav", cardId: "card", customerId: "cust", billIds: [] } }),
-  getAnalysis: async () => ({ analysis: { profile: p, health: health(p) } }),
+  getAnalysis: async () => ({ analysis: { profile: current, health: health(current) } }),
 }));
 vi.mock("@/lib/nessie/api", () => ({ nessieApi: () => ({ getMerchant: async () => ({ id: "m1", name: "Lucky Star", category: "gambling" }) }) }));
 
@@ -20,7 +21,7 @@ function signedRequest(body: object, eventId = `evt_${Math.random()}`) {
 const purchase = (extra: object = {}) => ({ account_id: "card", transaction: { id: "t1", kind: "purchase", amount_cents: 1_000, payer_id: "card", ...extra } });
 
 describe("/api/webhook/decision", () => {
-  beforeEach(() => { vi.resetModules(); process.env.NESSIE_WEBHOOK_SECRET = SECRET; });
+  beforeEach(() => { vi.resetModules(); current = p; process.env.NESSIE_WEBHOOK_SECRET = SECRET; });
   afterEach(() => { delete process.env.NESSIE_WEBHOOK_SECRET; });
 
   test("refuses to decide when no webhook secret is configured (no unsigned decisions)", async () => {
@@ -40,6 +41,15 @@ describe("/api/webhook/decision", () => {
     const { POST } = await import("@/app/api/webhook/decision/route");
     const res = await POST(signedRequest(purchase({ merchant_id: "m1" })));
     await expect(res.json()).resolves.toMatchObject({ decision: "decline", rule: "blocked_category" });
+  });
+
+  test("a purchase the guard would ask about is declined (a hook cannot wait for the owner)", async () => {
+    current = profileFor("C018", brokeBundle()); // no cash cushion: over $500 with under 1 month of runway → ask
+    const { POST } = await import("@/app/api/webhook/decision/route");
+    const res = await POST(signedRequest(purchase({ amount_cents: 60_000 })));
+    const body = await res.json();
+    expect(body).toMatchObject({ decision: "decline", rule: "large_low_runway" });
+    expect(body.reason).toMatch(/approve it in NovaBank/i);
   });
 
   test("GET status does not expose decision reasons (they contain customer balances)", async () => {
