@@ -7,6 +7,7 @@ import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
 import { MoveMoneyForm } from "@/components/nova/everyday/MoveMoneyForm";
 import { DateChip } from "@/components/nova/everyday/DateChip";
+import { SendMoneyDialog } from "@/components/nova/everyday/SendMoneyDialog";
 import { CATEGORY_LABEL, type BankView } from "@/lib/bank/view";
 import { fmtUSD } from "@/lib/money";
 
@@ -97,6 +98,7 @@ export default function DayToDayPage() {
             <div className="flex flex-wrap gap-2">
               {hasSavings && checking && <button className={`btn ${action === "transfer" ? "btn-primary" : ""}`} aria-expanded={action === "transfer"} onClick={() => toggle("transfer")}>Transfer</button>}
               {canPayCard && checking && <button className={`btn ${action === "paycard" ? "btn-primary" : ""}`} aria-expanded={action === "paycard"} onClick={() => toggle("paycard")}>Pay a bill</button>}
+              {b.live && checking && <SendMoneyDialog availableCents={checking.available} />}
             </div>
           </div>
           {action && <MoveMoneyForm key={action} mode={action} onClose={() => setAction(null)} cardBalance={view.cardBalance} minDue={cardBill?.amount} />}
