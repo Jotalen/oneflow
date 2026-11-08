@@ -23,14 +23,15 @@ export function CreditCards({ cards, rewards }: { cards: CardRow[]; rewards: Rew
     <Panel title="Credit card debt" subtitle={cards.length ? `${fmtUSD(total)} across ${cards.length} card${cards.length > 1 ? "s" : ""}` : undefined} right={<AskAi topic="which_card" />}>
       {cards.length === 0 && <p className="text-sm text-muted">No credit cards.</p>}
       <ul className="divide-y divide-line">
-        {cards.map((c, i) => <CardItem key={c.account.id} card={c} rewards={i === 0 ? rewards : null} />)}
+        {cards.map((c, i) => <CardItem key={c.account.id} card={c} rewards={i === 0 ? rewards : null} defaultOpen={i === 0} />)}
       </ul>
     </Panel>
   );
 }
 
-function CardItem({ card, rewards }: { card: CardRow; rewards: Rewards | null }) {
-  const [open, setOpen] = useState(false);
+/** The first card (the one with rewards) starts open, so the Rewards bubble lands on its details. */
+function CardItem({ card, rewards, defaultOpen }: { card: CardRow; rewards: Rewards | null; defaultOpen: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
   const detailsId = useId();
   const { account: a, debt } = card;
   const limit = a.creditLimit ?? 0;
