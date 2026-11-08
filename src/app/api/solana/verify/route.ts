@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   if (!parsed.success) return Response.json({ ok: false, error: "Invalid payment details or signature." }, { status: 400 });
   const request = parsed.data;
   try {
-    const rpc = createSolanaRpc(process.env.SOLANA_DEVNET_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL || "https://api.devnet.solana.com");
+    const rpc = createSolanaRpc(process.env.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL || "https://api.devnet.solana.com");
     const options = { abortSignal: AbortSignal.timeout(12_000) };
     const genesis = await rpc.getGenesisHash().send(options);
     if (!genesis.startsWith(DEVNET_CHAIN_REFERENCE)) return Response.json({ ok: false, error: "The verification server must use Solana Devnet." }, { status: 503 });
