@@ -1,18 +1,18 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { createEventPoller, type EventItem, type EventPage } from "@/lib/events/poller";
+import { FEED_EVENT_TYPES, pendingEvents } from "@/lib/events/pending";
 
 export const POLL_INTERVAL_MS = 2_000;
 const KEEP = 50;
 const PAGE_SIZE = 100;
-const DEFAULT_TYPES = ["transaction.pending", "transaction.completed", "transaction.declined", "transaction.cancelled"];
 
 type Listener = (events: EventItem[]) => void;
 const listeners = new Set<Listener>();
 let shared: ReturnType<typeof createEventPoller> | null = null;
 
 async function fetchPage(after: number): Promise<EventPage> {
-  const res = await fetch(`/api/events?after=${after}&limit=${PAGE_SIZE}&types=${DEFAULT_TYPES.join(",")}`, { cache: "no-store" });
+  const res = await fetch(`/api/events?after=${after}&limit=${PAGE_SIZE}&types=${FEED_EVENT_TYPES.join(",")}`, { cache: "no-store" });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw Object.assign(new Error(body.error ?? `HTTP ${res.status}`), { status: res.status, retryAfter: body.retryAfter });
@@ -45,6 +45,6 @@ export function useEventFeed(enabled = true) {
       if (listeners.size === 0) { p.stop(); shared = null; }
     };
   }, [enabled]);
-  const pending = events.filter((e) => e.type === "transaction.pending" && !events.some((x) => x.tx_id === e.tx_id && x.type !== "transaction.pending"));
+  const pending = pendingEvents(events);
   return { events, pending, live };
 }

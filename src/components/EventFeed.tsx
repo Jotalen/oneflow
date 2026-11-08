@@ -3,6 +3,7 @@ import { useEventFeed } from "@/hooks/useEventFeed";
 import { Card } from "./ui/Card";
 
 const TYPE_STYLE: Record<string, string> = {
+  "transaction.created": "text-warn",
   "transaction.pending": "text-warn",
   "transaction.completed": "text-good",
   "transaction.declined": "text-bad",

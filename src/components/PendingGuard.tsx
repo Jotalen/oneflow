@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useEventFeed } from "@/hooks/useEventFeed";
 import { Card } from "./ui/Card";
+import { isTerminalEvent } from "@/lib/events/pending";
+
+const SWIPE_CENTS = 80_000;
 
 interface Decided { txId: string; decision?: string; reason?: string; rule?: string; ask?: boolean; decision_source?: string; alreadySettled?: boolean; error?: string }
 
@@ -12,6 +15,7 @@ export function PendingGuard({ personaId, hasKey, accountIds }: { personaId: str
   const events = feed.events;
   const [log, setLog] = useState<Decided[]>([]);
   const [swiping, setSwiping] = useState(false);
+  const [swipeError, setSwipeError] = useState<string | null>(null);
   const handled = useRef(new Set<string>());
 
   async function decide(txId: string, decision?: "approve" | "decline") {
@@ -32,10 +36,21 @@ export function PendingGuard({ personaId, hasKey, accountIds }: { personaId: str
 
   async function swipe() {
     setSwiping(true);
-    try { await fetch("/api/dev/swipe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ persona: personaId, amountCents: 80_000 }) }); } finally { setSwiping(false); }
+    setSwipeError(null);
+    try {
+      const res = await fetch("/api/dev/swipe", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ persona: personaId, amountCents: SWIPE_CENTS }) });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        setSwipeError(res.status === 503 && body.error?.includes("422") ? "The bank rejected the swipe (not enough available credit on the card)." : body.error ?? `Swipe failed (HTTP ${res.status})`);
+      }
+    } catch {
+      setSwipeError("Could not reach the bank. Try again.");
+    } finally {
+      setSwiping(false);
+    }
   }
 
-  const statusOf = (txId: string) => events.find((e) => e.tx_id === txId && e.type !== "transaction.pending")?.type.replace("transaction.", "");
+  const statusOf = (txId: string) => events.find((e) => e.tx_id === txId && isTerminalEvent(e))?.type.replace("transaction.", "");
 
   return (
     <Card
@@ -43,6 +58,7 @@ export function PendingGuard({ personaId, hasKey, accountIds }: { personaId: str
       title="The app decides before money settles"
       right={hasKey ? <button type="button" onClick={() => void swipe()} disabled={swiping} className="glass px-3 py-1.5 text-xs font-semibold hover:border-accent disabled:opacity-50">{swiping ? "Swiping…" : "Simulate $800 card swipe"}</button> : <span className="chip text-muted">needs Nessie key</span>}
     >
+      {swipeError && <p role="alert" className="text-xs text-bad mb-2">{swipeError}</p>}
       <p className="text-xs text-muted mb-3">Rules: decline if over half of liquid cash or a blocked category · ask if over $500 with under 1 month of runway · otherwise approve. You can override.</p>
       {log.length === 0 ? (
         <p className="text-sm text-muted">No pending transactions seen yet.</p>
