@@ -48,7 +48,7 @@ export function TopActions() {
       </div>
 
       <div className="relative" ref={menuRef}>
-        <button className="flex items-center gap-1" aria-label="Switch customer" aria-expanded={menu} onClick={() => setMenu((v) => !v)}>
+        <button className="flex items-center gap-1" aria-label={`${me?.name[0] ?? "?"}, switch customer`} aria-expanded={menu} onClick={() => setMenu((v) => !v)}>
           <span className="h-9 w-9 rounded-full bg-surface-2 border border-line grid place-items-center text-sm font-semibold">{me?.name[0] ?? "?"}</span>
           <span aria-hidden className="text-muted text-xs">▾</span>
         </button>

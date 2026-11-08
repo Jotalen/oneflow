@@ -67,7 +67,7 @@ export function Sparkline({ values, height = 28, width = 72 }: { values: number[
   return (
     <div style={{ height, width }} aria-hidden>
       <ResponsiveContainer>
-        <LineChart data={data}><Line type="monotone" dataKey="v" stroke="var(--fg)" strokeWidth={1.5} dot={false} isAnimationActive={false} /></LineChart>
+        <LineChart data={data} accessibilityLayer={false}><Line type="monotone" dataKey="v" stroke="var(--fg)" strokeWidth={1.5} dot={false} isAnimationActive={false} /></LineChart>
       </ResponsiveContainer>
     </div>
   );

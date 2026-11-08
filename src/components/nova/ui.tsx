@@ -62,11 +62,11 @@ export function Tile({ label, value, note, dark }: { label: ReactNode; value: Re
   );
 }
 
-export function Bar({ pct, tone = "ink", marker }: { pct: number; tone?: "ink" | "bad" | "muted"; marker?: number }) {
+export function Bar({ pct, tone = "ink", marker, label = "Progress" }: { pct: number; tone?: "ink" | "bad" | "muted"; marker?: number; label?: string }) {
   const w = Math.max(0, Math.min(100, pct));
   const color = tone === "bad" ? "bg-bad" : tone === "muted" ? "bg-muted" : "bg-ink";
   return (
-    <div className="relative h-2 rounded-full bg-line overflow-hidden" role="progressbar" aria-valuenow={Math.round(w)} aria-valuemin={0} aria-valuemax={100}>
+    <div className="relative h-2 rounded-full bg-line overflow-hidden" role="progressbar" aria-label={label} aria-valuenow={Math.round(w)} aria-valuemin={0} aria-valuemax={100}>
       <div className={`h-full rounded-full ${color}`} style={{ width: `${w}%` }} />
       {marker !== undefined && <div className="absolute top-[-2px] bottom-[-2px] w-0.5 bg-fg" style={{ left: `${Math.max(0, Math.min(100, marker))}%` }} />}
     </div>
