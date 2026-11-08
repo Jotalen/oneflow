@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* OneFlow tokens. Light by default; dark follows the device unless Settings forces a theme. */
+/* OneFlow tokens. Always light by default; dark only when Settings picks Dark (or System on a dark device). */
 :root {
   --bg: #f1f1ef;
   --surface: #ffffff;
@@ -28,7 +28,7 @@
 /* Dark: #415a77 is only 2.7:1 on the dark surfaces, so the lighter slate carries accent text,
    focus and fills there (5.2:1 on --surface), with navy text on it (5.1:1). */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root[data-theme="system"] {
     --bg: #0f1012; --surface: #18191c; --surface-2: #212226; --line: #2b2d31; --fg: #f1f1f1; --muted: #9b9da3;
     --ink: #e0e1dd; --ink-fg: #0d1b2a;
     --accent: #778da9; --accent-strong: #e0e1dd; --on-accent: #0d1b2a; --accent-2: #778da9; --accent-soft: rgba(119, 141, 169, 0.16);
@@ -128,7 +128,7 @@ body {
    native-dialog pop: fade + scale from .96, growing out of the trigger (--origin, set on open). */
 :root { --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08); }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.18); }
+  :root[data-theme="system"] { --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.18); }
 }
 :root[data-theme="dark"] { --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.18); }
 

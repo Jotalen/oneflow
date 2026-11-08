@@ -78,10 +78,11 @@ const THEME_OPTIONS: { value: Theme; label: string }[] = [{ value: "light", labe
 
 function ThemePanel() {
   const stored = useStoredString(THEME_KEY);
-  const theme: Theme = stored === "light" || stored === "dark" ? stored : "system";
+  // Light unless the customer picks Dark or System here.
+  const theme: Theme = stored === "dark" || stored === "system" ? stored : "light";
   const apply = (t: Theme) => {
-    if (t === "system") { delete document.documentElement.dataset.theme; writeStorage(THEME_KEY, null); }
-    else { document.documentElement.dataset.theme = t; writeStorage(THEME_KEY, t); }
+    document.documentElement.dataset.theme = t;
+    writeStorage(THEME_KEY, t);
   };
   return (
     <Panel title="Theme" subtitle="Saved on this device">

@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
-/** Apply the saved theme (Settings → Theme), sidebar rail width and intro cover before first paint. */
-const THEME_INIT = `try{var t=localStorage.getItem("nova:theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
+/** Apply the saved theme (Settings → Theme; light unless Dark or System was picked), sidebar rail width and intro cover before first paint. */
+const THEME_INIT = `try{var t=localStorage.getItem("nova:theme");if(t==="dark"||t==="system")document.documentElement.dataset.theme=t}catch(e){}`;
 const HEAD_INIT = THEME_INIT + SIDEBAR_INIT_SCRIPT + INTRO_INIT_SCRIPT;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
