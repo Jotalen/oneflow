@@ -4,6 +4,7 @@ import { useEventFeed } from "@/hooks/useEventFeed";
 import { isTerminalEvent } from "@/lib/events/pending";
 
 export const SWIPE_CENTS = 80_000;
+export type SwipeCategory = "retail" | "gambling";
 const LOG_SIZE = 8;
 
 export interface GuardLogEntry { personaId: string; txId: string; decision?: string; reason?: string; rule?: string; ask?: boolean; decision_source?: string; alreadySettled?: boolean; error?: string }
@@ -11,7 +12,8 @@ export interface GuardLogEntry { personaId: string; txId: string; decision?: str
 export interface PendingGuardState {
   log: GuardLogEntry[];
   decide: (txId: string, decision?: "approve" | "decline") => Promise<void>;
-  swipe: () => Promise<void>;
+  /** Real Nessie card purchase; "gambling" goes to a casino merchant the guard's blocked-category rule declines. */
+  swipe: (merchantCategory?: SwipeCategory) => Promise<void>;
   swiping: boolean;
   swipeError: string | null;
   statusOf: (txId: string) => string | undefined;
@@ -58,11 +60,11 @@ export function usePendingGuard(personaId: string, enabled: boolean, accountIds:
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pending]);
 
-  async function swipe() {
+  async function swipe(merchantCategory: SwipeCategory = "retail") {
     setSwiping(true);
     setSwipeError(null);
     try {
-      const res = await postJson("/api/dev/swipe", { persona: personaId, amountCents: SWIPE_CENTS });
+      const res = await postJson("/api/dev/swipe", { persona: personaId, amountCents: SWIPE_CENTS, merchantCategory });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         setSwipeError(res.status === 503 && body.error?.includes("422") ? "The bank rejected the swipe (not enough available credit on the card)." : body.error ?? `Swipe failed (HTTP ${res.status})`);

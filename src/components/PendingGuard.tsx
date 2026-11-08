@@ -9,8 +9,14 @@ export function PendingGuard({ hasKey, guard }: { hasKey: boolean; guard: Pendin
     <Card
       eyebrow="Pending-transaction guard · Nessie v2"
       title="The app decides before money settles"
-      right={hasKey ? <button type="button" onClick={() => void swipe()} disabled={swiping} className="glass px-3 py-1.5 text-xs font-semibold hover:border-accent disabled:opacity-50">{swiping ? "Swiping…" : "Simulate $800 card swipe"}</button> : <span className="chip text-muted">needs Nessie key</span>}
+      right={hasKey ? null : <span className="chip text-muted">needs Nessie key</span>}
     >
+      {hasKey && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          <button type="button" onClick={() => void swipe("retail")} disabled={swiping} className="glass px-3 py-1.5 text-xs font-semibold hover:border-accent disabled:opacity-50">{swiping ? "Swiping…" : "Simulate $800 swipe at Target"}</button>
+          <button type="button" onClick={() => void swipe("gambling")} disabled={swiping} className="glass px-3 py-1.5 text-xs font-semibold hover:border-accent disabled:opacity-50">{swiping ? "Swiping…" : "Simulate $800 casino charge"}</button>
+        </div>
+      )}
       {swipeError && <p role="alert" className="text-xs text-bad mb-2">{swipeError}</p>}
       <p className="text-xs text-muted mb-3">Rules: decline if over half of liquid cash or a blocked category · ask if over $500 with under 1 month of runway · otherwise approve. You can override.</p>
       {log.length === 0 ? (
