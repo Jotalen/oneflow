@@ -38,11 +38,12 @@ export function planExecution(move: Move, ids: PersonaIds): ConcreteOp[] {
 }
 
 /** Execute in order; stop at the first Nessie error. Bill amounts convert to dollars inside api.createBill (ADR-006). */
-export async function executeMove(api: Pick<NessieApi, "transfer" | "createBill" | "updateBill" | "createAccount">, move: Move, ids: PersonaIds): Promise<ExecResult> {
+export async function executeMove(api: Pick<NessieApi, "transfer" | "createBill" | "updateBill" | "createAccount" | "deleteAccount">, move: Move, ids: PersonaIds): Promise<ExecResult> {
   const txIds: string[] = [];
   const billIds: string[] = [];
   const accountIds: string[] = [];
   let newCdId: string | null = null;
+  let cdFunded = false;
   try {
     for (const op of planExecution(move, ids)) {
       switch (op.op) {
@@ -50,6 +51,7 @@ export async function executeMove(api: Pick<NessieApi, "transfer" | "createBill"
           const payee = op.payee_id === "__new_cd__" ? newCdId ?? ids.savingsId : op.payee_id;
           const t = await api.transfer(op.accountId, { payee_id: payee, amount_cents: op.amount_cents, description: op.description });
           txIds.push(t.id);
+          if (op.payee_id === "__new_cd__") cdFunded = true;
           break;
         }
         case "createBill": {
@@ -72,6 +74,8 @@ export async function executeMove(api: Pick<NessieApi, "transfer" | "createBill"
     }
     return { ok: true, txIds, billIds, accountIds };
   } catch (e) {
+    // A CD we opened but could not fund would sit empty (and hide the CD move forever): close it.
+    if (newCdId && !cdFunded) await api.deleteAccount(newCdId).catch((err) => console.warn("[execute] could not close empty CD", newCdId, err?.status));
     if (e instanceof NessieError) return { ok: false, error: e.message, status: e.status, retryAfter: e.retryAfter };
     return { ok: false, error: e instanceof Error ? e.message : "execution failed" };
   }

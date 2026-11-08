@@ -37,7 +37,7 @@ describe("planExecution", () => {
   });
 
   test("move without execution plans nothing", () => {
-    const p = profileFor("C018");
+    const p = profileFor("C001", brokeBundle());
     const m = bankMoves(p).find((x) => x.id === "due_date_to_payday")!;
     expect(planExecution(m, ids)).toEqual([]);
   });
@@ -56,6 +56,19 @@ describe("executeMove", () => {
     const r = await executeMove(api as never, m, ids);
     expect(r).toEqual({ ok: true, txIds: ["t1"], billIds: [], accountIds: [] });
     expect(api.transfer).toHaveBeenCalledWith("chk", expect.objectContaining({ payee_id: "sav" }));
+  });
+
+  test("openCd closes the new CD again when funding it fails, so no empty CD is left behind", async () => {
+    const { NessieError } = await import("@/lib/nessie/client");
+    const api = {
+      createAccount: vi.fn(async () => ({ id: "cd1", type: "Savings", nickname: "CD 12mo", balance_cents: 0 })),
+      transfer: vi.fn(async () => { throw new NessieError(422, "insufficient funds"); }),
+      deleteAccount: vi.fn(async () => undefined),
+    };
+    const m = { ...bankMoves(profileFor("C003"))[0], id: "idle_cash_to_cd", execution: [{ op: "openCd" as const, amount: 100_000 }] };
+    const r = await executeMove(api as never, m, ids);
+    expect(r).toMatchObject({ ok: false, status: 422 });
+    expect(api.deleteAccount).toHaveBeenCalledWith("cd1");
   });
 
   test("surfaces NessieError as ok:false with retryAfter", async () => {

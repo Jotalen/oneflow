@@ -45,10 +45,28 @@ describe("bankMoves", () => {
   });
 
   test("due_date_to_payday only when contract due day differs from payday", () => {
-    const p = profileFor("C018"); // due 1st, paid 15th
+    const p = profileFor("C001", brokeBundle()); // due 1st, paid 15th, no cash cushion
     expect(bankMoves(p).find((x) => x.id === "due_date_to_payday")).toBeDefined();
     const aligned = { ...p, contract: { ...p.contract!, dueDay: p.paydayDay } };
     expect(bankMoves(aligned).find((x) => x.id === "due_date_to_payday")).toBeUndefined();
+  });
+
+  test("due_date_to_payday not offered when the payment is due after payday", () => {
+    const p = profileFor("C001", brokeBundle());
+    const dueAfter = { ...p, contract: { ...p.contract!, dueDay: p.paydayDay + 2 } };
+    expect(bankMoves(dueAfter).find((x) => x.id === "due_date_to_payday")).toBeUndefined();
+  });
+
+  test("due_date_to_payday not offered when checking already covers the payment and a month of essentials", () => {
+    const rich = typicalBundle();
+    rich.accounts = rich.accounts.map((a) => (a.type === "Checking" ? { ...a, balance_cents: 5_000_000, available_cents: 5_000_000 } : a));
+    expect(bankMoves(profileFor("C018", rich)).find((x) => x.id === "due_date_to_payday")).toBeUndefined();
+  });
+
+  test("set_autopay not offered again once a recurring Toyota bill exists (no duplicate payments)", () => {
+    const b = typicalBundle();
+    b.bills = [...b.bills, { id: "tfs", status: "recurring", payee: "Toyota Financial Services", payment_amount: 749.61, recurring_date: 1 }];
+    expect(bankMoves(profileFor("C005", b)).find((x) => x.id === "set_autopay")).toBeUndefined();
   });
 
   test("set_autopay offered when autopay is off", () => {

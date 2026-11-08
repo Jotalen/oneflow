@@ -84,8 +84,13 @@ function cancelRecurring(p: Profile): Move | null {
   };
 }
 
+/** Checking that covers the car payment plus this many months of essentials is not at overdraft risk. */
+export const DUE_DATE_SAFE_CUSHION_MONTHS = 1;
+
 function dueDateToPayday(p: Profile): Move | null {
-  if (!p.contract || p.contract.dueDay === p.paydayDay) return null;
+  if (!p.contract || p.contract.dueDay >= p.paydayDay) return null; // paycheck already lands first
+  const checking = p.accounts.filter((a) => a.kind === "checking").reduce((s, a) => s + a.available, 0);
+  if (checking >= p.contract.monthlyPayment + DUE_DATE_SAFE_CUSHION_MONTHS * essentialMonthly(p)) return null;
   return {
     id: "due_date_to_payday",
     kind: "bank",
@@ -100,6 +105,8 @@ function dueDateToPayday(p: Profile): Move | null {
 
 function setAutopay(p: Profile): Move | null {
   if (!p.contract || p.flags.autopay) return null;
+  // A recurring Toyota bill already pays it (e.g. this move was accepted): another would pay twice.
+  if (p.bills.some((b) => b.isVehiclePayment && b.status === "recurring")) return null;
   return {
     id: "set_autopay",
     kind: "bank",
@@ -109,6 +116,8 @@ function setAutopay(p: Profile): Move | null {
     nextStep: "Self-service",
     overrides: {},
     fixedImpact24: AUTOPAY_VALUE_PER_YEAR * HORIZON_YEARS,
+    // TFS offer AUTOPAY (offers_catalog: "Enroll in autopay", eligible when autopay = N, checked above).
+    tfs: { optionId: "AUTOPAY", eligibility: "Y", tfsTotalVsKeep: null, nextStepType: "Self-service", plainSummary: "Enroll in autopay", assumption: "", tradeoff: "" },
     execution: [{ op: "createBill", payee: "Toyota Financial Services", amount: p.contract.monthlyPayment, recurringDay: p.contract.dueDay, nickname: "TFS autopay" }],
   };
 }

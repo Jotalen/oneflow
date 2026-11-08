@@ -25,7 +25,8 @@ export function rankMoves(p: Profile, moves: Move[], t: ToyotaData): RankedMove[
     return { ...m, impact24, baseline, applied, goldenMatch: false };
   });
   ranked.sort((a, b) => tier(a, p) - tier(b, p) || b.impact24 - a.impact24);
-  const topCar = ranked.find((m) => m.kind === "car" || m.kind === "human");
+  // Golden answers name a TFS offer; compare with the top-ranked move that carries one (car, human, or AUTOPAY).
+  const topCar = ranked.find((m) => m.kind === "car" || m.kind === "human" || m.tfs);
   if (topCar && golden && topCar.tfs && topCar.tfs.optionId === golden.offer_id && topCar.tfs.eligibility === "Y") {
     topCar.goldenMatch = true;
   }

@@ -25,6 +25,20 @@ describe("rankMoves", () => {
     }
   });
 
+  test("C001 keeps the REFI golden badge with bank moves in the mix", () => {
+    const p = profileFor("C001");
+    const ranked = rankMoves(p, [...carMoves(p, toyota), ...bankMoves(p)], toyota);
+    expect(ranked.filter((m) => m.goldenMatch).map((m) => m.tfs!.optionId)).toEqual(["REFI"]);
+  });
+
+  test("set_autopay carries the TFS AUTOPAY offer so the golden badge can match it", () => {
+    const p = profileFor("C005");
+    const m = bankMoves(p).find((x) => x.id === "set_autopay")!;
+    expect(m.tfs).toMatchObject({ optionId: "AUTOPAY", eligibility: "Y" });
+    const ranked = rankMoves(p, [m], toyota);
+    expect(ranked[0].goldenMatch).toBe(golden("C005").offer_id === "AUTOPAY");
+  });
+
   test("goldenMatch false when eligibility is not Y even if id matches", () => {
     const p = profileFor("C003");
     const fake: Move = {
