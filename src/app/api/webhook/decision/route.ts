@@ -2,13 +2,28 @@ import { NextResponse } from "next/server";
 import { DedupeWindow, verifyNessieSignature } from "@/lib/nessie/webhook";
 import { guardDecision } from "@/lib/engine/guard";
 import { getAnalysis, readSeedIds } from "@/lib/server/analysis";
+import { nessieApi } from "@/lib/nessie/api";
 
 /**
  * Nessie decision-mode webhook (ADR-005, conditional on HTTPS deploy).
  * Verifies Nessie-Signature, de-dupes Nessie-Event-Id, maps the account to a persona, answers approve/decline.
+ * Without NESSIE_WEBHOOK_SECRET it refuses to answer: decisions are never made on unsigned requests.
  */
 const dedupe = new DedupeWindow();
+const MAX_REMEMBERED_DECISIONS = 200;
 const decisions = new Map<string, { decision: string; reason: string; rule: string; at: number }>();
+
+function remember(eventId: string, d: { decision: string; reason: string; rule: string }) {
+  decisions.set(eventId, { ...d, at: Date.now() });
+  // Map keeps insertion order: drop the oldest beyond the cap.
+  for (const k of decisions.keys()) { if (decisions.size <= MAX_REMEMBERED_DECISIONS) break; decisions.delete(k); }
+}
+
+async function merchantCategory(merchantId: string | undefined): Promise<string | null> {
+  if (!merchantId) return null;
+  const m = await nessieApi().getMerchant(merchantId).catch(() => null);
+  return (m as { category?: string } | null)?.category ?? null;
+}
 
 interface HookBody { id?: string; type?: string; account_id?: string; tx_id?: string; data?: Record<string, unknown>; transaction?: Record<string, unknown> }
 
@@ -21,10 +36,11 @@ function personaForAccount(accountId: string): string | null {
 
 export async function POST(req: Request) {
   const secret = process.env.NESSIE_WEBHOOK_SECRET ?? "";
+  if (!secret) return NextResponse.json({ error: "webhook not configured" }, { status: 503 });
   const raw = await req.text();
   const sig = req.headers.get("nessie-signature");
   const ts = req.headers.get("nessie-timestamp");
-  if (secret && !verifyNessieSignature({ secret, timestamp: ts, body: raw, signature: sig })) {
+  if (!verifyNessieSignature({ secret, timestamp: ts, body: raw, signature: sig })) {
     return NextResponse.json({ error: "bad signature" }, { status: 401 });
   }
   const eventId = req.headers.get("nessie-event-id") ?? "";
@@ -40,9 +56,10 @@ export async function POST(req: Request) {
   if (!persona) return NextResponse.json({ decision: "approve", reason: "unknown account; fail open" });
   try {
     const { analysis } = await getAnalysis(persona);
-    const g = guardDecision({ id: tx.id ?? body.tx_id ?? "", kind: tx.kind ?? "purchase", amountCents: Number(tx.amount_cents ?? 0), description: tx.description, payeeId: tx.payee_id }, analysis.profile, analysis.health);
+    const category = await merchantCategory(tx.merchant_id);
+    const g = guardDecision({ id: tx.id ?? body.tx_id ?? "", kind: tx.kind ?? "purchase", amountCents: Number(tx.amount_cents ?? 0), description: tx.description, merchantCategory: category, payeeId: tx.payee_id }, analysis.profile, analysis.health);
     const decision = g.decision === "ask" ? "approve" : g.decision; // a hook must answer; "ask" falls open and is surfaced in the UI log
-    if (eventId) decisions.set(eventId, { decision, reason: g.reason, rule: g.rule, at: Date.now() });
+    if (eventId) remember(eventId, { decision, reason: g.reason, rule: g.rule });
     return NextResponse.json({ decision, reason: g.reason.slice(0, 200), rule: g.rule, decision_source: "hook" });
   } catch (e) {
     console.error("[webhook]", e);
@@ -51,5 +68,6 @@ export async function POST(req: Request) {
 }
 
 export function GET() {
-  return NextResponse.json({ ok: true, mode: "decision", kinds: ["purchase"], recent: [...decisions.entries()].slice(-10).map(([id, d]) => ({ id, ...d })) });
+  // Public health check: reasons quote customer balances, so only expose rule names and timestamps.
+  return NextResponse.json({ ok: true, mode: "decision", kinds: ["purchase"], recent: [...decisions.entries()].slice(-10).map(([id, d]) => ({ id, decision: d.decision, rule: d.rule, at: d.at })) });
 }
