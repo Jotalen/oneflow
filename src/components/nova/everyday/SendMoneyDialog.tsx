@@ -1,10 +1,11 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { usePersona } from "@/components/PersonaProvider";
 import { useReadyBank } from "@/components/nova/BankProvider";
 import { parseDollarInput } from "@/lib/bank/everyday";
 import { MAX_MEMO_CHARS, MAX_P2P_CENTS, recipientsFor, type P2PReceipt, type P2PResult } from "@/lib/bank/p2p";
 import { fmtUSD } from "@/lib/money";
+import { showModalFrom } from "../motion/dialogOrigin";
 
 const REFRESH_AFTER_SEND_MS = 1_500;
 const FIELD = "rounded-lg border border-line bg-surface px-2 py-1.5 text-sm text-fg";
@@ -48,7 +49,7 @@ export function SendMoneyDialog({ availableCents }: { availableCents: number }) 
   const toName = people.find((p) => p.id === to)?.name ?? "";
   const edit = (set: (v: string) => void) => (v: string) => { set(v); setReviewing(false); };
 
-  const open = () => { setResult(null); setReviewing(false); ref.current?.showModal(); };
+  const open = (e: MouseEvent<HTMLButtonElement>) => { setResult(null); setReviewing(false); showModalFrom(ref.current, e.currentTarget); };
   const close = () => ref.current?.close();
   const reset = () => { setResult(null); setReviewing(false); setAmount(""); setMemo(""); };
 
@@ -70,7 +71,7 @@ export function SendMoneyDialog({ availableCents }: { availableCents: number }) 
   return (
     <>
       <button className="btn" onClick={open} aria-haspopup="dialog">Send money</button>
-      <dialog ref={ref} aria-labelledby="send-money-title" className="panel m-auto w-[min(26rem,calc(100vw-2rem))] p-5 text-fg backdrop:bg-black/40">
+      <dialog ref={ref} aria-labelledby="send-money-title" className="panel dialog-pop m-auto w-[min(26rem,calc(100vw-2rem))] p-5 text-fg backdrop:bg-black/40">
         <h2 id="send-money-title" className="font-semibold text-lg">Send money</h2>
         <p className="text-xs text-muted mt-0.5">From checking to another OneFlow customer. Moves real money in the bank.</p>
         {result?.ok ? (

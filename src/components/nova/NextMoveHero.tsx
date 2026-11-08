@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { RichText } from "./RichText";
 import { useEffect, useState } from "react";
 import type { RankedMove } from "@/lib/engine/moves/rank";
@@ -7,6 +8,11 @@ import { fmtUSD } from "@/lib/money";
 import { TwoFutures } from "@/components/TwoFutures";
 import { CoachPanel } from "@/components/CoachPanel";
 import { useReadyBank } from "./BankProvider";
+import { SPRING } from "@/lib/motion";
+
+const FADE = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: SPRING } as const;
+/** The sheet sits on the right edge, so it grows from there. */
+const SHEET = { initial: { opacity: 0, scale: 0.96 }, animate: { opacity: 1, scale: 1 }, exit: { opacity: 0, scale: 0.96 }, transition: SPRING, style: { transformOrigin: "center right" } } as const;
 
 const HERO_COUNT = 3;
 /** Button copy per bank move (wireframe: "Pay card now", "Set up auto-save", "Turn on autopay"). */
@@ -74,7 +80,7 @@ export function NextMoveHero() {
           </div>
         </div>
       </section>
-      {why && <WhyDrawer move={m} personaId={b.personaId} onClose={() => setWhy(false)} />}
+      <AnimatePresence>{why && <WhyDrawer key="why" move={m} personaId={b.personaId} onClose={() => setWhy(false)} />}</AnimatePresence>
     </>
   );
 }
@@ -87,8 +93,8 @@ function WhyDrawer({ move, personaId, onClose }: { move: RankedMove; personaId: 
     return () => document.removeEventListener("keydown", onKey);
   }, [onClose]);
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose} role="dialog" aria-modal aria-label={`Why: ${move.title}`}>
-      <div className="h-full w-full max-w-xl overflow-y-auto bg-bg p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+    <motion.div {...FADE} className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose} role="dialog" aria-modal aria-label={`Why: ${move.title}`}>
+      <motion.div {...SHEET} className="h-full w-full max-w-xl overflow-y-auto bg-bg p-4 sm:p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-xs uppercase tracking-wider text-muted">Why this move</div>
@@ -118,7 +124,7 @@ function WhyDrawer({ move, personaId, onClose }: { move: RankedMove; personaId: 
         )}
         {brief && <div className="panel p-4 text-sm leading-relaxed"><RichText text={brief} /></div>}
         <CoachPanel personaId={personaId} onBrief={setBrief} />
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -122,3 +122,33 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }
+
+/* card motion */
+/* Hover lift for clickable cards (scale/press is framer, in nova/motion/CardLink), and the
+   native-dialog pop: fade + scale from .96, growing out of the trigger (--origin, set on open). */
+:root { --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.08); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.18); }
+}
+:root[data-theme="dark"] { --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.18); }
+
+.card-lift { transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms cubic-bezier(0.2, 0.9, 0.3, 1); }
+.card-lift:hover { box-shadow: var(--card-shadow-hover); }
+
+.dialog-pop {
+  --pop-ease: cubic-bezier(0.2, 0.9, 0.3, 1);
+  transform-origin: var(--origin, 50% 50%);
+  opacity: 0;
+  scale: 0.96;
+  transition: opacity 200ms var(--pop-ease), scale 200ms var(--pop-ease), overlay 200ms allow-discrete, display 200ms allow-discrete;
+}
+.dialog-pop[open] { opacity: 1; scale: 1; }
+.dialog-pop::backdrop { opacity: 0; transition: opacity 200ms var(--pop-ease), overlay 200ms allow-discrete, display 200ms allow-discrete; }
+.dialog-pop[open]::backdrop { opacity: 1; }
+@starting-style {
+  .dialog-pop[open] { opacity: 0; scale: 0.96; }
+  .dialog-pop[open]::backdrop { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog-pop, .dialog-pop[open] { scale: none; }
+}

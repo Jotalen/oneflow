@@ -1,10 +1,21 @@
 "use client";
+import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { usePersona } from "@/components/PersonaProvider";
 import { PendingGuard } from "@/components/PendingGuard";
 import { usePendingGuard } from "@/hooks/usePendingGuard";
 import { EventFeed } from "@/components/EventFeed";
 import { useBank } from "./BankProvider";
+import { SPRING } from "@/lib/motion";
+
+/** Both panels open under a button at their top-right corner, so they grow from there. */
+const POP = {
+  initial: { opacity: 0, scale: 0.96 },
+  animate: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.96 },
+  transition: SPRING,
+  style: { transformOrigin: "top right" },
+} as const;
 
 function useOutside(open: boolean, close: () => void) {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,13 +49,15 @@ export function TopActions() {
           <span aria-hidden>🔔</span>
           {(unread > 0 || offline) && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-bad" />}
         </button>
+        <AnimatePresence>
         {bell && (
-          <div className="fixed inset-x-2 top-16 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[26rem] z-40 space-y-3 max-h-[75vh] overflow-auto rounded-2xl bg-bg p-2 border border-line shadow-xl">
+          <motion.div key="bell" {...POP} className="fixed inset-x-2 top-16 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[26rem] z-40 space-y-3 max-h-[75vh] overflow-auto rounded-2xl bg-bg p-2 border border-line shadow-xl">
             {offline && <div className="panel p-3 text-sm">Showing an offline snapshot. Live bank actions are simulated.</div>}
             {analysis && <PendingGuard hasKey={live} guard={guard} />}
             <EventFeed hasKey={live} />
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
 
       <div className="relative" ref={menuRef}>
@@ -52,8 +65,9 @@ export function TopActions() {
           <span className="h-9 w-9 rounded-full bg-surface-2 border border-line grid place-items-center text-sm font-semibold">{me?.name[0] ?? "?"}</span>
           <span aria-hidden className="text-muted text-xs">▾</span>
         </button>
+        <AnimatePresence>
         {menu && (
-          <div className="absolute right-0 mt-2 w-64 z-40 panel p-2 shadow-xl max-h-[70vh] overflow-auto">
+          <motion.div key="menu" {...POP} className="absolute right-0 mt-2 w-64 z-40 panel p-2 shadow-xl max-h-[70vh] overflow-auto">
             <div className="px-2 py-1 text-[0.7rem] uppercase tracking-wider text-muted">Customers</div>
             {personas.map((p) => (
               <button key={p.id} onClick={() => { setPersonaId(p.id); setMenu(false); }}
@@ -61,8 +75,9 @@ export function TopActions() {
                 <span>{p.name}, {p.age}</span><span className="text-muted text-xs">{p.id}</span>
               </button>
             ))}
-          </div>
+          </motion.div>
         )}
+        </AnimatePresence>
       </div>
     </div>
   );

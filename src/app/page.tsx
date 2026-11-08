@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
+import { ViewTransition, useMemo, useSyncExternalStore } from "react";
 import { PageHeader } from "@/components/nova/ui";
 import { Loading } from "@/components/nova/Loading";
 import { useReadyBank } from "@/components/nova/BankProvider";
@@ -10,6 +10,8 @@ import { useDashboardPrefs } from "@/lib/bank/useDashboard";
 import { useGoals } from "@/lib/bank/goals";
 import { useBudgetPlan } from "@/components/nova/everyday/useBudgetPlan";
 import { viewWithPlan } from "@/lib/bank/budgetPlan";
+import { cardMorphName, rememberOpenedCard } from "@/lib/motion";
+import { StaggerItem } from "@/components/nova/motion/StaggerItem";
 
 function greeting(hour: number) {
   if (hour < 12) return "Good morning";
@@ -45,7 +47,17 @@ export default function OverviewPage() {
       <PageHeader title={title} subtitle={<>Here&apos;s your financial overview.{b.offline && <span className="chip ml-2">offline snapshot</span>}</>} actions={editBtn} />
       {/* One grid in the saved order: small, medium and large bubbles can sit anywhere. */}
       <div className={BUBBLE_GRID}>
-        {ids.map((id) => <div key={id} className={`min-w-0 ${BUBBLE_SPAN[bubbleDef(id).size]}`}><Bubble id={id} a={b.analysis} v={view} goal={topGoal} /></div>)}
+        {ids.map((id, i) => {
+          const def = bubbleDef(id);
+          // Shares a view-transition name with the page it opens, so the card grows into that page.
+          return (
+            <ViewTransition key={id} name={cardMorphName(id)} share="card-morph" default="none">
+              <div className={`min-w-0 ${BUBBLE_SPAN[def.size]}`} onClickCapture={() => rememberOpenedCard(id, def.href)}>
+                <StaggerItem index={i} className="h-full"><Bubble id={id} a={b.analysis} v={view} goal={topGoal} /></StaggerItem>
+              </div>
+            </ViewTransition>
+          );
+        })}
       </div>
       <Link href="/dashboard/edit" className="btn w-full sm:hidden">✎ Edit dashboard</Link>
     </div>

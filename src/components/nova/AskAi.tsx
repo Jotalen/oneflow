@@ -1,7 +1,8 @@
 "use client";
-import { useId, useRef, useState, type FormEvent } from "react";
+import { useId, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { RichText } from "./RichText";
 import { useBank } from "@/components/nova/BankProvider";
+import { showModalFrom } from "./motion/dialogOrigin";
 
 /**
  * Shared "Ask AI" button + dialog. `<AskAi topic="safety_net" />` answers straight away;
@@ -91,8 +92,8 @@ function AskAiDialog({ topic, essentialsOverrides, personaId }: AskAiProps & { p
     setStatus(await ask({ persona: personaId, topic, ...(q ? { question: q } : {}), ...(essentialsOverrides ? { essentialsOverrides } : {}) }));
   };
 
-  const open = () => {
-    ref.current?.showModal();
+  const open = (e: MouseEvent<HTMLButtonElement>) => {
+    showModalFrom(ref.current, e.currentTarget);
     if (topic !== "safety_net") return;
     const key = `${personaId}:${JSON.stringify(essentialsOverrides ?? {})}`;
     if (status.kind === "loading" || (key === askedFor && status.kind === "done")) return;
@@ -114,7 +115,7 @@ function AskAiDialog({ topic, essentialsOverrides, personaId }: AskAiProps & { p
       <button type="button" className="btn h-8 px-3 text-xs" onClick={open} aria-haspopup="dialog" aria-label={copy.aria}>
         <Sparkle />{copy.button}
       </button>
-      <dialog ref={ref} aria-labelledby={titleId} className="panel m-auto w-[min(32rem,calc(100vw-2rem))] max-h-[85vh] overflow-y-auto p-5 text-fg backdrop:bg-black/40">
+      <dialog ref={ref} aria-labelledby={titleId} className="panel dialog-pop m-auto w-[min(32rem,calc(100vw-2rem))] max-h-[85vh] overflow-y-auto p-5 text-fg backdrop:bg-black/40">
         <div className="flex items-start justify-between gap-3">
           <h2 id={titleId} className="font-semibold text-lg flex items-center gap-2"><Sparkle className="h-4 w-4" />{copy.title}</h2>
           <button type="button" className="btn h-8 w-8 px-0" aria-label="Close" onClick={close}>✕</button>

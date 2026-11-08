@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { NavIcon, hasNavIcon } from "./icons";
 import type { ReactNode } from "react";
 import type { Analysis } from "@/lib/engine/analyze";
@@ -12,6 +11,8 @@ import { fmtUSD } from "@/lib/money";
 import { CarSpinner } from "@/components/CarSpinner";
 import { AreaTrend, Sparkline } from "./charts";
 import { NextMoveHero } from "./NextMoveHero";
+import { CardLink } from "./motion/CardLink";
+import { CountUpText } from "./motion/CountUp";
 import { Bar, Row, fmtDate, fmtSigned, fmtWhole, initials } from "./ui";
 
 /** 60-month new-purchase APR by credit tier, from the Toyota rate sheet (data/toyota/rate_sheet.csv). */
@@ -29,7 +30,7 @@ function Shell({ id, children, right }: { id: BubbleId; children: ReactNode; rig
   const d = bubbleDef(id);
   const iconHref = d.href.split(/[?#]/)[0];
   return (
-    <Link href={d.href} className="panel block h-full p-4 hover:border-fg/40 transition-colors">
+    <CardLink href={d.href} className="panel card-lift block h-full p-4 hover:border-fg/40 transition-colors">
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 min-w-0">
           {hasNavIcon(iconHref) && (
@@ -42,11 +43,11 @@ function Shell({ id, children, right }: { id: BubbleId; children: ReactNode; rig
         {right ?? <span className="text-muted text-sm" aria-hidden>›</span>}
       </div>
       {children}
-    </Link>
+    </CardLink>
   );
 }
 
-const Big = ({ children }: { children: ReactNode }) => <div className="money text-xl sm:text-2xl font-semibold leading-tight">{children}</div>;
+const Big = ({ children }: { children: ReactNode }) => <div className="money text-xl sm:text-2xl font-semibold leading-tight"><CountUpText>{children}</CountUpText></div>;
 const Note = ({ children }: { children: ReactNode }) => <div className="text-xs text-muted mt-1">{children}</div>;
 
 function pctChange(now: number, then: number): string {

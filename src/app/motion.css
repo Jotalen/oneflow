@@ -1,0 +1,79 @@
+/* Intro overlay + route view transitions. Kept apart from globals.css so motion is easy to find. */
+
+/* ---- Intro (src/components/intro) ---- */
+.intro-cover {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-color: #0f1012;
+  /* Faint grey dot grid, 32px apart; the canvas lights dots on the same lattice. */
+  background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.11) 1.2px, transparent 1.6px);
+  background-size: 32px 32px;
+  cursor: pointer;
+  /* Failsafe: if scripts never run, the cover still gets out of the way. */
+  animation: intro-failsafe 0s linear 8s forwards;
+}
+html[data-intro="play"] .intro-cover { display: block; }
+.intro-cover { touch-action: none; overscroll-behavior: contain; }
+/* Scroll cue: a quiet chevron that fades once scrolling starts. */
+.intro-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 2.5rem;
+  translate: -50% 0;
+  color: rgba(255, 255, 255, 0.55);
+  opacity: 0;
+  animation: intro-bob 1.6s ease-in-out infinite;
+}
+@keyframes intro-bob { 50% { transform: translateY(6px); } }
+@keyframes intro-failsafe { to { visibility: hidden; pointer-events: none; } }
+
+.intro-ball {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 101;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #39ff88;
+  box-shadow: 0 0 12px 4px rgba(57, 255, 136, 0.45), 0 0 32px 10px rgba(57, 255, 136, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ---- Route changes (Shell): fade + 8px rise in, quick dim/blur out ---- */
+:root {
+  /* The app's one spring (stiffness 380, damping 32) sampled for CSS. */
+  --spring: linear(0, 0.0613, 0.1977, 0.3586, 0.5145, 0.6506, 0.761, 0.8458, 0.9076, 0.9504, 0.9785, 0.9957, 1.0052, 1.0097, 1.0109, 1.0104, 1.009, 1.0072, 1.0055, 1.004, 1.0027, 1.0018, 1.0011, 1.0006, 1.0003, 1);
+  --spring-ms: 500ms;
+}
+::view-transition-new(.page-in) { animation: 200ms cubic-bezier(0.2, 0.9, 0.3, 1) both page-rise; }
+::view-transition-old(.page-out) { animation: 160ms ease-out both page-recede; }
+@keyframes page-rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes page-recede { to { opacity: 0; filter: blur(3px) brightness(0.75); } }
+
+/* ---- Card → detail: the card grows into its page like a window opening, and shrinks back ---- */
+::view-transition-group(.card-morph) {
+  animation-duration: var(--spring-ms);
+  animation-timing-function: var(--spring);
+  border-radius: 1rem;
+  overflow: clip;
+}
+::view-transition-old(.card-morph),
+::view-transition-new(.card-morph) {
+  height: 100%;
+  object-fit: cover;
+  object-position: top left;
+}
+::view-transition-image-pair(.card-morph) { animation-name: card-via-blur; }
+@keyframes card-via-blur { 30% { filter: blur(2px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-image-pair(*) { animation: none !important; }
+}

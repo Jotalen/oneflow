@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./motion.css";
 import { loadToyota } from "@/lib/toyota/load";
 import { PersonaProvider } from "@/components/PersonaProvider";
 import { BankProvider } from "@/components/nova/BankProvider";
 import { Shell } from "@/components/nova/Shell";
 import { SIDEBAR_INIT_SCRIPT } from "@/lib/nav";
+import { INTRO_INIT_SCRIPT } from "@/lib/intro/init";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -16,9 +18,9 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: "device-width", initialScale: 1 };
 
-/** Apply the saved theme (Settings → Theme) and sidebar rail width before first paint. */
+/** Apply the saved theme (Settings → Theme), sidebar rail width and intro cover before first paint. */
 const THEME_INIT = `try{var t=localStorage.getItem("nova:theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}`;
-const HEAD_INIT = THEME_INIT + SIDEBAR_INIT_SCRIPT;
+const HEAD_INIT = THEME_INIT + SIDEBAR_INIT_SCRIPT + INTRO_INIT_SCRIPT;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const t = loadToyota();

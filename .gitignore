@@ -72,3 +72,6 @@ docker-compose.yml
 
 # Team prep pack (PDF, notes), local only
 /prep/
+
+# design source files (logo PNGs, intro reference frames); rebuilt in code
+/brand/

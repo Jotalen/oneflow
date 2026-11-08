@@ -1,13 +1,17 @@
 "use client";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useId, useState } from "react";
 import { Bar, Panel } from "@/components/nova/ui";
 import { AskAi } from "@/components/nova/AskAi";
 import { AS_OF, type BankAccount, type Debt } from "@/lib/engine/types";
 import { REWARD_RULES, type Rewards } from "@/lib/bank/view";
 import { fmtUSD } from "@/lib/money";
+import { SPRING } from "@/lib/motion";
 
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const HIGH_USE_PCT = 30;
+const COLLAPSED = { height: 0, opacity: 0 } as const;
+const EXPANDED = { height: "auto", opacity: 1 } as const;
 
 export interface CardRow { account: BankAccount; debt: Debt | undefined }
 
@@ -36,6 +40,7 @@ function CardItem({ card, rewards, defaultOpen }: { card: CardRow; rewards: Rewa
   const { account: a, debt } = card;
   const limit = a.creditLimit ?? 0;
   const usePct = limit > 0 ? Math.round((a.balance / limit) * 100) : 0;
+  const reduce = useReducedMotion();
   return (
     <li className="py-3">
       <button type="button" className="flex w-full items-center gap-3 text-left" aria-expanded={open} aria-controls={detailsId} onClick={() => setOpen((v) => !v)}>
@@ -48,7 +53,9 @@ function CardItem({ card, rewards, defaultOpen }: { card: CardRow; rewards: Rewa
         <span className="sr-only">{open ? "Hide" : "Show"} card details</span>
       </button>
       <div className="mt-2"><Bar pct={usePct} tone={usePct > HIGH_USE_PCT ? "bad" : "ink"} marker={HIGH_USE_PCT} /></div>
+      <AnimatePresence initial={false}>
       {open && (
+        <motion.div key="details" className="overflow-hidden" initial={COLLAPSED} animate={EXPANDED} exit={COLLAPSED} transition={reduce ? { duration: 0 } : SPRING}>
         <div id={detailsId} className="mt-3 grid gap-3 sm:grid-cols-2">
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-xl bg-surface-2 p-3 text-sm">
             <dt className="text-muted">Limit</dt><dd className="text-right money">{fmtUSD(limit)}</dd>
@@ -60,7 +67,9 @@ function CardItem({ card, rewards, defaultOpen }: { card: CardRow; rewards: Rewa
           </dl>
           {rewards && <RewardsDetails rewards={rewards} />}
         </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </li>
   );
 }

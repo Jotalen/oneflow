@@ -1,8 +1,9 @@
 "use client";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { fmtUSD, type Cents } from "@/lib/money";
 import { TopActions } from "./TopActions";
+import { CardLink } from "./motion/CardLink";
+import { CountUpText } from "./motion/CountUp";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 /** "2026-11-07" → "Nov 7" (or "Nov 7, 2026" with year). */
@@ -35,7 +36,7 @@ export function PageHeader({ title, subtitle, actions }: { title: ReactNode; sub
 
 export function Panel({ title, subtitle, right, children, className = "", href, dark }: { title?: ReactNode; subtitle?: ReactNode; right?: ReactNode; children?: ReactNode; className?: string; href?: string; dark?: boolean }) {
   const body = (
-    <section className={`${dark ? "bg-ink text-ink-fg rounded-2xl" : "panel"} p-4 sm:p-5 h-full ${href ? "hover:border-fg/40 transition-colors" : ""} ${className}`}>
+    <section className={`${dark ? "bg-ink text-ink-fg rounded-2xl" : "panel"} p-4 sm:p-5 h-full ${href ? "card-lift hover:border-fg/40 transition-colors" : ""} ${className}`}>
       {(title || right) && (
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
@@ -48,7 +49,7 @@ export function Panel({ title, subtitle, right, children, className = "", href, 
       {children}
     </section>
   );
-  return href ? <Link href={href} className="block h-full">{body}</Link> : body;
+  return href ? <CardLink href={href} className="block h-full">{body}</CardLink> : body;
 }
 
 /** Small grey tile used inside panels (wireframe "Left to spend" boxes). */
@@ -56,7 +57,7 @@ export function Tile({ label, value, note, dark }: { label: ReactNode; value: Re
   return (
     <div className={`rounded-xl p-3 ${dark ? "bg-ink text-ink-fg" : "bg-surface-2"}`}>
       <div className={`text-xs ${dark ? "opacity-70" : "text-muted"}`}>{label}</div>
-      <div className="text-lg font-semibold money leading-tight mt-0.5">{value}</div>
+      <div className="text-lg font-semibold money leading-tight mt-0.5"><CountUpText>{value}</CountUpText></div>
       {note && <div className={`text-[0.7rem] mt-0.5 ${dark ? "opacity-70" : "text-muted"}`}>{note}</div>}
     </div>
   );
