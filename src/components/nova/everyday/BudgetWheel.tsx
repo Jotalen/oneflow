@@ -15,7 +15,10 @@ import { fmtMonth } from "@/components/nova/ui";
 const SIZE = 260;
 const C = SIZE / 2;
 const R = 100;
-const LABEL_R = 117;
+const LABEL_R = 121;
+/** Room around the wheel so the number labels (e.g. "10!") never touch the SVG edge. */
+const PAD = 10;
+const VIEW_BOX = `${-PAD} ${-PAD} ${SIZE + 2 * PAD} ${SIZE + 2 * PAD}`;
 const OVER_IN = R + 3;
 const OVER_OUT = R + 9;
 const GAP_DEG = 1.6;
@@ -90,7 +93,7 @@ export function BudgetWheel({ budget }: { budget: Budget }) {
   return (
     <div className="grid gap-4 sm:grid-cols-[minmax(0,17rem)_1fr] items-start">
       <figure className="mx-auto w-full max-w-[17rem]">
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full h-auto" role="img" aria-labelledby={`${id}-t ${id}-d`}>
+        <svg viewBox={VIEW_BOX} className="w-full h-auto" role="img" aria-labelledby={`${id}-t ${id}-d`}>
           <title id={`${id}-t`}>Budget wheel for {fmtMonth(budget.month)}</title>
           <desc id={`${id}-d`}>{summary}</desc>
           {slices.map((s, i) => <Slice key={s.key} s={s} i={i} n={slices.length} />)}
